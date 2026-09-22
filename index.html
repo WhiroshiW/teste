@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ECOS DO VAZIO — survival horror estilo PS1</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./css/style.css">
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.min.js" } }
+</script>
+</head>
+<body>
+<div id="screen"></div>
+<div id="scan"></div>
+
+<!-- ============ TÍTULO ============ -->
+<div id="title" class="overlay hidden">
+  <div class="titleTop">EQUIPE VAZIO apresenta</div>
+  <h1 class="logo">ECOS<br>DO VAZIO</h1>
+  <div class="subtitle">— um survival horror sobre depressão —</div>
+  <div id="titleMenu" class="menu"></div>
+  <div id="titleSaveInfo" class="saveInfo"></div>
+  <div class="titleFooter">© 1997 EQUIPE VAZIO • ESTILO PS1 • FONES RECOMENDADOS 🎧<br>Use ENTER / clique para confirmar • CVV 188</div>
+</div>
+
+<!-- ============ AJUDA ============ -->
+<div id="help" class="overlay hidden">
+  <div class="panel">
+    <h2>COMO JOGAR</h2>
+    <div id="helpRows"></div>
+    <p class="tip">Câmeras fixas, controles tanque — como nos clássicos.<br>Munição é escassa: às vezes, correr é a resposta.<br>Examine tudo. Registre no DIÁRIO (precisa de Fita de Tinta).</p>
+    <button id="helpBack" class="btn">◀ VOLTAR</button>
+  </div>
+</div>
+
+<!-- ============ OPÇÕES ============ -->
+<div id="options" class="overlay hidden">
+  <div class="panel">
+    <h2>OPÇÕES</h2>
+    <div class="optRow"><span>VOLUME GERAL</span><input id="optMaster" type="range" min="0" max="10" value="9"></div>
+    <div class="optRow"><span>MÚSICA</span><input id="optMusic" type="range" min="0" max="10" value="8"></div>
+    <div class="optRow"><span>EFEITOS</span><input id="optSfx" type="range" min="0" max="10" value="9"></div>
+    <div class="optRow"><span>EFEITO CRT</span><input id="optCrt" type="checkbox" checked></div>
+    <div class="optRow"><span>RESOLUÇÃO 3D</span>
+      <select id="optRes"><option value="ps1">PS1 (autêntico)</option><option value="alta">ALTA (nítido)</option></select>
+    </div>
+    <div class="optRow"><span>◀ VOLTAR</span><span></span></div>
+    <button id="optBack" class="btn">◀ VOLTAR</button>
+  </div>
+</div>
+
+<!-- ============ HUD ============ -->
+<div id="hud" class="hidden">
+  <div id="roomName" class="hidden"></div>
+  <div id="hpBox">❤ <span id="hpText">100</span> <span id="hpStatus" class="hpStatus ok">FINO</span></div>
+  <div id="ammoBox" class="hidden">🔫 <span id="ammoText"></span></div>
+  <div id="prompt" class="hidden"></div>
+  <div id="cross" class="hidden">＋</div>
+  <div id="target" class="hidden">◇</div>
+  <div id="bossBar" class="hidden"><div id="bossName">VULTO</div><div class="bossTrack"><div id="bossFill"></div></div></div>
+  <div id="toast" class="hidden"></div>
+</div>
+
+<!-- ============ BANNER DE ITEM ============ -->
+<div id="banner" class="hidden">
+  <div id="bannerIcon">🔑</div>
+  <div><div id="bannerName">Item</div><div id="bannerDesc">Descrição</div></div>
+  <div class="bannerHint">[E] continuar</div>
+</div>
+
+<!-- ============ DIÁLOGO ============ -->
+<div id="dialog" class="hidden">
+  <canvas id="dlgPortrait" width="96" height="96"></canvas>
+  <div class="dlgBody">
+    <div id="dlgName">DANIEL</div>
+    <div id="dlgText"></div>
+    <div class="dlgHint">▼ [E / ENTER / clique]</div>
+  </div>
+</div>
+
+<!-- ============ INVENTÁRIO ============ -->
+<div id="inventory" class="overlay hidden">
+  <div class="panel inv">
+    <h2>INVENTÁRIO</h2>
+    <div class="invMain">
+      <div id="invGrid"></div>
+      <div class="invSide">
+        <div class="invDetail">
+          <div id="invIcon">—</div>
+          <div id="invName">Vazio</div>
+          <div id="invDesc"></div>
+          <div id="invCmds"></div>
+        </div>
+        <div class="invMeta">
+          <div id="invWeapon"></div>
+          <div id="invPages"></div>
+          <div id="invTime"></div>
+        </div>
+      </div>
+    </div>
+    <div class="invObj">◎ <span id="invObjective"></span></div>
+    <div class="invFoot"><button id="invClose" class="btn">FECHAR [TAB]</button></div>
+  </div>
+</div>
+
+<!-- ============ COFRE ============ -->
+<div id="safe" class="overlay hidden">
+  <div class="panel small">
+    <h2>COFRE</h2>
+    <p class="tip">Digite a senha de 4 números.<br>← → escolhe • ↑ ↓ muda • ENTER confirma</p>
+    <div id="safeDigits"></div>
+    <div class="rowBtns">
+      <button id="safeOk" class="btn">ABRIR</button>
+      <button id="safeCancel" class="btn">SAIR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SALVAR ============ -->
+<div id="saveBox" class="overlay hidden">
+  <div class="panel small">
+    <h2>DIÁRIO</h2>
+    <p>Registrar o progresso?<br>(usa 1 Fita de Tinta)</p>
+    <div class="rowBtns">
+      <button id="saveYes" class="btn">SIM</button>
+      <button id="saveNo" class="btn">NÃO</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PAUSE ============ -->
+<div id="pause" class="overlay hidden">
+  <div class="panel small">
+    <h2>PAUSADO</h2>
+    <div id="pauseMenu" class="menu"></div>
+  </div>
+</div>
+
+<!-- ============ GAME OVER ============ -->
+<div id="gameover" class="overlay hidden">
+  <div class="goBox">
+    <h1 class="goTitle">VOCÊ MORREU</h1>
+    <p>A escuridão venceu... desta vez.<br>Mas toda noite termina. Tente de novo.</p>
+    <div class="rowBtns">
+      <button id="goRetry" class="btn">CONTINUAR</button>
+      <button id="goTitle" class="btn">TÍTULO</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FINAL ============ -->
+<div id="ending" class="overlay hidden">
+  <div class="panel">
+    <h2 id="endTitle">FINAL</h2>
+    <div id="endRank" class="rank">S</div>
+    <div id="endStats" class="stats"></div>
+    <div id="endMsg" class="tip"></div>
+    <button id="endBtn" class="btn">VOLTAR AO TÍTULO</button>
+  </div>
+</div>
+
+<!-- ============ PORTA ============ -->
+<div id="door" class="hidden"><canvas id="doorCanvas" width="320" height="180"></canvas></div>
+
+<!-- ============ TOUCH ============ -->
+<div id="touch" class="hidden">
+  <div class="tLeft">
+    <div class="tRow"><button id="tF" class="tBtn">▲</button></div>
+    <div class="tRow"><button id="tL" class="tBtn">◀</button><button id="tB" class="tBtn">▼</button><button id="tR" class="tBtn">▶</button></div>
+    <div class="tRow"><button id="tRun" class="tBtn small">CORRER</button></div>
+  </div>
+  <div class="tRight">
+    <button id="tAim" class="tBtn">MIRAR</button>
+    <button id="tFire" class="tBtn">ATIRAR</button>
+    <button id="tAct" class="tBtn">E</button>
+    <button id="tInv" class="tBtn small">INV</button>
+  </div>
+</div>
+
+<div id="err" class="hidden"></div>
+
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>
