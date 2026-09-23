@@ -65,6 +65,21 @@ export class AudioSys {
     this.pendingMusic = null;
     this.heartTimer = null;
     this.noiseBuf = null;
+    this.currentVoiceAudio = null;
+  }
+
+  playVoice(clipName) {
+    if (!clipName) return;
+    try {
+      if (this.currentVoiceAudio) {
+        this.currentVoiceAudio.pause();
+        this.currentVoiceAudio = null;
+      }
+      const a = new Audio(`./audio/${clipName}.mp3`);
+      a.volume = Math.max(0, Math.min(1, this.vMaster * this.vSfx));
+      a.play().catch(() => {});
+      this.currentVoiceAudio = a;
+    } catch (e) { /* no-op se áudio bloqueado */ }
   }
 
   unlock() {

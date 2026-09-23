@@ -463,6 +463,9 @@ export class UI {
     this.el.dlgName.textContent = NAMES[line.who] || line.who.toUpperCase();
     this.el.dlgText.textContent = '';
     drawPortrait(this.el.dlgPortrait, line.who);
+    if (line.voiceClip && this.audio && this.audio.playVoice) {
+      this.audio.playVoice(line.voiceClip);
+    }
   }
   advanceDialog() {
     if (!this.dlg.active) return;
