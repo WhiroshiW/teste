@@ -57,7 +57,9 @@ export class Game {
     this.chaseCamPos = new THREE.Vector3();
 
     // Sistema de Pontos & Desbloqueios
-    this.points = parseInt(localStorage.getItem(POINTS_KEY) || '0', 10);
+    const rawPts = localStorage.getItem(POINTS_KEY);
+    this.points = rawPts !== null ? parseInt(rawPts, 10) : 500; // 500 pts bônus inicial para testar a loja!
+    if (rawPts === null) localStorage.setItem(POINTS_KEY, '500');
     this.unlocks = JSON.parse(localStorage.getItem(UNLOCKS_KEY) || '{}');
     this.hiscores = JSON.parse(localStorage.getItem(HISCORES_KEY) || '{}');
 
@@ -299,6 +301,20 @@ export class Game {
     }
 
     if (st === 'title') {
+      if (code === 'Escape') {
+        if (!this.ui.el.campaignSelect.classList.contains('hidden')) {
+          this.ui.hideCampaignSelect(); this.ui.showTitle(this.hasSave()); return;
+        }
+        if (!this.ui.el.extraModes.classList.contains('hidden')) {
+          this.ui.hideExtraModes(); this.ui.showTitle(this.hasSave()); return;
+        }
+        if (!this.ui.el.pointsShop.classList.contains('hidden')) {
+          this.ui.hideShop(); this.ui.showTitle(this.hasSave()); return;
+        }
+        if (!this.ui.el.modelViewer.classList.contains('hidden')) {
+          this.ui.hideGallery(); this.ui.showShop(this.points, this.unlocks); return;
+        }
+      }
       if (code === 'KeyW' || code === 'ArrowUp') this.ui.titleNav(-1);
       else if (code === 'KeyS' || code === 'ArrowDown') this.ui.titleNav(1);
       else if (code === 'Enter' || code === 'Space' || code === 'KeyE') this.ui.titleConfirm();
@@ -362,6 +378,7 @@ export class Game {
 
   // ==================== AÇÕES DE MENU ====================
   titleAction(act) {
+    this.ui.hideTitle();
     if (act === 'new') {
       this.ui.showCampaignSelect();
     } else if (act === 'continue') {
@@ -372,11 +389,9 @@ export class Game {
       this.ui.showShop(this.points, this.unlocks);
     } else if (act === 'options') {
       this.optionsFrom = 'title';
-      this.ui.hideTitle();
       this.ui.showOptions();
     } else if (act === 'help') {
       this.helpFrom = 'title';
-      this.ui.hideTitle();
       this.ui.showHelp();
     }
   }
@@ -439,6 +454,7 @@ export class Game {
     this.gameMode = 'story';
     this.audio.stopMusic();
     this.audio.heartbeat(false);
+    this.ui.hideAllOverlays();
     this.ui.showHud(false);
     this.ui.boss(null);
     this.ui.extraHud(null);
@@ -454,6 +470,13 @@ export class Game {
 
   // ==================== INÍCIO DAS CAMPANHAS ====================
   startCampaign(campId) {
+    if (campId === 'bento' && !this.unlocks.extra_bento) {
+      this.audio.sfx('dryfire');
+      this.ui.toast('🔒 Turno do Bento bloqueado! Compre na Loja de Pontos por 1.200 PTS.', 3.5);
+      return;
+    }
+
+    this.ui.hideAllOverlays();
     this.currentCampaign = campId;
     this.gameMode = 'story';
     this.resetRun();
@@ -500,12 +523,20 @@ export class Game {
   }
 
   continueGame() {
+    this.ui.hideAllOverlays();
     const ok = this.doLoad();
     if (!ok) this.startCampaign('daniel');
   }
 
   // ==================== MODOS EXTRAS ====================
   startMercenaries() {
+    if (!this.unlocks.extra_mercenaries) {
+      this.audio.sfx('dryfire');
+      this.ui.toast('🔒 Modo Mercenários bloqueado! Compre na Loja de Pontos por 1.000 PTS.', 3.5);
+      return;
+    }
+
+    this.ui.hideAllOverlays();
     this.gameMode = 'mercenaries';
     this.mercTimer = 120; // 2 minutos
     this.mercScore = 0;
@@ -548,6 +579,13 @@ export class Game {
   }
 
   startSurvivor() {
+    if (!this.unlocks.extra_survivor) {
+      this.audio.sfx('dryfire');
+      this.ui.toast('🔒 Modo Sobrevivente bloqueado! Compre na Loja de Pontos por 1.000 PTS.', 3.5);
+      return;
+    }
+
+    this.ui.hideAllOverlays();
     this.gameMode = 'survivor';
     this.survivorWave = 1;
     this.survivorKills = 0;
@@ -743,7 +781,7 @@ export class Game {
 
   // ==================== DIÁLOGO & BANNERS ====================
   say(lines, cb) {
-    if (this.state === 'play') this.state = 'dialog';
+    this.state = 'dialog';
     this.player.setAim(false);
     this.ui.crosshair(false);
     this.ui.target(0, 0, false);

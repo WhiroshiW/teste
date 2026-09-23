@@ -27,6 +27,7 @@ function makeEl() {
     style: {}, children: [], width: 96, height: 96,
     innerHTML: '', textContent: '', value: '9', checked: true,
     appendChild(c) { el.children.push(c); return c; },
+    querySelector: () => null,
     querySelectorAll: () => [],
     addEventListener() {},
     getContext: () => make2d(),

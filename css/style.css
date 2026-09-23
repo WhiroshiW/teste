@@ -300,6 +300,15 @@ html, body {
 .extraCard h3 { color: #7db8ff; font-size: 14px; margin-bottom: 8px; }
 .extraCard p { font-size: 12px; line-height: 1.5; color: #b8b8b0; margin-bottom: 12px; }
 .extraScore { font-size: 12px; color: #ffd700; font-weight: bold; margin-bottom: 10px; }
+.extraStatus {
+  font-size: 11px; font-weight: bold; letter-spacing: 1px;
+  padding: 4px 8px; border-radius: 2px; margin-bottom: 8px;
+  display: inline-block; align-self: flex-start;
+}
+.extraStatus.locked { background: rgba(180, 20, 20, 0.25); color: #ff7777; border: 1px solid #aa2222; }
+.extraStatus.unlocked { background: rgba(30, 140, 50, 0.25); color: #55ff77; border: 1px solid #22aa44; }
+.btn.lockedBtn { background: #261414; color: #ff9999; border-color: #772222; }
+.btn.lockedBtn:hover { background: #441818; border-color: #ff4444; color: #fff; }
 
 /* Loja de Pontos */
 .shopHeader {

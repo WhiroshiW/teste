@@ -169,10 +169,31 @@ export const CAMPAIGNS = {
 // ------------------------------ LOJA DE PONTOS ------------------------------
 export const SHOP_ITEMS = [
   {
+    id: 'extra_mercenaries',
+    name: 'Modo Extra: The Mercenaries',
+    cost: 1000,
+    desc: 'Combate contra o relógio no sanatório com ranking S, totens de tempo e combos.',
+    icon: '⏱️',
+  },
+  {
+    id: 'extra_survivor',
+    name: 'Modo Extra: Sobrevivente',
+    cost: 1000,
+    desc: 'Sobrevivência infinita sob chuva pesada na floresta contra ondas crescentes.',
+    icon: '🛡️',
+  },
+  {
+    id: 'extra_bento',
+    name: 'Campanha Extra: O Turno da Noite',
+    cost: 1200,
+    desc: 'Jogue como o Zelador Bento no porão escuro com chave inglesa na noite do colapso.',
+    icon: '🗝️',
+  },
+  {
     id: 'infinite_ammo',
     name: 'Munição Infinita',
     cost: 2500,
-    desc: 'Ative no menu de pausa: todas as armas disparam sem consumir cartuchos.',
+    desc: 'Ative nas opções: todas as armas disparam sem consumir cartuchos.',
     icon: '♾️',
   },
   {

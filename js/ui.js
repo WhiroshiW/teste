@@ -86,6 +86,23 @@ export class UI {
   show(e) { if (e) e.classList.remove('hidden'); }
   hide(e) { if (e) e.classList.add('hidden'); }
 
+  hideAllOverlays() {
+    this.hide(this.el.title);
+    this.hide(this.el.campaignSelect);
+    this.hide(this.el.extraModes);
+    this.hide(this.el.pointsShop);
+    this.hide(this.el.modelViewer);
+    this.hide(this.el.help);
+    this.hide(this.el.options);
+    this.hide(this.el.inv);
+    this.hide(this.el.safe);
+    this.hide(this.el.saveBox);
+    this.hide(this.el.pause);
+    this.hide(this.el.gameover);
+    this.hide(this.el.ending);
+    this.hide(this.el.banner);
+  }
+
   renderCampaignPortraits() {
     const c1 = this.$('campPortDaniel');
     if (c1) drawPortrait(c1, 'daniel');
@@ -149,6 +166,37 @@ export class UI {
   showExtraModes(hiMerc, hiSurv) {
     if (this.el.scoreMercenaries) this.el.scoreMercenaries.textContent = `RECORDE: ${(hiMerc || 0).toLocaleString()} PTS`;
     if (this.el.scoreSurvivor) this.el.scoreSurvivor.textContent = `RECORDE: ONDA ${hiSurv || 0}`;
+
+    const u = this.game.unlocks || {};
+
+    const updateMode = (btnId, statusId, unlocked, cost) => {
+      const btn = this.$(btnId);
+      const st = this.$(statusId);
+      if (unlocked) {
+        if (st) {
+          st.textContent = '✓ DESBLOQUEADO';
+          st.className = 'extraStatus unlocked';
+        }
+        if (btn) {
+          btn.classList.remove('lockedBtn');
+          btn.textContent = btn.dataset.playText || 'JOGAR';
+        }
+      } else {
+        if (st) {
+          st.textContent = `🔒 BLOQUEADO (${cost.toLocaleString()} PTS NA LOJA)`;
+          st.className = 'extraStatus locked';
+        }
+        if (btn) {
+          btn.classList.add('lockedBtn');
+          btn.textContent = `DESBLOQUEAR NA LOJA (${cost.toLocaleString()} PTS)`;
+        }
+      }
+    };
+
+    updateMode('btnPlayMercenaries', 'statusMercenaries', !!u.extra_mercenaries, 1000);
+    updateMode('btnPlaySurvivor', 'statusSurvivor', !!u.extra_survivor, 1000);
+    updateMode('btnPlayBento', 'statusBento', !!u.extra_bento, 1200);
+
     this.show(this.el.extraModes);
   }
   hideExtraModes() { this.hide(this.el.extraModes); }
@@ -171,16 +219,36 @@ export class UI {
           </div>
         </div>
         <div class="shopItemRight">
-          <div class="shopItemCost">${bought ? 'ADQUIRIDO' : it.cost + ' PTS'}</div>
+          <div class="shopItemCost">${bought ? 'ADQUIRIDO' : it.cost.toLocaleString() + ' PTS'}</div>
         </div>
       `;
-      const right = row.children ? row.children[1] : null;
+      const right = (row.querySelector && row.querySelector('.shopItemRight')) || (row.children && row.children[1]);
       const btn = document.createElement('button');
       btn.className = 'btn small shopBtn';
-      btn.textContent = bought ? '✓' : 'COMPRAR';
-      if (bought) btn.disabled = true;
-      else btn.onclick = () => this.game.buyShopItem(it);
-      if (right && right.appendChild) right.appendChild(btn);
+
+      if (bought) {
+        if (it.id === 'model_viewer') {
+          btn.textContent = 'VER 3D';
+          btn.onclick = () => { this.hideShop(); this.showGallery(); };
+        } else if (it.id === 'extra_mercenaries') {
+          btn.textContent = 'JOGAR';
+          btn.onclick = () => { this.hideAllOverlays(); this.game.startMercenaries(); };
+        } else if (it.id === 'extra_survivor') {
+          btn.textContent = 'JOGAR';
+          btn.onclick = () => { this.hideAllOverlays(); this.game.startSurvivor(); };
+        } else if (it.id === 'extra_bento') {
+          btn.textContent = 'JOGAR';
+          btn.onclick = () => { this.hideAllOverlays(); this.game.startCampaign('bento'); };
+        } else {
+          btn.textContent = '✓';
+          btn.disabled = true;
+        }
+      } else {
+        btn.textContent = 'COMPRAR';
+        btn.onclick = () => this.game.buyShopItem(it);
+      }
+
+      if (right) right.appendChild(btn);
       else row.appendChild(btn);
 
       list.appendChild(row);
@@ -286,21 +354,65 @@ export class UI {
     };
 
     // Navegação principal
-    click('helpBack', () => { this.audio.sfx('uiBack'); this.game.helpBack(); });
-    click('optBack', () => { this.audio.sfx('uiBack'); this.game.optionsBack(); });
+    click('helpBack', () => { this.audio.sfx('uiBack'); this.hideHelp(); this.showTitle(this.game.hasSave()); });
+    click('optBack', () => { this.audio.sfx('uiBack'); this.hideOptions(); this.showTitle(this.game.hasSave()); });
     click('campBack', () => { this.audio.sfx('uiBack'); this.hideCampaignSelect(); this.showTitle(this.game.hasSave()); });
     click('extraBack', () => { this.audio.sfx('uiBack'); this.hideExtraModes(); this.showTitle(this.game.hasSave()); });
+    click('extraToShop', () => { this.audio.sfx('uiSelect'); this.hideExtraModes(); this.showShop(this.game.points, this.game.unlocks); });
     click('shopBack', () => { this.audio.sfx('uiBack'); this.hideShop(); this.showTitle(this.game.hasSave()); });
     click('galleryBack', () => { this.audio.sfx('uiBack'); this.hideGallery(); this.showShop(this.game.points, this.game.unlocks); });
 
     // Seleção de campanha
-    click('btnSelectDaniel', () => { this.audio.sfx('uiSelect'); this.hideCampaignSelect(); this.game.startCampaign('daniel'); });
-    click('btnSelectClara', () => { this.audio.sfx('uiSelect'); this.hideCampaignSelect(); this.game.startCampaign('clara'); });
+    click('btnSelectDaniel', () => {
+      this.audio.sfx('uiSelect');
+      this.hideAllOverlays();
+      this.game.startCampaign('daniel');
+    });
+    click('btnSelectClara', () => {
+      this.audio.sfx('uiSelect');
+      this.hideAllOverlays();
+      this.game.startCampaign('clara');
+    });
 
-    // Modos extras
-    click('btnPlayMercenaries', () => { this.audio.sfx('uiSelect'); this.hideExtraModes(); this.game.startMercenaries(); });
-    click('btnPlaySurvivor', () => { this.audio.sfx('uiSelect'); this.hideExtraModes(); this.game.startSurvivor(); });
-    click('btnPlayBento', () => { this.audio.sfx('uiSelect'); this.hideExtraModes(); this.game.startCampaign('bento'); });
+    // Modos extras com verificação de bloqueio
+    click('btnPlayMercenaries', () => {
+      if (!this.game.unlocks.extra_mercenaries) {
+        this.audio.sfx('dryfire');
+        this.hideExtraModes();
+        this.showShop(this.game.points, this.game.unlocks);
+        this.toast('🔒 Adquira o Modo Mercenários na Loja por 1.000 PTS!', 3.5);
+        return;
+      }
+      this.audio.sfx('uiSelect');
+      this.hideAllOverlays();
+      this.game.startMercenaries();
+    });
+
+    click('btnPlaySurvivor', () => {
+      if (!this.game.unlocks.extra_survivor) {
+        this.audio.sfx('dryfire');
+        this.hideExtraModes();
+        this.showShop(this.game.points, this.game.unlocks);
+        this.toast('🔒 Adquira o Modo Sobrevivente na Loja por 1.000 PTS!', 3.5);
+        return;
+      }
+      this.audio.sfx('uiSelect');
+      this.hideAllOverlays();
+      this.game.startSurvivor();
+    });
+
+    click('btnPlayBento', () => {
+      if (!this.game.unlocks.extra_bento) {
+        this.audio.sfx('dryfire');
+        this.hideExtraModes();
+        this.showShop(this.game.points, this.game.unlocks);
+        this.toast('🔒 Adquira o Turno do Bento na Loja por 1.200 PTS!', 3.5);
+        return;
+      }
+      this.audio.sfx('uiSelect');
+      this.hideAllOverlays();
+      this.game.startCampaign('bento');
+    });
 
     // Alternar câmera
     click('hudCamBtn', () => this.game.toggleCamMode());

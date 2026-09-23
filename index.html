@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ECOS DO VAZIO — survival horror estilo PS1</title>
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="./css/style.css?v=3">
+<link rel="stylesheet" href="./css/style.css?v=4">
 <script type="importmap">
 { "imports": { "three": "./vendor/three.module.min.js" } }
 </script>
@@ -67,30 +67,35 @@
 <!-- ============ MODOS EXTRAS ============ -->
 <div id="extraModes" class="overlay hidden">
   <div class="panel large">
-    <h2>MODOS EXTRAS</h2>
+    <h2>MODOS EXTRAS DESBLOQUEÁVEIS</h2>
+    <p class="tip">Desbloqueie modos extras na Loja de Pontos Secretos acumulando pontos em suas jornadas.</p>
     <div class="extraGrid">
       <div class="extraCard">
         <h3>⏱️ MODO MERCENÁRIOS</h3>
+        <div class="extraStatus locked" id="statusMercenaries">🔒 BLOQUEADO (1.000 PTS)</div>
         <p>Enfrente hordas de aberrações contra o relógio! Quebre cristais de tempo, faça combos e conquiste Ranks S e SS para ganhar pontos.</p>
         <div class="extraScore" id="scoreMercenaries">RECORDE: 0 PTS</div>
-        <button id="btnPlayMercenaries" class="btn">JOGAR MERCENÁRIOS</button>
+        <button id="btnPlayMercenaries" class="btn" data-play-text="JOGAR MERCENÁRIOS">JOGAR MERCENÁRIOS</button>
       </div>
 
       <div class="extraCard">
         <h3>🛡️ MODO SOBREVIVENTE</h3>
+        <div class="extraStatus locked" id="statusSurvivor">🔒 BLOQUEADO (1.000 PTS)</div>
         <p>Resistência claustrofóbica com recursos extremamente limitados. Quantas ondas você consegue suportar antes da escuridão engolir tudo?</p>
         <div class="extraScore" id="scoreSurvivor">RECORDE: ONDA 0</div>
-        <button id="btnPlaySurvivor" class="btn">JOGAR SOBREVIVENTE</button>
+        <button id="btnPlaySurvivor" class="btn" data-play-text="JOGAR SOBREVIVENTE">JOGAR SOBREVIVENTE</button>
       </div>
 
       <div class="extraCard">
         <h3>🗝️ O TURNO DA NOITE</h3>
-        <p>Campanha curta de NPC jogando como o <b>Zelador Bento</b> na noite em que o laboratório ruiu. Tranque os portões e salve a cidade!</p>
+        <div class="extraStatus locked" id="statusBento">🔒 BLOQUEADO (1.200 PTS)</div>
+        <p>Campanha curta jogando como o <b>Zelador Bento</b> na noite em que o laboratório ruiu. Tranque os portões e sobreviva ao porão!</p>
         <div class="extraScore">HISTÓRIA DE BENTO</div>
-        <button id="btnPlayBento" class="btn">JOGAR TURNO DO BENTO</button>
+        <button id="btnPlayBento" class="btn" data-play-text="JOGAR TURNO DO BENTO">JOGAR TURNO DO BENTO</button>
       </div>
     </div>
     <div class="rowBtns">
+      <button id="extraToShop" class="btn">⭐ IR PARA A LOJA DE PONTOS</button>
       <button id="extraBack" class="btn">◀ VOLTAR</button>
     </div>
   </div>
@@ -339,6 +344,6 @@
 
 <div id="err" class="hidden"></div>
 
-<script type="module" src="./js/main.js?v=3"></script>
+<script type="module" src="./js/main.js?v=4"></script>
 </body>
 </html>
