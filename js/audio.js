@@ -113,6 +113,11 @@ export class AudioSys {
   setMaster(v) { this.vMaster = v; this.applyVol(); }
   setMusic(v) { this.vMusic = v; this.applyVol(); }
   setSfx(v) { this.vSfx = v; this.applyVol(); }
+  setVolume(which, v) {
+    if (which === 'master') this.setMaster(v);
+    else if (which === 'music') this.setMusic(v);
+    else if (which === 'sfx') this.setSfx(v);
+  }
 
   get ready() { return !!this.ctx; }
   now() { return this.ctx ? this.ctx.currentTime : 0; }

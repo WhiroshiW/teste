@@ -289,6 +289,8 @@ export function objectiveFor(f) {
   return 'Vasculhe o quarto. Encontre um jeito de se defender.';
 }
 
+export const OBJECTIVES = objectiveFor;
+
 export const END_GOOD = [
   { who: 'n', text: 'A luz envolve tudo — quente, sem queimar. Como um abraço demorado.' },
   { who: 'lucia', text: 'Você leu todas as páginas. Você se lembrou de tudo. Até das partes que doíam.' },

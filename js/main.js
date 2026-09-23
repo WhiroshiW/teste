@@ -16,14 +16,20 @@ window.addEventListener('error', (ev) => {
   showErr(ev.message || 'falha desconhecida');
 });
 
-window.addEventListener('DOMContentLoaded', () => {
+function boot() {
   try {
     const container = document.getElementById('screen');
     if (!container) throw new Error('elemento #screen não encontrado');
     if (!window.WebGLRenderingContext) throw new Error('WebGL não suportado neste navegador');
-    new Game(THREE, container);
+    window.__game = new Game(THREE, container);
   } catch (err) {
     console.error(err);
-    showErr(err.message);
+    showErr(err.message || String(err));
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
+}
