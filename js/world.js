@@ -159,6 +159,55 @@ export function makePickupMesh(THREE, TEX, item, page) {
       break;
     }
     case 'ribbon': box(THREE, g, 0.26, 0.1, 0.2, M(0xa02838), 0, 0, 0); break;
+    case 'revolver': {
+      box(THREE, g, 0.08, 0.12, 0.4, M(0x889098), 0, 0, 0);
+      box(THREE, g, 0.07, 0.18, 0.1, M(0x3a2010), 0, -0.12, -0.12);
+      break;
+    }
+    case 'ammo38': box(THREE, g, 0.32, 0.2, 0.22, M(0x224488), 0, 0, 0); break;
+    case 'grenade_launcher': {
+      box(THREE, g, 0.12, 0.14, 0.7, M(0x2d3a28), 0, 0, 0);
+      break;
+    }
+    case 'grenade_rounds': box(THREE, g, 0.36, 0.24, 0.26, M(0xaa6622), 0, 0, 0); break;
+    case 'magnum': {
+      box(THREE, g, 0.09, 0.14, 0.5, M(0xd0d8e0, 0x334455), 0, 0, 0);
+      box(THREE, g, 0.08, 0.2, 0.12, M(0x3a1810), 0, -0.13, -0.14);
+      addGlow(TEX.glowWarm, 0xffe066, 1.2);
+      break;
+    }
+    case 'magnum_ammo': box(THREE, g, 0.34, 0.22, 0.24, M(0xb8860b), 0, 0, 0); break;
+    case 'antidote': {
+      const b = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.28, 8), M(0x44bb77, 0x114422));
+      g.add(b);
+      addGlow(TEX.glowCyan, 0x55ffaa, 0.9);
+      break;
+    }
+    case 'clara_card': {
+      box(THREE, g, 0.34, 0.04, 0.22, M(0x1188cc, 0x052244), 0, 0, 0);
+      addGlow(TEX.glowCyan, 0x44bbff, 0.8);
+      break;
+    }
+    case 'forest_key': case 'bento_key': case 'chapel_key': {
+      const col = item === 'forest_key' ? 0x557766 : item === 'bento_key' ? 0x8899aa : 0xaa7733;
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.08, 0.028, 6, 10), M(col));
+      ring.position.y = 0.1; g.add(ring);
+      box(THREE, g, 0.05, 0.24, 0.05, M(col), 0, -0.06, 0);
+      box(THREE, g, 0.12, 0.05, 0.05, M(col), 0.04, -0.14, 0);
+      addGlow(TEX.glowWarm, 0xffcc66, 0.85);
+      break;
+    }
+    case 'lucia_locket': {
+      const o = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), M(0xd4af37, 0x443311));
+      g.add(o);
+      addGlow(TEX.glowWarm, 0xffd700, 1.0);
+      break;
+    }
+    case 'alencastro_dossier': {
+      box(THREE, g, 0.34, 0.06, 0.46, M(0x8b6508), 0, 0, 0);
+      addGlow(TEX.glowWarm, 0xffeedd, 0.7);
+      break;
+    }
     case 'smallkey': case 'rustkey': case 'basekey': {
       const col = item === 'rustkey' ? 0x7a4a22 : 0xc8a028;
       const ring = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.025, 6, 10), M(col));
@@ -432,6 +481,9 @@ function buildSaguao(THREE, TEX) {
     { need: { item: 'basekey' }, consume: true, setFlag: 'poraoOpen', msg: 'Trancada. A placa diz "PORÃO — PROIBIDO". Precisa da CHAVE DO PORÃO.' });
   addDoor(R, 3, -5.0, 1.5, 'Chamar o elevador', 'terraco', 3, 3.2, Math.PI,
     { need: { flag: 'fuseOn' }, elevator: true, msg: 'elevador_off' });
+  addDoor(R, 0, 5.0, 1.4, 'Portão para os Jardins da Floresta', 'floresta', 0, -14.0, 0,
+    { need: { item: 'forest_key' }, setFlag: 'forestUnlocked', msg: 'Portão de ferro fundido trancado. Precisa da CHAVE DO PORTÃO DE FERRO.' });
+  addDoor(R, 7.1, -3.5, 1.3, 'Entrar na Capela', 'capela', 0, 8.5, Math.PI);
 
   addInteract(R, 0, -2.1, 1.5, 'Examinar a estátua', 'statue');
   addInteract(R, -6.5, 1.9, 1.4, 'Escrever no diário', 'save');
@@ -711,6 +763,7 @@ function buildPorao(THREE, TEX) {
   addCam(R, [-8, -6, -4, 6], [-7, 2.5, 4.6], [-5, 0.7, -1], 60);
 
   addDoor(R, 7.2, -2, 1.3, 'Voltar ao saguão', 'saguao', -7.2, -2, Math.PI / 2);
+  addDoor(R, -6.5, 3.5, 1.4, 'Subir pelo Alçapão para a Floresta', 'floresta', -8.5, 0.5, 0);
 
   addInteract(R, 1.5, -0.3, 1.5, 'Girar a válvula', 'valve');
   addInteract(R, 5, -3.7, 1.6, 'Examinar a caldeira', 'boiler');
@@ -896,6 +949,207 @@ function buildTerraco(THREE, TEX) {
   return R;
 }
 
+// ============================================================
+// FLORESTA / JARDINS EXTERNOS DO SANATÓRIO
+// ============================================================
+function buildFloresta(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'floresta', 'Jardins da Floresta', 26, 36, 9);
+  R.ambient = 'floresta';
+  R.fog = { c: 0x080e18, n: 6, f: 36 };
+
+  const groundM = tm(THREE, TEX.forestGround, 8, 12);
+  const stoneM = tm(THREE, TEX.wallStone, 4, 2);
+  const barkM = tm(THREE, TEX.bark, 1, 2);
+  const leavesM = tm(THREE, TEX.leaves, 2, 2);
+  const ironGateM = new THREE.MeshBasicMaterial({ map: TEX.ironGate, transparent: true, alphaTest: 0.3, side: THREE.DoubleSide });
+
+  // chão
+  plane(THREE, R.group, 26, 36, groundM, 0, 0, 0, -Math.PI / 2);
+
+  // Muros de perímetro
+  // Norte (parede do sanatório com portão central)
+  box(THREE, R.group, 11, 4, 0.6, stoneM, -7.5, 2, -17.7); solid(R, -13, -18, -2, -17.4);
+  box(THREE, R.group, 11, 4, 0.6, stoneM, 7.5, 2, -17.7); solid(R, 2, -18, 13, -17.4);
+  plane(THREE, R.group, 4, 3.5, ironGateM, 0, 1.75, -17.65, 0, 0);
+
+  // Sul (limite da floresta / cerca de pedra)
+  box(THREE, R.group, 26, 3, 0.6, stoneM, 0, 1.5, 17.7); solid(R, -13, 17.4, 13, 18);
+  // Leste (muro da capela)
+  box(THREE, R.group, 0.6, 4, 36, stoneM, 12.7, 2, 0); solid(R, 12.4, -18, 13, 18);
+  // Oeste (muro do bosque)
+  box(THREE, R.group, 0.6, 4, 36, stoneM, -12.7, 2, 0); solid(R, -13, -18, -12.4, 18);
+
+  // Árvores com tronco e copas
+  const tree = (x, z, h = 4.5, r = 1.6) => {
+    box(THREE, R.group, 0.7, h, 0.7, barkM, x, h / 2, z);
+    const foliage = new THREE.Mesh(new THREE.ConeGeometry(r, h * 0.75, 6), leavesM);
+    foliage.position.set(x, h * 0.85, z); R.group.add(foliage);
+    solid(R, x - 0.45, z - 0.45, x + 0.45, z + 0.45);
+  };
+
+  // Bosque à esquerda (Oeste)
+  tree(-9, -12, 5, 1.8);
+  tree(-10, -5, 5.5, 2.0);
+  tree(-5, -2, 4.8, 1.7);
+  tree(-9, 10, 5.2, 1.9);
+  tree(-6, 13, 4.6, 1.6);
+
+  // Bosque à direita (Leste)
+  tree(9, -11, 5, 1.8);
+  tree(5, -6, 5.2, 1.8);
+  tree(8, 2, 4.7, 1.7);
+  tree(6, 9, 5.4, 2.0);
+  tree(10, 12, 4.8, 1.7);
+
+  // Carro da Dra. Clara acidentado ao sul (z = 13.5, x = 0)
+  const carGroup = new THREE.Group(); carGroup.position.set(0, 0, 13.5); R.group.add(carGroup);
+  const carBody = flat(THREE, 0x1c2b3d);
+  box(THREE, carGroup, 2.0, 0.9, 4.2, carBody, 0, 0.55, 0);
+  box(THREE, carGroup, 1.7, 0.7, 2.2, flat(THREE, 0x141e2b), 0, 1.3, -0.2);
+  pointLight(THREE, R, 0xfff2cc, 22, 24, 0, 0.8, 11);
+  solid(R, -1.2, 11.2, 1.2, 15.8);
+
+  // Cemitério com lápides ao noroeste (-7, -6)
+  const tombM = tm(THREE, TEX.tombstone, 1, 1);
+  for (let tz = -10; tz <= -4; tz += 3) {
+    for (let tx = -9; tx <= -5; tx += 2) {
+      box(THREE, R.group, 0.5, 0.8, 0.2, tombM, tx, 0.4, tz);
+      solid(R, tx - 0.35, tz - 0.25, tx + 0.35, tz + 0.25);
+    }
+  }
+  box(THREE, R.group, 1.0, 0.2, 1.8, tombM, -7, 0.1, -7);
+  box(THREE, R.group, 0.8, 1.2, 0.25, tombM, -7, 0.7, -7.8);
+  pointLight(THREE, R, 0x66aaff, 12, 12, -7, 1.5, -7);
+
+  // Cabana do Bento a sudoeste (-8.5, 4.5)
+  const cabinM = tm(THREE, TEX.wood, 2, 2);
+  box(THREE, R.group, 3.5, 3.0, 3.5, cabinM, -8.5, 1.5, 4.5);
+  solid(R, -10.4, 2.6, -6.6, 6.4);
+  plane(THREE, R.group, 1.6, 1.6, new THREE.MeshLambertMaterial({ map: TEX.doorMetal }), -8.5, 0.02, 1.5, -Math.PI / 2);
+
+  // Postes de iluminação de ferro
+  const lampPost = (px, pz) => {
+    box(THREE, R.group, 0.14, 3.2, 0.14, flat(THREE, 0x1a1a20), px, 1.6, pz);
+    box(THREE, R.group, 0.4, 0.1, 0.4, flat(THREE, 0x2a2a30), px, 3.2, pz);
+    pointLight(THREE, R, 0xffcc88, 16, 18, px, 2.9, pz);
+    solid(R, px - 0.2, pz - 0.2, px + 0.2, pz + 0.2);
+  };
+  lampPost(2.5, -6);
+  lampPost(-2.5, 4);
+
+  // Câmeras PS1
+  addCam(R, [-13, 8, 13, 18], [0, 3.8, 16.5], [0, 1.2, 8], 62);
+  addCam(R, [-13, -2, 13, 8], [6.5, 3.6, 5], [0, 1.0, 0], 60);
+  addCam(R, [-2, -18, 13, -2], [8.0, 3.5, -12], [0, 1.2, -16], 62);
+  addCam(R, [-13, -18, -2, -2], [-3.0, 3.5, -13], [-7, 0.8, -7], 60);
+
+  // Portas
+  addDoor(R, 0, -17.0, 1.6, 'Entrar no Sanatório (Saguão)', 'saguao', 0, 4.0, Math.PI);
+  addDoor(R, 12.0, -4.0, 1.5, 'Entrar na Capela', 'capela', 5.5, 0, -Math.PI / 2);
+  addDoor(R, -8.5, 1.5, 1.5, 'Descer pelo Alçapão ao Porão', 'porao', -6.0, 3.0, 0);
+
+  // Interações
+  addInteract(R, 0, 11.8, 1.6, 'Examinar o carro da Dra. Clara', 'carro_clara');
+  addInteract(R, -7, -6.5, 1.6, 'Examinar o túmulo de Lúcia', 'tumulo_lucia');
+  addInteract(R, -8.5, 3.0, 1.5, 'Examinar a cabana de Bento', 'cabana_bento');
+
+  // Itens
+  addPickup(THREE, R, TEX, 'pills', 0.8, 12.5, 1);
+  addPickup(THREE, R, TEX, 'ammo38', -0.8, 12.5, 12);
+  addPickup(THREE, R, TEX, 'lucia_locket', -7, -7.0, 1);
+  addPickup(THREE, R, TEX, 'ribbon', -7.5, 3.5, 1);
+  addPickup(THREE, R, TEX, 'frag', -7, -8.0, 1);
+
+  // Inimigos
+  addSpawn(R, 'cao', 2.0, -1.0, 0);
+  addSpawn(R, 'rastejador', -4.0, 7.0, 1);
+  addSpawn(R, 'sombra', 3.0, 8.0, 2);
+
+  return R;
+}
+
+// ============================================================
+// CAPELA ESQUECIDA DO SANATÓRIO
+// ============================================================
+function buildCapela(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'capela', 'Capela Esquecida', 14, 22, 6.5);
+  R.ambient = 'capela';
+  R.music = 'safe';
+  R.fog = { c: 0x0a0c16, n: 5, f: 26 };
+
+  const floorM = tm(THREE, TEX.floorTile, 4, 6);
+  const wallM = tm(THREE, TEX.wallStone, 5, 2);
+  const pewM = tm(THREE, TEX.pewWood, 1, 1);
+  const vitralM = new THREE.MeshBasicMaterial({ map: TEX.vitral });
+
+  // chão e teto
+  plane(THREE, R.group, 14, 22, floorM, 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 14, 22, wallM, 0, 6.5, 0, Math.PI / 2);
+
+  perimeter(THREE, R, 14, 22, 6.5, wallM, [
+    { side: 'S', at: 0, w: 2.2 },
+    { side: 'E', at: 0, w: 2.2 },
+  ]);
+  doorVisual(THREE, R, 'S', 0, 22, 14, TEX.doorWood);
+  doorVisual(THREE, R, 'E', 0, 22, 14, TEX.doorMetal);
+
+  // Altar de mármore ao fundo (Norte, z = -8.5)
+  box(THREE, R.group, 4.0, 1.0, 1.6, tm(THREE, TEX.statue, 2, 1), 0, 0.5, -8.5);
+  box(THREE, R.group, 1.2, 0.3, 0.6, flat(THREE, 0x3a2010), 0, 1.15, -8.5);
+  solid(R, -2.2, -9.5, 2.2, -7.5);
+
+  // Vitral Gótico iluminado acima do altar
+  plane(THREE, R.group, 4.0, 4.5, vitralM, 0, 4.0, -10.9, 0, 0);
+  pointLight(THREE, R, 0xbbaaff, 18, 20, 0, 3.5, -7.5);
+
+  // Bancos de madeira (fileiras à esquerda e à direita do corredor central)
+  for (let z = -5; z <= 5; z += 2.5) {
+    box(THREE, R.group, 3.2, 0.7, 0.6, pewM, -3.5, 0.35, z);
+    solid(R, -5.2, z - 0.4, -1.8, z + 0.4);
+    box(THREE, R.group, 3.2, 0.7, 0.6, pewM, 3.5, 0.35, z);
+    solid(R, 1.8, z - 0.4, 5.2, z + 0.4);
+  }
+
+  // Estátua de pedra de anjo no centro (z = -2)
+  box(THREE, R.group, 1.0, 0.4, 1.0, tm(THREE, TEX.statue, 1, 1), 0, 0.2, -2);
+  const angel = new THREE.Mesh(new THREE.ConeGeometry(0.35, 1.4, 6), tm(THREE, TEX.statue, 1, 1));
+  angel.position.set(0, 1.1, -2); R.group.add(angel);
+  solid(R, -0.6, -2.6, 0.6, -1.4);
+
+  // Confessionário de madeira (SE, x = 5.2, z = 6.5)
+  box(THREE, R.group, 1.8, 3.2, 1.4, tm(THREE, TEX.wood, 1, 2), 5.2, 1.6, 6.5);
+  solid(R, 4.1, 5.6, 6.2, 7.4);
+
+  // Iluminação
+  pointLight(THREE, R, 0xffaa55, 14, 16, -4.5, 3.0, 0);
+  pointLight(THREE, R, 0xffaa55, 14, 16, 4.5, 3.0, 0);
+  pointLight(THREE, R, 0xffd088, 12, 16, 0, 3.2, 7.0);
+
+  // Câmeras
+  addCam(R, [-7, 2, 7, 11], [0, 3.6, 9.8], [0, 1.2, 2], 58);
+  addCam(R, [-7, -4, 7, 2], [-4.5, 3.4, 0], [0, 1.0, -3], 60);
+  addCam(R, [-7, -11, 7, -4], [0, 3.2, -4], [0, 1.2, -8.5], 62);
+
+  // Portas
+  addDoor(R, 0, 10.0, 1.5, 'Voltar ao Saguão Principal', 'saguao', 6.0, -3.5, -Math.PI / 2);
+  addDoor(R, 6.0, 0, 1.5, 'Saída para os Jardins da Floresta', 'floresta', 10.5, -4.0, Math.PI / 2);
+
+  // Interações
+  addInteract(R, 0, -7.0, 1.6, 'Examinar o Altar', 'altar_capela');
+  addInteract(R, 4.5, 6.5, 1.5, 'Examinar o Confessionário', 'confessionario');
+  addInteract(R, 0, -1.0, 1.4, 'Olhar a Estátua do Anjo', 'anjo_capela');
+
+  // Itens
+  addPickup(THREE, R, TEX, 'antidote', -0.5, -7.5, 1);
+  addPickup(THREE, R, TEX, 'grenade_rounds', 5.2, 4.5, 4);
+  addPickup(THREE, R, TEX, 'alencastro_dossier', 4.5, 7.5, 1);
+
+  // Inimigo
+  addSpawn(R, 'carrasco', 0, -4.5, 0);
+
+  return R;
+}
+
 const BUILDERS = {
   quarto: buildQuarto,
   saguao: buildSaguao,
@@ -903,6 +1157,8 @@ const BUILDERS = {
   consultorio: buildConsultorio,
   porao: buildPorao,
   terraco: buildTerraco,
+  floresta: buildFloresta,
+  capela: buildCapela,
 };
 
 export function buildRoom(THREE, TEX, id) {

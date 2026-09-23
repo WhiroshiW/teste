@@ -24,6 +24,8 @@ uniform float uWhite;
 uniform vec2 uShake;
 uniform float uCrt;
 uniform float uFlash;
+uniform float uBrightness;
+uniform float uFilter;
 
 float bayer(vec2 p) {
   int x = int(mod(p.x, 4.0));
@@ -59,6 +61,19 @@ void main() {
 
   // quantização 15-bit (PS1)
   col = floor(col * 31.0 + 0.5) / 31.0;
+
+  // ajuste de brilho / visibilidade
+  col *= max(0.5, uBrightness);
+
+  // filtros retrô (loja de pontos)
+  if (uFilter > 1.5) { // sepia
+    float gray = dot(col, vec3(0.299, 0.587, 0.114));
+    col = vec3(gray * 1.18, gray * 0.95, gray * 0.70);
+  } else if (uFilter > 0.5) { // vhs
+    float track = sin(vUv.y * 25.0 + uTime * 6.0) * 0.06;
+    col.r += track;
+    col.b -= track * 0.7;
+  }
 
   // scanlines + vinheta (CRT)
   if (uCrt > 0.5) {
@@ -109,6 +124,8 @@ export function createPSX(THREE, renderer) {
     uShake: { value: new THREE.Vector2(0, 0) },
     uCrt: { value: 1 },
     uFlash: { value: 0 },
+    uBrightness: { value: 1.35 }, // Brilho calibrado para excelente visibilidade
+    uFilter: { value: 0 },
   };
   const postMat = new THREE.ShaderMaterial({
     vertexShader: POST_VERT,
@@ -188,6 +205,8 @@ export function createPSX(THREE, renderer) {
     setFade(v) { uniforms.uFade.value = v; },
     setWhite(v) { uniforms.uWhite.value = v; },
     setFlash(v) { uniforms.uFlash.value = v; },
+    setBrightness(v) { uniforms.uBrightness.value = v; },
+    setFilter(v) { uniforms.uFilter.value = v; },
     setCrt(b) { uniforms.uCrt.value = b ? 1 : 0; },
     setQuality(h) {
       high = h;

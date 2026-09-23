@@ -666,6 +666,196 @@ export function buildTextures(THREE) {
     poster15(x, 32, 32);
     reg('teddy', c);
   }
+
+  // ---------- CHÃO DA FLORESTA / JARDIM ----------
+  {
+    const [c, x] = cv(128, 128);
+    x.fillStyle = '#221c16'; x.fillRect(0, 0, 128, 128);
+    for (let i = 0; i < 200; i++) {
+      const g = ri(28, 52);
+      x.fillStyle = `rgb(${ri(26, 44)},${g},${ri(20, 35)})`;
+      x.fillRect(ri(0, 127), ri(0, 127), ri(2, 6), ri(2, 5));
+    }
+    // folhas secas caídas
+    for (let i = 0; i < 40; i++) {
+      x.fillStyle = Math.random() < 0.5 ? '#5a3418' : '#384422';
+      x.fillRect(ri(0, 126), ri(0, 126), 3, 2);
+    }
+    grain(x, 128, 128, 600, 0.2);
+    poster15(x, 128, 128);
+    reg('forestGround', c);
+  }
+
+  // ---------- TRONCO DE ÁRVORE (CASCA) ----------
+  {
+    const [c, x] = cv(64, 128);
+    x.fillStyle = '#2c221a'; x.fillRect(0, 0, 64, 128);
+    for (let i = 0; i < 50; i++) {
+      x.fillStyle = `rgb(${ri(28, 48)},${ri(20, 36)},${ri(14, 28)})`;
+      x.fillRect(ri(0, 62), 0, ri(1, 3), 128);
+    }
+    stains(x, 64, 128, 8, 'rgba(10,20,10,0.45)', 4, 14);
+    grain(x, 64, 128, 500, 0.25);
+    poster15(x, 64, 128);
+    reg('bark', c);
+  }
+
+  // ---------- FOLHAS DE PINHEIRO / ÁRVORE ----------
+  {
+    const [c, x] = cv(64, 64);
+    x.fillStyle = '#182414'; x.fillRect(0, 0, 64, 64);
+    for (let i = 0; i < 180; i++) {
+      x.fillStyle = Math.random() < 0.5 ? '#243b1e' : '#142210';
+      x.fillRect(ri(0, 62), ri(0, 62), ri(2, 5), ri(2, 5));
+    }
+    grain(x, 64, 64, 300, 0.25);
+    poster15(x, 64, 64);
+    reg('leaves', c);
+  }
+
+  // ---------- GRADE DE FERRO GÓTICO ----------
+  {
+    const [c, x] = cv(64, 64);
+    x.clearRect(0, 0, 64, 64);
+    x.fillStyle = '#1c1f24';
+    x.fillRect(0, 0, 64, 4);
+    x.fillRect(0, 60, 64, 4);
+    for (let i = 4; i < 64; i += 12) {
+      x.fillRect(i, 0, 4, 64);
+      // ponta de lança
+      x.fillRect(i - 1, 2, 6, 3);
+      x.fillRect(i, 0, 4, 2);
+    }
+    grain(x, 64, 64, 120, 0.3);
+    const t = new THREE.CanvasTexture(c);
+    t.magFilter = THREE.NearestFilter;
+    t.minFilter = THREE.NearestFilter;
+    t.generateMipmaps = false;
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    T.ironGate = t;
+  }
+
+  // ---------- LÁPIDE DE CEMITÉRIO ----------
+  {
+    const [c, x] = cv(64, 64);
+    x.fillStyle = '#484c50'; x.fillRect(0, 0, 64, 64);
+    stains(x, 64, 64, 4, 'rgba(15,25,15,0.4)', 6, 18); // musgo
+    cracks(x, 64, 64, 4);
+    // cruz entalhada
+    x.fillStyle = '#22252a';
+    x.fillRect(30, 14, 4, 24);
+    x.fillRect(24, 20, 16, 4);
+    grain(x, 64, 64, 400, 0.2);
+    poster15(x, 64, 64);
+    reg('tombstone', c);
+  }
+
+  // ---------- BANCO DE MADEIRA DA CAPELA ----------
+  {
+    const [c, x] = cv(64, 64);
+    x.fillStyle = '#342014'; x.fillRect(0, 0, 64, 64);
+    for (let y = 0; y < 64; y += 16) {
+      x.fillStyle = 'rgba(0,0,0,0.4)'; x.fillRect(0, y, 64, 1);
+      x.fillStyle = 'rgba(255,255,255,0.06)'; x.fillRect(0, y + 1, 64, 1);
+    }
+    grain(x, 64, 64, 300, 0.2);
+    poster15(x, 64, 64);
+    reg('pewWood', c);
+  }
+
+  // ---------- VITRAL GÓTICO COLORIDO ----------
+  {
+    const [c, x] = cv(64, 128);
+    x.fillStyle = '#101420'; x.fillRect(0, 0, 64, 128);
+    const cols = ['#8a2233', '#1e4488', '#aa7722', '#2a6644', '#7a2288'];
+    for (let r = 8; r < 120; r += 20) {
+      for (let col = 6; col < 60; col += 18) {
+        x.fillStyle = cols[ri(0, cols.length - 1)];
+        x.fillRect(col, r, 14, 16);
+      }
+    }
+    // armação de chumbo preta
+    x.strokeStyle = '#050608'; x.lineWidth = 3;
+    x.strokeRect(2, 2, 60, 124);
+    for (let r = 8; r < 120; r += 20) {
+      x.beginPath(); x.moveTo(2, r); x.lineTo(62, r); x.stroke();
+    }
+    grain(x, 64, 128, 400, 0.15);
+    reg('vitral', c);
+  }
+
+  // ---------- CORPO DE CLARA (JALECO & VINHO) ----------
+  {
+    const [c, x] = cv(32, 64);
+    x.fillStyle = '#dcdcd8'; x.fillRect(0, 0, 32, 64); // jaleco
+    x.fillStyle = '#6b1d28'; x.fillRect(10, 0, 12, 34); // blusa vinho
+    x.fillStyle = '#1a1820'; x.fillRect(0, 34, 32, 4);  // cinto
+    x.fillStyle = '#222228'; x.fillRect(4, 38, 24, 26); // calça escura
+    grain(x, 32, 64, 200, 0.2); poster15(x, 32, 64);
+    reg('claraBody', c);
+  }
+
+  // ---------- CORPO DE BENTO (MACACÃO ZELADOR) ----------
+  {
+    const [c, x] = cv(32, 64);
+    x.fillStyle = '#223854'; x.fillRect(0, 0, 32, 64); // macacão azul
+    x.fillStyle = '#3a2418'; x.fillRect(0, 32, 32, 4); // cinto de couro
+    stains(x, 32, 64, 5, 'rgba(10,8,6,0.5)', 3, 8); // graxa
+    grain(x, 32, 64, 240, 0.25); poster15(x, 32, 64);
+    reg('bentoBody', c);
+  }
+
+  // ---------- TRAJE TÁTICO MILITAR (LOJA) ----------
+  {
+    const [c, x] = cv(32, 64);
+    x.fillStyle = '#1c221a'; x.fillRect(0, 0, 32, 64);
+    for (let i = 0; i < 40; i++) {
+      x.fillStyle = Math.random() < 0.5 ? '#2d3826' : '#141812';
+      x.fillRect(ri(0, 28), ri(0, 60), ri(3, 7), ri(3, 6));
+    }
+    x.fillStyle = '#0a0a0c'; x.fillRect(0, 32, 32, 5); // cinturão
+    grain(x, 32, 64, 250, 0.2); poster15(x, 32, 64);
+    reg('tacticalSuit', c);
+  }
+
+  // ---------- PELE DO CARNIÇAL RASTEJADOR ----------
+  {
+    const [c, x] = cv(32, 32);
+    x.fillStyle = '#384838'; x.fillRect(0, 0, 32, 32);
+    stains(x, 32, 32, 3, 'rgba(20,10,10,0.6)', 3, 9);
+    grain(x, 32, 32, 300, 0.3); poster15(x, 32, 32);
+    reg('crawlerSkin', c);
+  }
+
+  // ---------- CAPUZ / CORPO DO CARRASCO ----------
+  {
+    const [c, x] = cv(32, 64);
+    x.fillStyle = '#3a342c'; x.fillRect(0, 0, 32, 64); // estopa
+    stains(x, 32, 64, 6, 'rgba(50,10,10,0.55)', 4, 12); // sangue seco
+    grain(x, 32, 64, 300, 0.3); poster15(x, 32, 64);
+    reg('executionerBody', c);
+  }
+
+  // ---------- CUTELO ENFERRUJADO ----------
+  {
+    const [c, x] = cv(32, 32);
+    x.fillStyle = '#585e64'; x.fillRect(0, 0, 32, 32);
+    stains(x, 32, 32, 4, 'rgba(100,20,10,0.6)', 3, 10);
+    grain(x, 32, 32, 200, 0.3); poster15(x, 32, 32);
+    reg('rustyCleaver', c);
+  }
+
+  // ---------- TOTEM DO MODO MERCENÁRIOS ----------
+  {
+    const [c, x] = cv(32, 64);
+    x.fillStyle = '#103058'; x.fillRect(0, 0, 32, 64);
+    const grad = x.createLinearGradient(0, 0, 32, 64);
+    grad.addColorStop(0, '#50c0ff'); grad.addColorStop(0.5, '#ffd700'); grad.addColorStop(1, '#2060b0');
+    x.fillStyle = grad; x.fillRect(4, 4, 24, 56);
+    grain(x, 32, 64, 200, 0.2); poster15(x, 32, 64);
+    reg('mercenaryTotem', c);
+  }
+
   return T;
 }
 
@@ -711,6 +901,47 @@ export function drawPortrait(canvas, who) {
     px(14, 32, 20, 4, '#9a988e');            // barba
     px(8, 38, 32, 10, '#e0e0dc');            // jaleco
     px(22, 38, 4, 10, '#8899aa');
+  } else if (who === 'clara') {
+    px(10, 4, 28, 12, '#4a2c18');            // cabelo castanho
+    px(8, 12, 6, 22, '#4a2c18'); px(34, 12, 6, 22, '#4a2c18');
+    px(13, 14, 22, 22, '#ddb294');           // rosto
+    px(16, 21, 5, 4, '#fff'); px(27, 21, 5, 4, '#fff'); // olhos
+    px(17, 22, 3, 3, '#2a6a4a'); px(28, 22, 3, 3, '#2a6a4a'); // íris verde
+    px(22, 27, 4, 3, '#b88264');             // nariz
+    px(20, 32, 8, 2, '#a05058');             // lábios
+    px(8, 38, 32, 10, '#e4e4e0');            // jaleco médico
+    px(20, 38, 8, 10, '#6b1d28');            // gola vinho
+  } else if (who === 'bento') {
+    px(10, 4, 28, 8, '#3a3e44');             // boné/boina
+    px(8, 12, 32, 6, '#282b30');             // aba
+    px(14, 16, 20, 20, '#ba9476');           // rosto envelhecido
+    px(16, 22, 4, 3, '#1a1814'); px(28, 22, 4, 3, '#1a1814'); // olhos fundos
+    px(14, 28, 20, 5, '#88847e');            // bigode grisalho farto
+    px(22, 24, 4, 4, '#9c765a');             // nariz largo
+    px(8, 38, 32, 10, '#223854');            // macacão azul de trabalho
+    px(22, 38, 4, 10, '#d8d8d0');            // camiseta por baixo
+  } else if (who === 'alencastro') {
+    px(12, 6, 24, 8, '#707074');             // cabelo grisalho penteado
+    px(14, 14, 20, 22, '#a89890');           // rosto pálido
+    px(15, 21, 18, 1, '#222');               // óculos finos
+    px(16, 19, 6, 5, 'rgba(180,200,220,0.6)'); px(26, 19, 6, 5, 'rgba(180,200,220,0.6)');
+    px(18, 21, 2, 2, '#441155'); px(28, 21, 2, 2, '#441155'); // olhos sombrios
+    // veias escuras no rosto
+    px(12, 24, 3, 8, '#3b1248'); px(33, 22, 3, 10, '#3b1248');
+    px(20, 33, 8, 1, '#443834');             // boca fria
+    px(8, 38, 32, 10, '#1c1822');            // terno escuro
+    px(22, 38, 4, 10, '#882233');            // gravata
+  } else if (who === 'radio') {
+    px(10, 8, 28, 32, '#1a1e24');            // carcaça do walkie-talkie
+    px(14, 2, 4, 8, '#3a4048');              // antena
+    px(14, 12, 20, 8, '#2a603a');            // display LCD verde
+    px(16, 14, 16, 4, '#50c868');            // texto no visor
+    px(14, 22, 20, 14, '#0e1014');           // grade do alto-falante
+    for (let gy = 23; gy < 35; gy += 3) {
+      for (let gx = 15; gx < 33; gx += 3) px(gx, gy, 2, 1, '#283038');
+    }
+    px(32, 10, 2, 2, '#ff3020');             // led de sinal
+    px(8, 40, 32, 8, '#101216');
   } else if (who === 'vulto') {
     px(12, 8, 24, 30, '#050508');            // rosto negro
     px(10, 4, 28, 8, '#0e0e16');

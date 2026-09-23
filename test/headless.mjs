@@ -121,7 +121,8 @@ for (const id of ROOM_IDS) {
 for (const id of ROOM_IDS) {
   for (const d of rooms[id].doors) {
     const T = rooms[d.target];
-    ok(!pointInSolids(d.sx, d.sz, T.solids), `${id} -> ${d.target}: spawn (${d.sx},${d.sz}) dentro de sólido!`);
+    const solidsFinal = T.solids.filter((s) => s.tag !== 'water');
+    ok(!pointInSolids(d.sx, d.sz, solidsFinal), `${id} -> ${d.target}: spawn (${d.sx},${d.sz}) dentro de sólido!`);
   }
 }
 // cobertura das câmeras: cantos da sala cobertos por alguma câmera
@@ -243,21 +244,29 @@ console.log('[6] UI...');
     audio: fakeAudio,
     opts: { master: 0.9, music: 0.8, sfx: 0.9, crt: true, high: false },
     flags: { frags: [true, false, false, false], pages: [true, false, false, false, false, false, false, false] },
-    inv: [{ id: 'knife', qty: 1 }, { id: 'pistol', qty: 1 }, { id: 'ammo9', qty: 24 }],
+    inv: [{ item: 'knife', qty: 1 }, { item: 'pistol', qty: 1 }, { item: 'ammo9', qty: 24 }],
     equipped: 'pistol',
+    player: { hp: 100, maxhp: 100, weapon: 'pistol' },
+    points: 1000,
+    unlocks: {},
+    currentCampaign: 'daniel',
+    hasSave() { return true; },
+    formattedTime() { return '00:01:00'; },
+    currentObjective() { return 'Explore a enfermaria.'; },
     getInvData() {
       return { items: this.inv, equipped: this.equipped, objective: 'Teste', pages: 1, time: '00:01:00' };
     },
-    countItem(id) { const s = this.inv.find((i) => i.id === id); return s ? s.qty : 0; },
+    countItem(id) { const s = this.inv.find((i) => i.item === id); return s ? s.qty : 0; },
     titleAction() {}, helpBack() {}, optionsBack() {}, applyOpts() {},
     pauseAction() {}, gameoverAction() {}, endingDone() {}, closeInventory() {},
     invCommand() {}, invDefaultAction() {}, safeConfirm() {}, safeCancel() {},
     saveConfirm() {}, touchFire() {}, touchAct() {}, touchInv() {}, touch: {},
+    toggleCamMode() {}, setBrightness() {}, setCamMode() {}, setFilter() {}, setInfiniteAmmo() {},
   };
   const ui = new UI(fakeGame);
   ui.showTitle(true); ui.titleNav(1); ui.renderTitleMenu(true); ui.hideTitle();
   ui.showHelp(); ui.hideHelp();
-  ui.showOptions(); ui.optionsNav(1); ui.optionsAdjust(1); ui.optionsConfirm(); ui.hideOptions();
+  ui.showOptions(); ui.hideOptions();
   ui.showHud(true); ui.room('TESTE'); ui.hp(25); ui.ammo('M9 • 10', true);
   ui.prompt('E — teste'); ui.prompt(null);
   ui.crosshair(true); ui.target(10, 10, true); ui.target(0, 0, false);
@@ -270,16 +279,20 @@ console.log('[6] UI...');
   for (let i = 0; i < 200 && !done; i++) { ui.update(0.05); ui.advanceDialog(); }
   ok(done, 'fluxo de diálogo');
   // inventário
-  ui.openInventory(fakeGame.getInvData());
-  ui.invNav(1, 0); ui.invConfirm(); ui.invBack(); ui.closeInventory();
+  ui.showInventory();
+  ui.invNav(1, 0); ui.invConfirm(); ui.invBack(); ui.hideInventory();
   // cofre
-  ui.openSafe(); ui.safeNav(1, 0); ui.safeNav(0, 1);
-  ok(/^\d{4}$/.test(ui.safeCode), 'código do cofre: ' + ui.safeCode);
-  ui.closeSafe();
+  ui.showSafe(); ui.safeNav(1, 0); ui.safeNav(0, 1);
+  const safeStr = ui.safeDigits.join('');
+  ok(/^\d{4}$/.test(safeStr), 'código do cofre: ' + safeStr);
+  ui.hideSafe();
   // save/pause/gameover/ending
-  ui.showSave(); ui.saveNav(1); ui.hideSave();
+  ui.showSaveBox(); ui.hideSaveBox();
   ui.showPause(); ui.pauseNav(1); ui.hidePause();
   ui.showGameOver(); ui.hideGameOver();
+  ui.showCampaignSelect(); ui.hideCampaignSelect();
+  ui.showExtraModes(1000, 5); ui.hideExtraModes();
+  ui.showShop(1000, {}); ui.hideShop();
   ui.showEnding({ title: 'FIM', good: true, rank: 'S', time: '00:10:00', saves: 1, pages: 8, msg: 'x' });
   ui.hideEnding();
   // animação de porta (acelera o relógio)

@@ -10,6 +10,8 @@ const AMBIENTS = {
   consultorio:{ base: 65, base2: 65.9, type: 'sine', lp: 260, noise: 0.04, nlp: 350, lfo: 0.07, vol: 0.45 },
   porao:     { base: 41, base2: 41.6, type: 'sawtooth', lp: 140, noise: 0.14, nlp: 240, lfo: 0.2, vol: 0.65 },
   terraco:   { base: 46, base2: 92.3, type: 'sawtooth', lp: 200, noise: 0.3, nlp: 2400, lfo: 0.11, vol: 0.7 },
+  floresta:  { base: 43, base2: 86.4, type: 'sine', lp: 280, noise: 0.22, nlp: 1200, lfo: 0.14, vol: 0.6 },
+  capela:    { base: 55, base2: 110.2, type: 'triangle', lp: 340, noise: 0.05, nlp: 600, lfo: 0.05, vol: 0.5 },
   title:     { base: 55, base2: 82.5, type: 'triangle', lp: 240, noise: 0.12, nlp: 1500, lfo: 0.09, vol: 0.5 },
 };
 
@@ -31,6 +33,16 @@ const MUSICS = {
     wave: 'sawtooth', vol: 0.14, tempo: 0.24,
     notes: [0, 0, 12, 0, 3, 0, 10, 0, 0, 0, 12, 0, 5, 3, 1, 0],
     base: 55, drum: true,
+  },
+  mercenaries: {
+    wave: 'sawtooth', vol: 0.16, tempo: 0.16,
+    notes: [0, 12, 0, 7, 3, 12, 0, 10, 0, 12, 0, 7, 5, 3, 1, 0],
+    base: 65.4, drum: true,
+  },
+  capela: {
+    wave: 'triangle', vol: 0.12, tempo: 0.58, harm: true,
+    notes: [0, -4, 3, 7, 12, 7, 3, 0, -5, 0, 4, 8, 12, 8, 4, 0],
+    base: 174.6,
   },
   ending: {
     wave: 'triangle', vol: 0.15, tempo: 0.55,
@@ -154,6 +166,45 @@ export class AudioSys {
         this.noise({ t: 0.18, v: 0.5, fc: 3500, fc2: 300 });
         this.tone({ f: 220, f2: 40, t: 0.22, v: 0.4, type: 'square' });
         break;
+      case 'revolver':
+        this.noise({ t: 0.22, v: 0.6, fc: 4200, fc2: 240 });
+        this.tone({ f: 280, f2: 35, t: 0.28, v: 0.55, type: 'square' });
+        break;
+      case 'typewriter':
+        // som clássico de máquina de escrever estilo RE
+        for (let i = 0; i < 4; i++) {
+          this.tone({ f: 1200 + Math.random() * 600, t: 0.03, v: 0.14, type: 'square', at: i * 0.12 });
+          this.noise({ t: 0.04, v: 0.12, fc: 2400, at: i * 0.12 });
+        }
+        // campainha mecânica "ding!"
+        this.tone({ f: 1760, t: 0.5, v: 0.25, type: 'sine', at: 0.55 });
+        break;
+      case 'totem':
+        // quebra de cristal e bônus de tempo
+        [587, 880, 1174, 1760].forEach((f, i) => this.tone({ f, t: 0.2, v: 0.18, type: 'triangle', at: i * 0.07 }));
+        this.noise({ t: 0.25, v: 0.2, fc: 3000, type: 'highpass' });
+        break;
+      case 'growlBrute':
+        this.tone({ f: 45, f2: 30, t: 1.2, v: 0.35, type: 'sawtooth' });
+        this.noise({ t: 0.8, v: 0.25, fc: 350, fc2: 80 });
+        break;
+      case 'dogBark':
+        this.tone({ f: 260, f2: 120, t: 0.18, v: 0.25, type: 'sawtooth' });
+        this.noise({ t: 0.15, v: 0.2, fc: 1200 });
+        break;
+      case 'crawlerHiss':
+        this.noise({ t: 0.45, v: 0.25, fc: 3200, type: 'bandpass', q: 3 });
+        break;
+      case 'radioBeep':
+        this.noise({ t: 0.08, v: 0.15, fc: 1800 });
+        this.tone({ f: 880, t: 0.06, v: 0.12, type: 'square', at: 0.04 });
+        this.tone({ f: 1320, t: 0.08, v: 0.14, type: 'square', at: 0.1 });
+        break;
+      case 'voiceTalk': {
+        const pitch = opt.pitch || (opt.who === 'clara' ? 280 : opt.who === 'bento' ? 140 : 190);
+        this.tone({ f: pitch, f2: pitch * 0.85, t: 0.07, v: 0.15, type: 'triangle' });
+        break;
+      }
       case 'shotgun':
         this.noise({ t: 0.4, v: 0.65, fc: 2500, fc2: 120 });
         this.tone({ f: 140, f2: 30, t: 0.4, v: 0.5, type: 'square' });

@@ -15,6 +15,22 @@ export const INTRO = [
   { who: 'n', text: 'Encontre os 4 FRAGMENTOS DE MEMÓRIA. Acenda o memorial. E, por favor... não desista.' },
 ];
 
+export const INTRO_CLARA = [
+  { who: 'n', text: '23:40. Estrada da Serra da Mantiqueira. Tempestade torrencial.' },
+  { who: 'clara', text: 'Droga... as árvores caíram na pista. O carro derrapou nas pedras do portão.' },
+  { who: 'clara', text: 'O Sanatório Santa Lúcia deveria estar em ruínas há anos... mas há luzes acesas no topo.' },
+  { who: 'clara', text: 'Dr. Alencastro... eu sei o que você fazia com os pacientes naquelas caldeiras.' },
+  { who: 'radio', text: '...chiado... Dra. Mendes... se estiver me ouvindo... não entre pelo saguão principal... o portão da floresta...' },
+  { who: 'clara', text: 'O rádio do Bento! Preciso encontrar a passagem pela Capela ou pelo Porão e recuperar os dossiês antes que tudo desmorone.' },
+];
+
+export const INTRO_BENTO = [
+  { who: 'n', text: '02:15 da madrugada. Os alarmes das caldeiras dispararam.' },
+  { who: 'bento', text: 'As luzes estão oscilando... O Dr. Alencastro perdeu o controle dos testes.' },
+  { who: 'bento', text: 'Preciso pegar minha chave mestra, religar o gerador e trancar o portão da floresta antes que essas aberrações cheguem à cidade.' },
+  { who: 'bento', text: 'Aguente firme, Lúcia... o Bento vai tentar segurar isso.' },
+];
+
 export const D = {
   cama_locked: [
     { who: 'daniel', text: 'Minha cama de quando eu era interno aqui. O colchão afunda no meio, como naquela época.' },
@@ -52,6 +68,67 @@ export const D = {
   janela_quarto: [
     { who: 'n', text: 'Lá fora só há névoa e chuva. O jardim do sanatório afundou nela há muito tempo.' },
     { who: 'daniel', text: 'Às vezes eu acho que a névoa sou eu.' },
+  ],
+
+  // ================= ENCONTRO DANIEL & CLARA (CUTSCENE) =================
+  encontro_daniel: [
+    { who: 'n', text: 'Uma silhueta se move na penumbra da Capela... armando o cão de um revólver.' },
+    { who: 'clara', text: 'Fique onde está! Dê mais um passo e eu atiro!' },
+    { who: 'daniel', text: 'Espere! Eu sou humano! Não sou uma daquelas coisas!' },
+    { who: 'clara', text: '...Você fala. E respira. Quem é você? Como entrou aqui?' },
+    { who: 'daniel', text: 'Meu nome é Daniel. Eu... eu estou procurando minha irmã, Lúcia.' },
+    { who: 'clara', text: 'Lúcia?! ...Meu Deus. A paciente do quarto 3. O Alencastro falava que a família tinha desistido dela.' },
+    { who: 'daniel', text: 'Eu nunca desisti! Eles me proibiram de visitá-la!' },
+    { who: 'clara', text: 'Eu sou a Dra. Clara Mendes. Tentei parar os experimentos dele, mas era tarde demais.' },
+    { who: 'clara', text: 'Tome esta CHAVE DO PORTÃO DE FERRO. Dá acesso aos jardins e ao cemitério onde ele escondia os corpos. Vá, Daniel. Eu vou descer às caldeiras para dar um fim no monstro que ele se tornou.' },
+    { who: 'daniel', text: 'Obrigado, Dra. Clara. Tome cuidado lá embaixo.' },
+  ],
+  encontro_clara: [
+    { who: 'n', text: 'Passos apressados ecoam pelo piso da Capela.' },
+    { who: 'clara', text: 'Parado! Identifique-se!' },
+    { who: 'daniel', text: 'Não atire! Por favor... eu não sou um deles!' },
+    { who: 'clara', text: 'Um rapaz... segurando uma arma trêmula. Você... você se parece com ela.' },
+    { who: 'daniel', text: 'Com quem? Você conheceu a Lúcia?' },
+    { who: 'clara', text: 'Eu era a psiquiatra assistente dela, Daniel. Ela tinha um desenho de você na parede da enfermaria.' },
+    { who: 'daniel', text: 'Ela... ela ainda está aqui?' },
+    { who: 'clara', text: 'As memórias dela estão. Os ecos da dor que o Alencastro causou a todos nós. Tome este cartão e a chave do portão da floresta. Nós vamos terminar isso juntos.' },
+    { who: 'clara', text: 'Se você encontrar o Bento... diga a ele que eu cumpri minha promessa.' },
+  ],
+
+  // ================= INTERAÇÕES DA FLORESTA & CAPELA =================
+  carro_clara: [
+    { who: 'clara', text: 'Meu velho sedan azul. O radiador furou na batida contra o mourão.' },
+    { who: 'n', text: 'No porta-malas amassado: munição sobressalente e suprimentos médicos de emergência.' },
+  ],
+  tumulo_lucia: [
+    { who: 'n', text: 'Uma lápide de mármore gasta sob a copa de um salgueiro retorcido.' },
+    { who: 'n', text: '"Lúcia Silva — 1994-2016. Que as estrelas guardem o teu sorriso suave."' },
+    { who: 'daniel', text: 'Lúcia... finalmente te encontrei. Me perdoa por ter demorado tanto.' },
+    { who: 'n', text: 'Entre as flores secas, repousa o MEDALHÃO DE LÚCIA com um Fragmento de Memória reluzente.' },
+    { who: 'q', text: 'Você veio até o fim, Daniel. A tempestade está quase acabando.' },
+  ],
+  cabana_bento: [
+    { who: 'n', text: 'A guarita de ferramentas do zelador Bento.' },
+    { who: 'bento', text: '"Se alguém estiver lendo isso: os disjuntores das caldeiras esquentaram demais. Não desçam sem água nas tubulações. Bento."' },
+    { who: 'n', text: 'Sobre a bancada de madeira: uma FITA DE TINTA para registrar o progresso.' },
+  ],
+  altar_capela: [
+    { who: 'n', text: 'O altar de mármore sob o vitral gótico cintilante.' },
+    { who: 'n', text: 'Uma inscrição em latim: "Lux in tenebris lucet" — A luz brilha nas trevas.' },
+    { who: 'n', text: 'Você sente uma serenidade profunda ao lado desta mesa sagrada.' },
+  ],
+  confessionario: [
+    { who: 'n', text: 'Um confessionário de carvalho escuro com marcas de unhas na portinhola.' },
+    { who: 'medico', text: '"Gravação de Alencastro: Eu não sinto remorso. A depressão é uma falha química que só pode ser extirpada pelo choque absoluto. Se eles quebrarem... construiremos homens sem fraquezas."' },
+    { who: 'daniel', text: 'Ele era um monstro completo. Tratava seres humanos como objetos de teste.' },
+  ],
+  anjo_capela: [
+    { who: 'n', text: 'Uma estátua de anjo de pedra calcária com os olhos vendados por uma fita cinzenta.' },
+    { who: 'n', text: '"A justiça divina não precisa de olhos para julgar o coração dos homens."' },
+  ],
+  typewriter_safe: [
+    { who: 'n', text: 'Você se aproxima da velha máquina de escrever. O som do rolete de ferro traz uma sensação profunda de segurança.' },
+    { who: 'n', text: 'Enquanto você estiver nesta sala, nenhuma criatura da noite ousará cruzar o umbral.' },
   ],
   estatua_key: [
     { who: 'daniel', text: 'A estátua da Santa Lúcia, padroeira dos olhos. "Para que enxerguem na escuridão", dizia a placa.' },
@@ -228,10 +305,33 @@ export const END_NORMAL = [
   { who: 'n', text: 'FINAL: MEIO CAMINHO — Daniel despertou. Melhor, mas incompleto. Algumas memórias ficaram no sanatório... esperando.' },
 ];
 
+export const END_CLARA_GOOD = [
+  { who: 'n', text: 'O corpo mutado do Dr. Alencastro desaba sobre as engrenagens das caldeiras, dissolvendo-se em cinzas.' },
+  { who: 'clara', text: 'Acabou, Alencastro. A dor não é uma doença a ser destruída com crueldade. É um sinal de que estamos vivos.' },
+  { who: 'n', text: 'Clara carrega as pastas com os prontuários e as fitas de áudio em direção ao pátio da floresta.' },
+  { who: 'clara', text: 'O sol desponta tímido entre as árvores da serra. Os nomes de Lúcia e dos outros pacientes serão lembrados com honra.' },
+  { who: 'n', text: 'FINAL: REDENÇÃO MÉDICA — A Dra. Clara entregou o dossiê ao Ministério Público. O complexo foi demolido e uma fundação de acolhimento psicológico foi erguida em seu lugar.' },
+];
+
+export const END_CLARA_NORMAL = [
+  { who: 'n', text: 'Com as caldeiras em chamas, Clara corre pelo alçapão e alcança os portões da floresta.' },
+  { who: 'clara', text: 'Eu sobrevivi... mas quantos ficaram para trás? A escuridão ainda ecoa na serra.' },
+  { who: 'n', text: 'FINAL: FUGA NA MADRUGADA — Clara escapou com vida. O fogo consumiu as ruínas, mas o peso do que viu naquela noite a acompanhará para sempre.' },
+];
+
+export const END_BENTO = [
+  { who: 'n', text: 'Com as mãos trêmulas e ensanguentadas, o velho Bento passa a grossa corrente de ferro pelo portão dos fundos.' },
+  { who: 'bento', text: 'O cadeado fechou... O alarme silenciou. Nenhuma criatura vai sair daqui.' },
+  { who: 'bento', text: 'Ele se senta na cadeira da guarita, observando a garoa cair sobre o jardim.' },
+  { who: 'bento', text: '"Bom descanso, meninos e meninas... O tio Bento vigiou o último turno."' },
+  { who: 'n', text: 'FINAL: O ÚLTIMO TURNO — O sacrifício silencioso de um homem simples salvou centenas de vidas anônimas na cidade adormecida.' },
+];
+
 export const HELP_ROWS = [
   ['W / ↑', 'Andar para frente'],
   ['S / ↓', 'Andar para trás'],
   ['A / ← — D / →', 'Girar (controles tanque)'],
+  ['V ou C', 'Alternar Câmera (Fixa PS1 / 3ª Pessoa GTA)'],
   ['SHIFT', 'Correr (segurar)'],
   ['ESPAÇO', 'Mirar com a arma (segurar)'],
   ['J ou clique', 'Atirar (enquanto mira)'],

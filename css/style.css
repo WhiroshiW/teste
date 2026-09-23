@@ -266,9 +266,101 @@ html, body {
   border: 2px solid #f44; font-size: 13px;
 }
 
+/* ============ novos estilos: campanhas, loja, extras, ecg ============ */
+.panel.large { max-width: min(860px, 96vw); }
+
+/* Seleção de Campanha */
+.campGrid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px; margin: 18px 0; text-align: left;
+}
+.campCard {
+  background: #111118; border: 2px solid #3d2a2a; padding: 14px;
+  display: flex; gap: 14px; border-radius: 4px; transition: 0.2s border-color, 0.2s transform;
+}
+.campCard:hover { border-color: #c8a028; transform: translateY(-2px); }
+.campPort { width: 84px; height: 84px; border: 2px solid #5a5a66; image-rendering: pixelated; flex-shrink: 0; }
+.campInfo { display: flex; flex-direction: column; justify-content: space-between; }
+.campInfo h3 { color: #c8a028; font-size: 13px; letter-spacing: 2px; }
+.campInfo h4 { color: #f0f0f0; font-size: 16px; margin: 2px 0 4px; }
+.campSub { color: #8899aa; font-size: 12px; font-style: italic; margin-bottom: 6px; }
+.campGear { font-size: 11px; color: #a0a096; margin: 6px 0 10px; }
+.campBtn { width: 100%; font-size: 12px; padding: 8px; margin: 0; }
+
+/* Modos Extras */
+.extraGrid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px; margin: 16px 0;
+}
+.extraCard {
+  background: #12141c; border: 2px solid #2a3448; padding: 14px;
+  text-align: left; display: flex; flex-direction: column; justify-content: space-between;
+}
+.extraCard:hover { border-color: #6699ff; }
+.extraCard h3 { color: #7db8ff; font-size: 14px; margin-bottom: 8px; }
+.extraCard p { font-size: 12px; line-height: 1.5; color: #b8b8b0; margin-bottom: 12px; }
+.extraScore { font-size: 12px; color: #ffd700; font-weight: bold; margin-bottom: 10px; }
+
+/* Loja de Pontos */
+.shopHeader {
+  display: flex; justify-content: space-between; align-items: center;
+  background: #1a1622; padding: 10px 16px; border: 1px solid #c8a028;
+  color: #ffd700; font-weight: bold; font-size: 15px; margin-bottom: 12px;
+}
+.shopPointsVal { font-size: 18px; text-shadow: 0 0 10px rgba(255,215,0,0.6); }
+.shopList { display: flex; flex-direction: column; gap: 8px; max-height: 50vh; overflow-y: auto; text-align: left; }
+.shopItem {
+  background: #101218; border: 1px solid #333a48; padding: 10px 14px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.shopItem.bought { border-color: #3a6844; }
+.shopItemLeft { display: flex; gap: 12px; align-items: center; }
+.shopItemIcon { font-size: 24px; }
+.shopItemTitle { color: #e0e0e0; font-weight: bold; font-size: 13px; }
+.shopItemDesc { font-size: 11px; color: #889098; }
+.shopItemRight { display: flex; align-items: center; gap: 10px; }
+.shopItemCost { color: #ffd700; font-size: 13px; font-weight: bold; }
+
+/* Galeria 3D */
+.galleryBody { display: flex; gap: 18px; margin: 16px 0; text-align: left; }
+.gallery3d { flex: 1; display: flex; flex-direction: column; align-items: center; }
+#galleryCanvas { background: #08080c; border: 2px solid #3a3a48; width: 100%; max-width: 340px; height: 240px; }
+.galleryHint { font-size: 11px; color: #778; margin-top: 6px; }
+.gallerySide { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.gallerySelect {
+  background: #1a1a24; color: #ffd700; border: 1px solid #5a5a66;
+  padding: 8px; font-family: inherit; font-size: 13px;
+}
+.galleryBio { font-size: 12px; line-height: 1.6; color: #c0c0b8; margin-top: 8px; }
+
+/* Inventário com ECG Cardíaco */
+.invHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.ecgBox {
+  display: flex; align-items: center; gap: 10px;
+  background: #06090e; border: 1px solid #1a3a28; padding: 4px 10px; border-radius: 4px;
+}
+#ecgCanvas { width: 140px; height: 32px; image-rendering: pixelated; }
+.ecgStatus { font-weight: bold; font-size: 13px; }
+
+/* HUD Extras & Câmera */
+#extraHud {
+  position: fixed; top: 14px; right: 14px; z-index: 20;
+  display: flex; gap: 14px; background: rgba(10,12,18,0.8);
+  border: 1px solid #3a4a60; padding: 6px 14px; font-size: 14px; color: #fff;
+}
+.hudCamBtn {
+  position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 20;
+  background: rgba(20,24,32,0.75); color: #c8a028; border: 1px solid #5a5a66;
+  padding: 4px 12px; font-family: inherit; font-size: 11px; font-weight: bold; cursor: pointer;
+}
+.hudCamBtn:hover { border-color: #ffd700; color: #fff; }
+
+.titlePoints { color: #ffd700; font-size: 13px; margin: 6px 0; text-shadow: 1px 1px 0 #000; }
+.endPointsEarned { color: #ffd700; font-weight: bold; font-size: 15px; margin: 12px 0; }
+
 @media (max-width: 640px) {
-  .invMain { flex-direction: column; }
-  .invSide { width: 100%; }
-  #dlgPortrait { width: 60px; height: 60px; }
-  #banner { top: 14%; }
+  .campGrid { grid-template-columns: 1fr; }
+  .galleryBody { flex-direction: column; }
+  #galleryCanvas { max-width: 100%; height: 200px; }
+  .extraGrid { grid-template-columns: 1fr; }
 }
