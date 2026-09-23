@@ -1,14 +1,15 @@
 // ============================================================
 // ECOS DO VAZIO - Boot
 // ============================================================
-import * as THREE from 'three';
+import * as THREE from '../vendor/three.module.min.js';
 import { Game } from './game.js';
 
 function showErr(msg) {
   const e = document.getElementById('err');
   if (e) {
-    e.classList.remove('hidden');
-    e.textContent = 'ERRO: ' + msg;
+    e.className = '';
+    e.style.cssText = 'position:fixed;top:12px;left:12px;right:12px;z-index:999999;background:#8b0000;color:#fff;padding:16px;border:3px solid #ff4d4d;font-family:monospace;font-size:14px;box-shadow:0 0 20px #000;line-height:1.5;';
+    e.innerHTML = '<b>⚠️ ERRO DO JOGO:</b><br>' + msg;
   }
 }
 

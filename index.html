@@ -6,6 +6,31 @@
 <title>ECOS DO VAZIO — survival horror estilo PS1</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="./css/style.css">
+<script>
+window.addEventListener('error', function(e) {
+  var d = document.getElementById('err') || document.body;
+  if (d) {
+    var div = document.getElementById('err');
+    if (!div) {
+      div = document.createElement('div');
+      div.id = 'err';
+      document.body.appendChild(div);
+    }
+    div.className = '';
+    div.style.cssText = 'position:fixed;top:12px;left:12px;right:12px;z-index:999999;background:#8b0000;color:#fff;padding:16px;border:3px solid #ff4d4d;font-family:monospace;font-size:14px;box-shadow:0 0 20px #000;line-height:1.5;';
+    div.innerHTML = '<b>⚠️ ERRO DETECTADO:</b><br>' + (e.message || 'Falha ao inicializar') + 
+      (e.filename ? '<br><small style="color:#fca">' + e.filename + ':' + e.lineno + '</small>' : '');
+  }
+});
+window.addEventListener('unhandledrejection', function(e) {
+  var div = document.getElementById('err') || document.createElement('div');
+  div.id = 'err';
+  div.className = '';
+  div.style.cssText = 'position:fixed;top:12px;left:12px;right:12px;z-index:999999;background:#8b0000;color:#fff;padding:16px;border:3px solid #ff4d4d;font-family:monospace;font-size:14px;box-shadow:0 0 20px #000;line-height:1.5;';
+  div.innerHTML = '<b>⚠️ PROMISE REJECTION:</b><br>' + (e.reason && (e.reason.message || e.reason.stack) || String(e.reason));
+  if (!div.parentNode) document.body.appendChild(div);
+});
+</script>
 <script type="importmap">
 { "imports": { "three": "./vendor/three.module.min.js" } }
 </script>

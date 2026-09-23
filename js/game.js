@@ -168,15 +168,39 @@ export class Game {
     }
   }
 
+  setVolume(which, v) {
+    this.opts[which] = v;
+    this.audio.setVolume(which, v);
+    this.saveOpts();
+  }
+
+  setCrt(b) {
+    this.opts.crt = !!b;
+    this.psx.setCrt(this.opts.crt);
+    this.saveOpts();
+  }
+
+  setQuality(high) {
+    this.opts.high = !!high;
+    this.psx.setQuality(this.opts.high);
+    this.saveOpts();
+  }
+
+  saveOpts() {
+    try {
+      localStorage.setItem('ecoVazioOpts', JSON.stringify(this.opts));
+    } catch (e) { /* noop */ }
+  }
+
   setCamMode(m) {
     this.camMode = m;
     this.opts.cam = m;
-    localStorage.setItem('ecoVazioOpts', JSON.stringify(this.opts));
+    this.saveOpts();
   }
 
   setBrightness(level) {
     this.opts.brightness = level;
-    localStorage.setItem('ecoVazioOpts', JSON.stringify(this.opts));
+    this.saveOpts();
     const val = level === 'normal' ? 1.0 : level === 'max' ? 1.75 : 1.35;
     this.psx.setBrightness(val);
     this.ambLight.intensity = level === 'normal' ? 0.45 : level === 'max' ? 0.85 : 0.65;
@@ -184,7 +208,7 @@ export class Game {
 
   setFilter(f) {
     this.opts.filter = f;
-    localStorage.setItem('ecoVazioOpts', JSON.stringify(this.opts));
+    this.saveOpts();
     const mode = f === 'vhs' ? 1 : f === 'sepia' ? 2 : 0;
     this.psx.setFilter(mode);
   }
@@ -192,7 +216,7 @@ export class Game {
   setInfiniteAmmo(b) {
     this.infiniteAmmo = b;
     this.opts.infAmmo = b;
-    localStorage.setItem('ecoVazioOpts', JSON.stringify(this.opts));
+    this.saveOpts();
   }
 
   // ==================== EXECUÇÃO / RESETS ====================
