@@ -63,14 +63,37 @@ html, body {
 .rowBtns { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
 
 /* ============ título ============ */
-#title { flex-direction: column; background: radial-gradient(ellipse at center, rgba(10,0,0,0.25) 0%, rgba(0,0,0,0.88) 75%); }
-.titleTop { color: #8a8a8a; letter-spacing: 6px; font-size: clamp(10px, 2vw, 14px); margin-bottom: 8px; }
+#title {
+  flex-direction: column;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(5,6,10,0.5) 60%, rgba(0,0,0,0.85) 100%);
+}
+.titleBackdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, transparent 25%, transparent 75%, rgba(0,0,0,0.85) 100%);
+}
+.titleTop {
+  color: #c8a028;
+  letter-spacing: 8px;
+  font-size: clamp(11px, 2.2vw, 15px);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(200,160,40,0.5), 2px 2px 0 #000;
+  font-weight: bold;
+}
 .logo {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(44px, 11vw, 110px);
-  line-height: 0.95; text-align: center; letter-spacing: 6px;
-  color: #a01818;
-  text-shadow: 0 0 18px rgba(160,20,20,0.6), 4px 4px 0 #000, -2px -2px 0 #300;
+  font-family: 'Cinzel', Georgia, 'Times New Roman', serif;
+  font-size: clamp(48px, 12vw, 115px);
+  line-height: 0.95;
+  text-align: center;
+  letter-spacing: 10px;
+  color: #c01e1e;
+  text-shadow:
+    0 0 25px rgba(220,30,30,0.7),
+    4px 4px 0 #000,
+    -2px -2px 0 #200,
+    2px 2px 8px rgba(0,0,0,0.9);
   animation: flicker 4s infinite;
 }
 @keyframes flicker {
@@ -88,6 +111,97 @@ html, body {
 .menuItem.sel { color: #fff; background: #3a0d0d; border-color: #5a1a1a; }
 .saveInfo { color: #c8a028; margin-top: 12px; font-size: 12px; min-height: 16px; }
 .titleFooter { position: absolute; bottom: 12px; color: #555; font-size: 11px; text-align: center; line-height: 1.7; }
+
+/* ============ INTRO CINEMATOGRÁFICA DO SANATÓRIO ============ */
+#introCutscene {
+  background: transparent;
+  padding: 0;
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 60;
+}
+.introCinematic {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: auto;
+}
+.cinematicLetterbox {
+  width: 100%;
+  height: clamp(50px, 12vh, 95px);
+  background: #000;
+  z-index: 10;
+  box-shadow: 0 0 25px rgba(0,0,0,0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cinematicLetterbox.bottom {
+  justify-content: flex-end;
+  padding-right: 28px;
+}
+.cinematicCenter {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 28px 42px;
+  background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.3) 35%, transparent 100%);
+  text-align: center;
+  user-select: none;
+}
+.introYearTag {
+  color: #c8a028;
+  font-size: clamp(11px, 2.2vw, 15px);
+  letter-spacing: 7px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  text-shadow: 0 0 10px rgba(200,160,40,0.6), 2px 2px 0 #000;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.introYearTag.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.introQuoteText {
+  color: #f2f2eb;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(14px, 2.8vw, 22px);
+  line-height: 1.65;
+  max-width: 840px;
+  min-height: 64px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.95), 0 0 14px rgba(255,255,255,0.25);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.introQuoteText.visible {
+  opacity: 1;
+}
+.cinematicSkipPrompt {
+  color: #a0a0b2;
+  font-size: clamp(10px, 1.8vw, 12px);
+  letter-spacing: 2px;
+  padding: 6px 16px;
+  border: 1px solid #3a3a4e;
+  background: rgba(12,14,20,0.8);
+  cursor: pointer;
+  animation: pulseSkip 2.5s infinite;
+}
+.cinematicSkipPrompt:hover {
+  color: #ffd700;
+  border-color: #c8a028;
+  background: rgba(45,20,10,0.85);
+}
+@keyframes pulseSkip {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
 
 /* ============ ajuda / opções ============ */
 .helpRow {
@@ -186,45 +300,203 @@ html, body {
 .dlgHint { text-align: right; color: #666; font-size: 11px; animation: blink 1s infinite; }
 
 /* ============ inventário ============ */
-.panel.inv { max-width: min(720px, 96vw); }
+.panelStamp {
+  font-size: clamp(9px, 1.8vw, 11px);
+  letter-spacing: 3px;
+  color: #c8a028;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  text-shadow: 1px 1px 0 #000;
+  font-weight: bold;
+}
+.panel.inv {
+  max-width: min(760px, 96vw);
+  background: linear-gradient(135deg, #161822 0%, #0e1017 50%, #090a0f 100%);
+  border: 3px solid #4a5062;
+  box-shadow: inset 0 0 0 2px #181920, 0 0 0 3px #000, 0 0 40px rgba(0,0,0,0.9);
+}
+.invHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  border-bottom: 2px solid #292d3a;
+  padding-bottom: 10px;
+}
+.invHeaderLeft { text-align: left; }
+.invHeaderLeft h2 { margin-bottom: 0; }
+
+/* ECG Cardíaco Retrô */
+.ecgMonitor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #03060a;
+  border: 2px inset #384252;
+  padding: 5px 12px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.95);
+}
+.ecgBezel {
+  position: relative;
+  width: 140px;
+  height: 36px;
+  background: #020904;
+  border: 1px solid #143a18;
+  overflow: hidden;
+}
+#ecgCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+}
+.ecgScanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(to bottom, rgba(0,255,100,0.06) 0px, rgba(0,255,100,0.06) 1px, transparent 1px, transparent 3px);
+}
+.ecgData {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 65px;
+}
+.ecgBpm {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: #72ef88;
+}
+.ecgStatus {
+  font-weight: bold;
+  font-size: 13px;
+  letter-spacing: 2px;
+}
+
 .invMain { display: flex; gap: 14px; }
-#invGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; flex: 1; }
+#invGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; flex: 1; }
 .invCell {
-  aspect-ratio: 1.35; background: #14141c; border: 2px solid #333;
+  aspect-ratio: 1.15;
+  background: #0d0f16;
+  border: 2px outset #474f63;
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.08), inset -2px -2px 0 rgba(0,0,0,0.85);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   cursor: pointer; position: relative;
+  transition: transform 0.1s ease;
 }
-.invCell.sel { border-color: #ffe9b0; background: #2a2010; }
-.invCell.equipped { border-color: #c8a028; }
-.invCell.equipped::after { content: 'EQUIP'; position: absolute; bottom: 2px; font-size: 9px; color: #c8a028; }
-.invCell.empty { background: #0a0a10; cursor: default; }
-.invIcon { font-size: clamp(22px, 5vw, 34px); }
-.invQty { font-size: 12px; color: #8a8a8a; }
-.invSide { width: 42%; display: flex; flex-direction: column; gap: 10px; text-align: left; }
-.invDetail { background: #101018; border: 1px solid #333; padding: 10px; min-height: 150px; }
-#invIcon { font-size: 30px; }
-#invName { color: #ffe9b0; font-weight: bold; margin: 4px 0; font-size: clamp(12px, 2.4vw, 15px); }
-#invDesc { color: #9a9a92; font-size: clamp(10px, 2vw, 12px); line-height: 1.5; }
-#invCmds { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+.invCell:hover {
+  transform: translateY(-2px);
+  border-color: #929bb4;
+}
+.invCell.sel {
+  background: #242214;
+  border: 2px outset #ffe066;
+  box-shadow: 0 0 12px rgba(255,224,102,0.45), inset 1px 1px 0 rgba(255,255,255,0.3);
+}
+.invCell.equipped {
+  border-color: #2ecc71;
+}
+.invCell.equipped::after {
+  content: 'EQUIP';
+  position: absolute; bottom: 3px; right: 3px;
+  font-size: 9px; font-weight: bold;
+  color: #2ecc71; background: #06180c;
+  padding: 1px 4px; border: 1px solid #2ecc71;
+}
+.invCell.empty {
+  background: #07080d;
+  border-style: inset;
+  border-color: #202430;
+  cursor: default;
+}
+.invCell.empty:hover { transform: none; }
+.invIcon { font-size: clamp(22px, 4.5vw, 32px); }
+.invQty {
+  font-family: 'Courier New', monospace;
+  font-size: 12px; font-weight: bold;
+  color: #55ff88;
+  position: absolute; top: 3px; right: 5px;
+  text-shadow: 0 0 4px rgba(85,255,136,0.6);
+}
+
+.invSide { width: 38%; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.invDetail {
+  background: #0c0e15;
+  border: 2px inset #2d3344;
+  padding: 12px;
+  min-height: 155px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.7);
+}
+#invIcon { font-size: 32px; }
+#invName { color: #ffe9b0; font-weight: bold; margin: 4px 0; font-size: clamp(13px, 2.4vw, 16px); }
+#invDesc { color: #a4a8b5; font-size: clamp(11px, 2vw, 13px); line-height: 1.5; }
+#invCmds { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
 .cmdBtn {
-  font-family: inherit; font-size: 12px; background: #1a1a22; color: #d8d8d8;
-  border: 2px solid #5a5a66; padding: 5px 12px; cursor: pointer;
+  font-family: inherit; font-size: 12px; font-weight: bold;
+  background: #181b26; color: #d8d8d8;
+  border: 2px outset #515970; padding: 5px 12px; cursor: pointer;
 }
-.cmdBtn.sel, .cmdBtn:hover { background: #5a1a1a; border-color: #c8a028; color: #fff; }
-.invMeta { font-size: clamp(10px, 2vw, 12px); color: #8a8a92; display: flex; flex-direction: column; gap: 4px; }
-.invMeta div { background: #101018; border: 1px solid #2a2a32; padding: 5px 8px; }
-.invObj { margin-top: 12px; text-align: left; color: #ffe9b0; font-size: clamp(11px, 2.2vw, 13px); background: #141008; border: 1px solid #5a4a1a; padding: 8px 10px; }
-.invFoot { margin-top: 8px; }
+.cmdBtn.sel, .cmdBtn:hover {
+  background: #6e1717; border-color: #ffd700; color: #fff;
+}
+.invMeta { font-size: clamp(10px, 2vw, 12px); color: #9aa0b4; display: flex; flex-direction: column; gap: 4px; }
+.invMeta div {
+  background: #0c0e15; border: 1px solid #222736; padding: 5px 8px;
+}
+.invObj {
+  margin-top: 12px; text-align: left; color: #ffe9b0;
+  font-size: clamp(11px, 2.2vw, 13px);
+  background: #161208; border: 2px inset #6a531a; padding: 8px 12px;
+}
+.invFoot { margin-top: 10px; display: flex; justify-content: flex-end; gap: 8px; }
 
 /* ============ cofre ============ */
-#safeDigits { display: flex; gap: 10px; justify-content: center; margin: 14px 0; }
-.digit {
-  width: clamp(44px, 10vw, 60px); height: clamp(56px, 13vw, 76px);
-  background: #14141c; border: 2px solid #444; color: #ffe9b0;
-  font-size: clamp(26px, 6vw, 38px); font-weight: bold;
-  display: flex; align-items: center; justify-content: center; cursor: pointer;
+.safePanel {
+  background: linear-gradient(135deg, #20232b 0%, #15171e 50%, #0d0f14 100%);
+  border: 3px solid #60687c;
+  box-shadow: inset 0 0 0 2px #181920, 0 0 35px rgba(0,0,0,0.9);
 }
-.digit.sel { border-color: #ffe9b0; background: #2a2010; }
+#safeDigits { display: flex; gap: 10px; justify-content: center; margin: 16px 0; }
+.digit {
+  width: clamp(48px, 11vw, 64px); height: clamp(60px, 14vw, 82px);
+  background: #0b0d14; border: 2px outset #5a647d; color: #ffe066;
+  font-family: 'Courier New', monospace;
+  font-size: clamp(28px, 6.5vw, 42px); font-weight: bold;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.9);
+}
+.digit.sel {
+  border-color: #ffdd44;
+  background: #252310;
+  box-shadow: 0 0 14px rgba(255,221,68,0.5), inset 0 0 8px rgba(0,0,0,0.8);
+}
+
+/* ============ máquina de escrever (salvar) ============ */
+.typewriterPanel {
+  background: linear-gradient(135deg, #1d1712 0%, #14100c 50%, #0c0a08 100%);
+  border: 3px solid #6a4a2a;
+  box-shadow: inset 0 0 0 2px #22180e, 0 0 40px rgba(0,0,0,0.9);
+}
+.typewriterArt { font-size: 38px; margin: 6px 0; }
+.typewriterText {
+  color: #dfd8c8;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(12px, 2.4vw, 15px);
+  line-height: 1.6;
+}
+.typewriterHint { color: #9c8a74; font-size: 11px; font-style: italic; }
+.saveBtn {
+  background: #3a2210;
+  border-color: #c8a028;
+  color: #ffe9b0;
+}
+.saveBtn:hover {
+  background: #5a3215;
+  border-color: #ffd700;
+  color: #fff;
+}
 
 /* ============ game over / final ============ */
 .goBox { text-align: center; }

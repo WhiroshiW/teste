@@ -34,7 +34,9 @@ export class UI {
       invCmds: this.$('invCmds'), invObjective: this.$('invObjective'),
       invPages: this.$('invPages'), invWeapon: this.$('invWeapon'), invTime: this.$('invTime'),
       invHeroName: this.$('invHeroName'),
-      ecgCanvas: this.$('ecgCanvas'), ecgStatus: this.$('ecgStatus'),
+      ecgCanvas: this.$('ecgCanvas'), ecgStatus: this.$('ecgStatus'), ecgBpm: this.$('ecgBpm'),
+      introCutscene: this.$('introCutscene'), introYearTag: this.$('introYearTag'),
+      introQuoteText: this.$('introQuoteText'), introSkipBtn: this.$('introSkipBtn'),
       safe: this.$('safe'), safeDigits: this.$('safeDigits'),
       saveBox: this.$('saveBox'),
       pause: this.$('pause'), pauseMenu: this.$('pauseMenu'),
@@ -88,6 +90,7 @@ export class UI {
 
   hideAllOverlays() {
     this.hide(this.el.title);
+    this.hide(this.el.introCutscene);
     this.hide(this.el.campaignSelect);
     this.hide(this.el.extraModes);
     this.hide(this.el.pointsShop);
@@ -114,8 +117,8 @@ export class UI {
   showTitle(hasSave) {
     this.show(this.el.title);
     this.titleItems = hasSave
-      ? ['new', 'continue', 'extras', 'shop', 'options', 'help']
-      : ['new', 'extras', 'shop', 'options', 'help'];
+      ? ['new', 'continue', 'intro', 'extras', 'shop', 'options', 'help']
+      : ['new', 'intro', 'extras', 'shop', 'options', 'help'];
     this.menuIdx.title = 0;
     if (this.el.titlePointsVal) {
       this.el.titlePointsVal.textContent = (this.game.points || 0).toLocaleString();
@@ -128,6 +131,7 @@ export class UI {
     const labels = {
       new: 'NOVO JOGO',
       continue: 'CONTINUAR',
+      intro: 'ASSISTIR INTRO (1997)',
       extras: 'MODOS EXTRAS',
       shop: 'LOJA DE PONTOS',
       options: 'OPÇÕES',
@@ -346,12 +350,38 @@ export class UI {
   showOptions() { this.show(this.el.options); }
   hideOptions() { this.hide(this.el.options); }
 
+  showIntroCutscene() {
+    this.show(this.el.introCutscene);
+  }
+  hideIntroCutscene() {
+    this.hide(this.el.introCutscene);
+  }
+  setIntroSubtitle(yearText, quoteText) {
+    if (this.el.introYearTag) {
+      this.el.introYearTag.textContent = yearText || '';
+      this.el.introYearTag.classList.toggle('visible', !!yearText);
+    }
+    if (this.el.introQuoteText) {
+      this.el.introQuoteText.innerHTML = quoteText || '';
+      this.el.introQuoteText.classList.toggle('visible', !!quoteText);
+    }
+  }
+
   // ==================== BOTÕES / EVENTOS ====================
   wireButtons() {
     const click = (id, fn) => {
       const e = this.$(id);
       if (e) e.onclick = (ev) => { ev.preventDefault(); this.audio.unlock(); fn(); };
     };
+
+    // Pular intro cinematográfica
+    click('introSkipBtn', () => { this.game.skipIntroCinematic(); });
+    if (this.el.introCutscene) {
+      this.el.introCutscene.onclick = (ev) => {
+        ev.preventDefault();
+        this.game.skipIntroCinematic();
+      };
+    }
 
     // Navegação principal
     click('helpBack', () => { this.audio.sfx('uiBack'); this.hideHelp(); this.showTitle(this.game.hasSave()); });
@@ -615,17 +645,27 @@ export class UI {
     const x = c.getContext('2d');
     const w = c.width, h = c.height;
 
-    // trilha escura com fade
-    x.fillStyle = 'rgba(6, 9, 14, 0.22)';
+    // Fundo verde escuro fosforescente com grade hospitalar
+    x.fillStyle = 'rgba(2, 8, 4, 0.25)';
     x.fillRect(0, 0, w, h);
 
-    const color = hp > 66 ? '#00ff66' : hp > 33 ? '#ffcc00' : '#ff3333';
+    // Grade milimetrada de osciloscópio
+    x.strokeStyle = 'rgba(0, 80, 30, 0.15)';
+    x.lineWidth = 1;
+    for (let gx = 0; gx < w; gx += 16) {
+      x.beginPath(); x.moveTo(gx, 0); x.lineTo(gx, h); x.stroke();
+    }
+    for (let gy = 0; gy < h; gy += 10) {
+      x.beginPath(); x.moveTo(0, gy); x.lineTo(w, gy); x.stroke();
+    }
+
+    const color = hp > 66 ? '#33ff66' : hp > 33 ? '#ffcc00' : '#ff3333';
     x.strokeStyle = color;
     x.lineWidth = 2;
     x.shadowColor = color;
-    x.shadowBlur = 3;
+    x.shadowBlur = 4;
 
-    const rate = hp > 66 ? 75 : hp > 33 ? 100 : 140;
+    const rate = hp > 66 ? 75 : hp > 33 ? 100 : 145;
     this.ecgX = (this.ecgX || 0) + dt * rate;
     if (this.ecgX >= w) {
       this.ecgX = 0;
@@ -654,6 +694,11 @@ export class UI {
     if (this.el.ecgStatus) {
       this.el.ecgStatus.textContent = st.label;
       this.el.ecgStatus.style.color = color;
+    }
+    if (this.el.ecgBpm) {
+      const bpm = hp > 66 ? 72 : hp > 33 ? 116 : 164;
+      this.el.ecgBpm.textContent = `${bpm} BPM`;
+      this.el.ecgBpm.style.color = color;
     }
   }
 

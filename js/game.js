@@ -7,7 +7,7 @@
 import {
   ITEMS, WEAPONS, ENEMIES, CAMPAIGNS, SHOP_ITEMS, GALLERY_MODELS,
   rankFor, rankForMercenaries, fmtTime, healthStatus,
-  SAVE_KEY, POINTS_KEY, UNLOCKS_KEY, HISCORES_KEY
+  SAVE_KEY, POINTS_KEY, UNLOCKS_KEY, HISCORES_KEY, OPTS_KEY
 } from './config.js';
 import { buildTextures } from './textures.js';
 import { buildRoom, ROOM_IDS, makePickupMesh } from './world.js';
@@ -27,7 +27,17 @@ export class Game {
     try {
       this.renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'default' });
     } catch (e) {
-      this.renderer = new THREE.WebGLRenderer({ antialias: false });
+      try {
+        this.renderer = new THREE.WebGLRenderer({ antialias: false });
+      } catch (e2) {
+        this.renderer = {
+          domElement: document.createElement('canvas'),
+          setPixelRatio() {},
+          setSize() {},
+          setAnimationLoop() {},
+          render() {},
+        };
+      }
     }
     this.renderer.setPixelRatio(1);
     const initW = container.clientWidth || window.innerWidth || 320;
@@ -63,6 +73,11 @@ export class Game {
     this.camMode = 'fixed';
     this.chaseCamPos = new THREE.Vector3();
 
+    // Limpeza de qualquer save antigo legado
+    ['[SECURITY_DATA]', 'ecos_vazio_points', 'ecos_vazio_unlocks', 'ecos_vazio_scores', 'ecoVazioOpts', 'santa_lucia_save'].forEach((k) => {
+      try { localStorage.removeItem(k); } catch (e) { /* noop */ }
+    });
+
     // Sistema de Pontos & Desbloqueios
     const rawPts = localStorage.getItem(POINTS_KEY);
     this.points = rawPts !== null ? parseInt(rawPts, 10) : 500; // 500 pts bônus inicial para testar a loja!
@@ -76,7 +91,7 @@ export class Game {
       brightness: 'high', filter: 'none', cam: 'fixed', infAmmo: false,
     };
     try {
-      const o = JSON.parse(localStorage.getItem('ecoVazioOpts') || '{}');
+      const o = JSON.parse(localStorage.getItem(OPTS_KEY) || '{}');
       Object.assign(this.opts, o);
     } catch (e) { /* noop */ }
     this.camMode = this.opts.cam || 'fixed';
@@ -121,8 +136,8 @@ export class Game {
     window.addEventListener('resize', () => this.resize());
     this.resize();
 
-    // Cenário inicial do título: floresta sob névoa e postes iluminados
-    this.loadRoom('floresta', 0, 10, 0, { backdrop: true });
+    // Cenário inicial do título: diorama 3D atmosférico do sanatório sob tempestade
+    this.loadRoom('title_diorama', 0, 0, 0, { backdrop: true });
     this.player.group.visible = false;
     this.audio.music('title');
     this.ui.showTitle(this.hasSave());
@@ -197,7 +212,7 @@ export class Game {
 
   saveOpts() {
     try {
-      localStorage.setItem('ecoVazioOpts', JSON.stringify(this.opts));
+      localStorage.setItem(OPTS_KEY, JSON.stringify(this.opts));
     } catch (e) { /* noop */ }
   }
 
@@ -307,6 +322,13 @@ export class Game {
       return;
     }
 
+    if (st === 'intro_cutscene') {
+      if (code === 'Enter' || code === 'Space' || code === 'KeyE' || code === 'Escape') {
+        this.skipIntroCinematic();
+        return;
+      }
+    }
+
     if (st === 'title') {
       if (code === 'Escape') {
         if (!this.ui.el.campaignSelect.classList.contains('hidden')) {
@@ -367,15 +389,17 @@ export class Game {
   }
 
   onCanvasClick() {
-    if (this.state === 'play' && this.aimHeld()) this.tryFire();
-    else if (this.state === 'dialog' || this.state === 'intro') this.ui.advanceDialog();
+    if (this.state === 'intro_cutscene') this.skipIntroCinematic();
+    else if (this.state === 'play' && this.aimHeld()) this.tryFire();
+    else if (this.state === 'dialog' || this.state === 'intro' || this.state === 'cutscene') this.ui.advanceDialog();
     else if (this.state === 'banner') this.closeBanner();
   }
 
   touchFire() { if (this.state === 'play' && this.aimHeld()) this.tryFire(); }
   touchAct() {
-    if (this.state === 'play') this.doPromptAction();
-    else if (this.state === 'dialog' || this.state === 'intro') this.ui.advanceDialog();
+    if (this.state === 'intro_cutscene') this.skipIntroCinematic();
+    else if (this.state === 'play') this.doPromptAction();
+    else if (this.state === 'dialog' || this.state === 'intro' || this.state === 'cutscene') this.ui.advanceDialog();
     else if (this.state === 'banner') this.closeBanner();
   }
   touchInv() {
@@ -388,6 +412,8 @@ export class Game {
     this.ui.hideTitle();
     if (act === 'new') {
       this.ui.showCampaignSelect();
+    } else if (act === 'intro') {
+      this.playIntroCinematic(() => this.toTitle());
     } else if (act === 'continue') {
       this.continueGame();
     } else if (act === 'extras') {
@@ -400,6 +426,220 @@ export class Game {
     } else if (act === 'help') {
       this.helpFrom = 'title';
       this.ui.showHelp();
+    }
+  }
+
+  // ==================== INTRO CINEMATOGRÁFICA DO SANATÓRIO ====================
+  playIntroCinematic(onFinish) {
+    this.state = 'intro_cutscene';
+    this.introCallback = onFinish || (() => this.toTitle());
+    this.ui.hideAllOverlays();
+    this.ui.showIntroCutscene();
+    this.loadRoom('title_diorama', 0, 0, 0, { backdrop: true });
+    this.audio.music('ambient');
+    this.introTimer = 0;
+    this.introPhase = 0;
+    this.introDone = false;
+  }
+
+  skipIntroCinematic() {
+    if (this.introDone) return;
+    this.introDone = true;
+    this.ui.hideIntroCutscene();
+    if (this.introCallback) {
+      const cb = this.introCallback;
+      this.introCallback = null;
+      cb();
+    } else {
+      this.toTitle();
+    }
+  }
+
+  updateIntroCinematic(dt) {
+    if (this.introDone) return;
+    this.introTimer += dt;
+    const t = this.introTimer;
+
+    // Tomada 1: (0s - 4.5s) - Close na janela gótica com chuva e tempestade
+    if (t < 4.5) {
+      if (this.introPhase !== 1) {
+        this.introPhase = 1;
+        this.ui.setIntroSubtitle(
+          'SERRA DA MANTIQUEIRA · OUTUBRO DE 1997',
+          'As portas do Sanatório Santa Lúcia foram lacradas há dez anos... isolando a loucura e as mortes não explicadas.'
+        );
+      }
+      const p = t / 4.5;
+      this.camera.position.set(0, 2.3 + Math.sin(t * 1.2) * 0.05, -3.2 - p * 0.4);
+      this.camera.lookAt(0, 2.2, -4.95);
+    }
+    // Tomada 2: (4.5s - 9.0s) - Descida suave focando o prontuário de Lúcia e a foto
+    else if (t < 9.0) {
+      if (this.introPhase !== 2) {
+        this.introPhase = 2;
+        this.ui.setIntroSubtitle(
+          'DUAS JORNADAS CRUZADAS',
+          'Daniel Silva procura respostas para o suicídio forjado de sua irmã Lúcia. Dra. Clara Mendes busca desmascarar os experimentos clandestinos de seu mentor.'
+        );
+      }
+      const p = (t - 4.5) / 4.5;
+      this.camera.position.set(
+        0.35 - p * 0.15,
+        1.55 - p * 0.18,
+        -1.1 - p * 0.2
+      );
+      this.camera.lookAt(0.1, 1.02, -1.65);
+    }
+    // Tomada 3: (9.0s - 13.5s) - Foco na vela acesa, crucifixo e frascos
+    else if (t < 13.5) {
+      if (this.introPhase !== 3) {
+        this.introPhase = 3;
+        this.ui.setIntroSubtitle(
+          'OS ECOS DA CULPA',
+          'Nesta madrugada fria, seus caminhos convergem para o mesmo abismo. A dor da perda tomou forma na escuridão.'
+        );
+      }
+      const p = (t - 9.0) / 4.5;
+      this.camera.position.set(
+        -0.45 - p * 0.1,
+        1.52 + Math.sin(t * 1.5) * 0.03,
+        -1.15 - p * 0.15
+      );
+      this.camera.lookAt(-0.55, 1.42, -1.6);
+    }
+    // Tomada 4: (13.5s - 17.0s) - Recuo dramático para plano geral e revelação do título
+    else if (t < 17.0) {
+      if (this.introPhase !== 4) {
+        this.introPhase = 4;
+        this.ui.setIntroSubtitle(
+          'EQUIPE NAKAMURA APRESENTA',
+          '<strong style="color:#c81e1e; font-size:1.4em; letter-spacing:8px;">SANTA LÚCIA</strong>'
+        );
+        this.audio.sfx('thunder');
+        this.flashBoost = 0.6;
+      }
+      const p = (t - 13.5) / 3.5;
+      this.camera.position.set(
+        -0.45 + p * 0.3,
+        1.6 + p * 0.2,
+        -0.5 + p * 0.5
+      );
+      this.camera.lookAt(-0.15, 1.2, -1.8);
+    }
+    // Final da cutscene
+    else {
+      this.skipIntroCinematic();
+    }
+  }
+
+  // ==================== CUTSCENES EM MOMENTOS CHAVE ====================
+  startChapelCutscene(r, companion) {
+    this.flags.chapelEncounterMet = true;
+    this.state = 'cutscene';
+    this.cutsceneTimer = 0;
+    this.cutsceneMode = 'chapel';
+    this.player.setAim(false);
+    this.ui.crosshair(false);
+    this.ui.target(0, 0, false);
+
+    // Câmera dramática de introdução do encontro (plano baixo entre os bancos)
+    this.camera.position.set(2.2, 0.85, -1.2);
+    this.camera.lookAt(0, 1.25, -3.5);
+
+    const dialogue = this.currentCampaign === 'daniel' ? D.encontro_daniel : D.encontro_clara;
+    setTimeout(() => {
+      this.say(dialogue, () => {
+        this.addItem('forest_key', 1);
+        this.showBanner('forest_key');
+        this.addPoints(200, 'Encontro Revelador na Capela');
+        this.state = 'play';
+        this.selectCam(true);
+      });
+    }, 400);
+  }
+
+  startMemorialCutscene() {
+    this.flags.memorialOpen = true;
+    this.state = 'cutscene';
+    this.cutsceneTimer = 0;
+    this.cutsceneMode = 'memorial';
+    this.player.setAim(false);
+    this.ui.crosshair(false);
+    this.ui.target(0, 0, false);
+
+    this.audio.sfx('memorial');
+    this.flashBoost = 0.8;
+    this.camShake = 1.2;
+
+    this.camera.position.set(0, 1.6, 3.8);
+    this.camera.lookAt(0, 1.4, 0);
+
+    setTimeout(() => {
+      this.audio.sfx('thunder');
+      this.audio.sfx('bossRoar');
+      this.spawnBossActors();
+      this.say(D.memorial_ok, () => {
+        this.state = 'play';
+        this.checkObjective();
+        this.selectCam(true);
+      });
+    }, 1200);
+  }
+
+  startBoilerBossCutscene(boss) {
+    this.state = 'cutscene';
+    this.cutsceneTimer = 0;
+    this.cutsceneMode = 'boiler';
+    this.player.setAim(false);
+    this.ui.crosshair(false);
+    this.ui.target(0, 0, false);
+
+    this.camera.position.set(0, 0.6, 4.0);
+    this.camera.lookAt(0, 1.6, 0);
+    this.flashBoost = 0.5;
+    this.audio.sfx('bossRoar');
+
+    const lines = [
+      { who: 'n', text: 'O vapor das caldeiras silva alto... As correntes de ferro tremem sob a névoa.' },
+      { who: 'clara', text: 'Alencastro... o que você fez com seu próprio corpo?!', voiceClip: 'voice_clara_intro' },
+      { who: 'vulto', text: 'O VAZIO... FINALMENTE... ME PREENCHEU!' },
+    ];
+
+    setTimeout(() => {
+      this.say(lines, () => {
+        this.state = 'play';
+        this.selectCam(true);
+      });
+    }, 800);
+  }
+
+  updateCutsceneCam(dt) {
+    this.cutsceneTimer += dt;
+    const t = this.cutsceneTimer;
+
+    if (this.cutsceneMode === 'chapel') {
+      this.camera.position.set(
+        2.2 + Math.sin(t * 0.8) * 0.15,
+        0.85 + Math.cos(t * 0.6) * 0.05,
+        -1.2 + Math.sin(t * 0.5) * 0.1
+      );
+      this.camera.lookAt(0, 1.25, -3.5);
+    } else if (this.cutsceneMode === 'memorial') {
+      const r = 3.6 - Math.min(1.0, t * 0.3);
+      const angle = t * 0.45;
+      this.camera.position.set(
+        Math.sin(angle) * r,
+        1.6 + Math.min(1.8, t * 0.5),
+        Math.cos(angle) * r
+      );
+      this.camera.lookAt(0, 1.4, 0);
+    } else if (this.cutsceneMode === 'boiler') {
+      this.camera.position.set(
+        Math.sin(t * 0.7) * 0.3,
+        0.6 + Math.min(1.2, t * 0.4),
+        4.0 - Math.min(1.0, t * 0.3)
+      );
+      this.camera.lookAt(0, 1.6, 0);
     }
   }
 
@@ -469,7 +709,7 @@ export class Game {
     this.whiteTarget = 0; this.whiteVal = 0;
     this.dmgVal = 0;
     this.player.group.visible = false;
-    this.loadRoom('floresta', 0, 10, 0, { backdrop: true });
+    this.loadRoom('title_diorama', 0, 0, 0, { backdrop: true });
     this.fadeTarget = 0;
     this.ui.showTitle(this.hasSave());
     this.audio.music('title');
@@ -699,16 +939,7 @@ export class Game {
       const companion = new NPC(this.THREE, this.TEX, npcWho, 0, -3.5, Math.PI);
       companion.addTo(r.group);
       this.npcs.push(companion);
-
-      setTimeout(() => {
-        this.flags.chapelEncounterMet = true;
-        const dialogue = this.currentCampaign === 'daniel' ? D.encontro_daniel : D.encontro_clara;
-        this.say(dialogue, () => {
-          this.addItem('forest_key', 1);
-          this.showBanner('forest_key');
-          this.addPoints(200, 'Encontro Revelador');
-        });
-      }, 600);
+      this.startChapelCutscene(r, companion);
     }
 
     // Chefe Alencastro no Porão da Campanha B
@@ -721,6 +952,7 @@ export class Game {
       this.enemies.push(boss);
       this.boss = boss;
       this.audio.music('boss');
+      this.startBoilerBossCutscene(boss);
     }
 
     if (!opts.backdrop) {
@@ -1221,11 +1453,7 @@ export class Game {
         const n = f.frags.filter(Boolean).length;
         if (f.memorialOpen) { this.ui.toast('O memorial arde em luz azul.', 3); break; }
         if (n < 4) { say(D.memorial_falta); break; }
-        f.memorialOpen = true;
-        this.audio.sfx('memorial');
-        this.audio.sfx('bossRoar');
-        this.spawnBossActors();
-        say(D.memorial_ok, () => this.checkObjective());
+        this.startMemorialCutscene();
         break;
       }
       case 'portal':
@@ -1583,8 +1811,14 @@ export class Game {
       this.updatePlay(dt);
       if (this.gameMode === 'mercenaries') this.updateMercenaries(dt);
       else if (this.gameMode === 'survivor') this.updateSurvivor(dt);
+    } else if (st === 'intro_cutscene') {
+      this.updateIntroCinematic(dt);
+      if (this.room && this.room.fx) this.room.fx(dt, this.clock.elapsedTime, this);
     } else if (st === 'title') {
       this.updateTitleCam(dt);
+      if (this.room && this.room.fx) this.room.fx(dt, this.clock.elapsedTime, this);
+    } else if (st === 'cutscene') {
+      this.updateCutsceneCam(dt);
       if (this.room && this.room.fx) this.room.fx(dt, this.clock.elapsedTime, this);
     } else if (st === 'ending') {
       this.selectCam();
@@ -1625,14 +1859,13 @@ export class Game {
   }
 
   updateTitleCam(dt) {
-    this.titleAngle += dt * 0.05;
-    const r = 14;
-    this.camera.position.set(
-      Math.sin(this.titleAngle) * r,
-      3.2 + Math.sin(this.titleAngle * 2) * 0.6,
-      Math.cos(this.titleAngle) * r + 2
-    );
-    this.camera.lookAt(0, 1.4, 0);
+    this.titleAngle += dt * 0.15;
+    // Movimento orbital suave ao redor da mesa com a vela, dossiê e tempestade
+    const cx = -0.45 + Math.sin(this.titleAngle * 0.4) * 0.35;
+    const cy = 1.48 + Math.cos(this.titleAngle * 0.3) * 0.08;
+    const cz = -0.55 + Math.cos(this.titleAngle * 0.35) * 0.25;
+    this.camera.position.set(cx, cy, cz);
+    this.camera.lookAt(-0.15, 1.15, -1.7);
   }
 
   updatePlay(dt) {

@@ -1150,6 +1150,167 @@ function buildCapela(THREE, TEX) {
   return R;
 }
 
+// ---------------- DIORAMA DO TÍTULO (SANATÓRIO 1997) ----------------
+function buildTitleDiorama(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'title_diorama', 'SANATÓRIO SANTA LÚCIA (1997)', 12, 10, 3.8);
+
+  // Piso de madeira nobre envelhecida e paredes com lambril
+  plane(THREE, R.group, 12, 10, tm(THREE, TEX.wood, 4, 3), 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 12, 3.8, tm(THREE, TEX.wallpaper, 4, 1.2), 0, 1.9, -5);
+  plane(THREE, R.group, 12, 3.8, tm(THREE, TEX.wallpaper, 4, 1.2), 0, 1.9, 5, Math.PI);
+  plane(THREE, R.group, 10, 3.8, tm(THREE, TEX.wood, 3, 1.2), -6, 1.9, 0, Math.PI / 2);
+  plane(THREE, R.group, 10, 3.8, tm(THREE, TEX.wood, 3, 1.2), 6, 1.9, 0, -Math.PI / 2);
+  plane(THREE, R.group, 12, 10, tm(THREE, TEX.ceiling, 3, 3), 0, 3.8, 0, Math.PI / 2);
+
+  // Moldura e vidros da Janela Gótica com tempestade lá fora
+  box(THREE, R.group, 3.6, 2.6, 0.15, flat(THREE, 0x1a1c22), 0, 2.2, -4.95);
+  plane(THREE, R.group, 3.2, 2.2, new THREE.MeshBasicMaterial({
+    color: 0x335577, transparent: true, opacity: 0.45,
+  }), 0, 2.2, -4.9, 0);
+
+  // Grades de ferro gótico na janela
+  for (let i = -1.2; i <= 1.2; i += 0.6) {
+    box(THREE, R.group, 0.04, 2.2, 0.05, flat(THREE, 0x111318), i, 2.2, -4.88);
+  }
+  for (let j = 1.4; j <= 3.0; j += 0.8) {
+    box(THREE, R.group, 3.2, 0.04, 0.05, flat(THREE, 0x111318), 0, j, -4.88);
+  }
+
+  // Cortina de tecido bordô rasgada balançando com o vento
+  const curtain = plane(THREE, R.group, 1.1, 2.6, new THREE.MeshLambertMaterial({
+    map: TEX.sheet, color: 0x5a1a1a, side: THREE.DoubleSide,
+  }), -2.0, 2.0, -4.8, 0);
+  R.titleCurtain = curtain;
+
+  // Chuva de partículas lá fora da janela
+  const RN = 300;
+  const rpos = new Float32Array(RN * 3);
+  for (let i = 0; i < RN; i++) {
+    rpos[i * 3] = (Math.random() - 0.5) * 8;
+    rpos[i * 3 + 1] = 0.5 + Math.random() * 4.5;
+    rpos[i * 3 + 2] = -5.3 - Math.random() * 2.0;
+  }
+  const rgeo = new THREE.BufferGeometry();
+  rgeo.setAttribute('position', new THREE.BufferAttribute(rpos, 3));
+  const rmat = new THREE.PointsMaterial({ color: 0x88bbff, size: 0.09, transparent: true, opacity: 0.75 });
+  const rain = new THREE.Points(rgeo, rmat);
+  R.group.add(rain);
+  R.rain = rain;
+
+  // Mesa central de carvalho do sanatório
+  box(THREE, R.group, 2.6, 0.1, 1.4, tm(THREE, TEX.wood, 1, 1), 0, 0.95, -1.8);
+  // Pernas torneadas
+  for (const [px, pz] of [[-1.15, -1.25], [1.15, -1.25], [-1.15, -2.35], [1.15, -2.35]]) {
+    box(THREE, R.group, 0.12, 0.95, 0.12, flat(THREE, 0x22140c), px, 0.475, pz);
+  }
+
+  // Cadeira clássica de espaldar alto atrás da mesa
+  box(THREE, R.group, 0.7, 0.08, 0.7, flat(THREE, 0x2e1810), 0, 0.65, -2.8);
+  box(THREE, R.group, 0.7, 0.85, 0.08, flat(THREE, 0x2e1810), 0, 1.15, -3.1);
+  box(THREE, R.group, 0.08, 0.65, 0.08, flat(THREE, 0x1a0e08), -0.28, 0.32, -2.5);
+  box(THREE, R.group, 0.08, 0.65, 0.08, flat(THREE, 0x1a0e08), 0.28, 0.32, -2.5);
+
+  // 1. Castiçal de ferro fundido com vela acesa
+  box(THREE, R.group, 0.24, 0.05, 0.24, flat(THREE, 0x1a1a1a), -0.55, 1.02, -1.6);
+  box(THREE, R.group, 0.06, 0.35, 0.06, flat(THREE, 0xded8c0), -0.55, 1.22, -1.6);
+  // Chama low-poly da vela
+  const flameGeo = new THREE.ConeGeometry(0.04, 0.11, 5);
+  const flameMat = new THREE.MeshBasicMaterial({ color: 0xffdd44 });
+  const flame = new THREE.Mesh(flameGeo, flameMat);
+  flame.position.set(-0.55, 1.45, -1.6);
+  R.group.add(flame);
+  R.candleFlame = flame;
+
+  // Luz pulsante alaranjada da vela
+  const candleLight = pointLight(THREE, R, 0xffa033, 16, 12, -0.55, 1.55, -1.6, { amp: 3.5, speed: 12 });
+  R.candleLight = candleLight;
+
+  // 2. Prontuário Médico Aberto de Lúcia Silva
+  const dossier = box(THREE, R.group, 0.65, 0.03, 0.5, tm(THREE, TEX.paper, 1, 1), 0.25, 1.01, -1.7);
+  dossier.rotation.y = 0.12;
+
+  // 3. Fotografia antiga de Daniel e Lúcia
+  const photo = box(THREE, R.group, 0.28, 0.02, 0.22, tm(THREE, TEX.faceDaniel, 1, 1), -0.05, 1.02, -1.38);
+  photo.rotation.y = -0.25;
+
+  // 4. Crucifixo de ferro inclinado sobre livros antigos
+  box(THREE, R.group, 0.45, 0.14, 0.35, flat(THREE, 0x3d2015), 0.75, 1.07, -1.5);
+  box(THREE, R.group, 0.42, 0.12, 0.32, flat(THREE, 0x1f2838), 0.77, 1.20, -1.52);
+  box(THREE, R.group, 0.04, 0.45, 0.04, flat(THREE, 0x6a5830), 0.75, 1.35, -1.9);
+  box(THREE, R.group, 0.24, 0.04, 0.04, flat(THREE, 0x6a5830), 0.75, 1.45, -1.9);
+
+  // 5. Frascos de medicamentos de vidro âmbar e verde
+  box(THREE, R.group, 0.08, 0.22, 0.08, flat(THREE, 0x7a4412), -0.85, 1.11, -1.9);
+  box(THREE, R.group, 0.07, 0.18, 0.07, flat(THREE, 0x225533), -0.96, 1.09, -1.82);
+
+  // 6. Relógio de bolso antigo
+  const pocketWatch = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.03, 8), flat(THREE, 0xc8a028));
+  pocketWatch.position.set(-0.25, 1.02, -1.45);
+  R.group.add(pocketWatch);
+
+  // Relâmpagos ocasionais vindos de fora da janela
+  const stormLight = new THREE.DirectionalLight(0x7799ee, 0.2);
+  stormLight.position.set(0, 4, -8);
+  R.group.add(stormLight);
+  R.stormLight = stormLight;
+
+  // Luz ambiente suave da tempestade
+  pointLight(THREE, R, 0x334466, 6, 15, 0, 2.8, -3.5);
+
+  // Sólidos e limites
+  solid(R, -6, -5.2, 6, -4.8);
+  solid(R, -6, 4.8, 6, 5.2);
+  solid(R, -6.2, -5, -5.8, 5);
+  solid(R, 5.8, -5, 6.2, 5);
+  solid(R, -1.4, -2.5, 1.4, -1.1);
+
+  // Porta
+  addDoor(R, 0, 4.8, 1.5, 2.4, 'saguao', 0, 0, 0);
+
+  // Câmera do Diorama
+  addCam(R, [-6, -5, 6, 5], [-0.5, 1.65, -0.65], [-0.2, 1.25, -1.8], 55);
+
+  // FX: animação da vela, cortina, chuva e relâmpagos
+  let lightningTimer = 4.0;
+  R.fx = (dt, t, game) => {
+    if (R.candleFlame) {
+      const wobble = Math.sin(t * 14) * 0.08 + Math.cos(t * 23) * 0.05;
+      R.candleFlame.scale.set(1 + wobble, 1 + wobble * 1.5, 1 + wobble);
+      R.candleFlame.position.x = -0.55 + Math.sin(t * 11) * 0.008;
+    }
+    if (R.titleCurtain) {
+      R.titleCurtain.rotation.y = Math.sin(t * 1.8) * 0.12;
+      R.titleCurtain.position.z = -4.8 + Math.cos(t * 1.5) * 0.05;
+    }
+    if (R.rain) {
+      const pos = R.rain.geometry.attributes.position.array;
+      for (let i = 1; i < pos.length; i += 3) {
+        pos[i] -= dt * 14.0;
+        if (pos[i] < 0.2) pos[i] = 4.8;
+      }
+      R.rain.geometry.attributes.position.needsUpdate = true;
+    }
+    lightningTimer -= dt;
+    if (lightningTimer <= 0) {
+      lightningTimer = 5.0 + Math.random() * 7.0;
+      if (R.stormLight) {
+        R.stormLight.intensity = 3.5;
+        setTimeout(() => { if (R.stormLight) R.stormLight.intensity = 0.5; }, 80);
+        setTimeout(() => { if (R.stormLight) R.stormLight.intensity = 4.0; }, 160);
+        setTimeout(() => { if (R.stormLight) R.stormLight.intensity = 0.2; }, 320);
+      }
+      if (game && game.flashBoost !== undefined) {
+        game.flashBoost = 0.45;
+      }
+      if (game && game.audio) {
+        game.audio.sfx('thunder');
+      }
+    }
+  };
+
+  return R;
+}
+
 const BUILDERS = {
   quarto: buildQuarto,
   saguao: buildSaguao,
@@ -1159,6 +1320,7 @@ const BUILDERS = {
   terraco: buildTerraco,
   floresta: buildFloresta,
   capela: buildCapela,
+  title_diorama: buildTitleDiorama,
 };
 
 export function buildRoom(THREE, TEX, id) {

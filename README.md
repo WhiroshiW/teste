@@ -1,7 +1,7 @@
 # SANTA LÚCIA 🕯️
 *Desenvolvido por Equipe Nakamura*
 
-Um **survival horror 3D cinematográfico no autêntico estilo PlayStation 1** com **duas campanhas completas que se cruzam** (estilo Leon e Claire no Resident Evil 2 clássico/remake), alternância em tempo real entre **Câmera Fixa (PS1 Clássico)** e **3ª Pessoa (estilo GTA / Livre)**, **3 Modos Extras**, **Loja de Pontos Secretos**, **Galeria 3D de Modelos** e iluminação de alto contraste e legibilidade.
+Um **survival horror 3D cinematográfico no autêntico estilo PlayStation 1** com **duas campanhas completas que se cruzam** (estilo Leon e Claire no Resident Evil 2 clássico), alternância em tempo real entre **Câmera Fixa (PS1 Clássico)** e **3ª Pessoa (estilo GTA / Livre)**, **3 Modos Extras**, **Loja de Pontos Secretos**, **Galeria 3D de Modelos** e iluminação de alto contraste e legibilidade.
 
 **Tema:** terror psicológico sobre **depressão, luto e culpa** com uma profunda mensagem de resiliência e esperança. (Apoio à vida: **CVV 188**.)
 
@@ -9,43 +9,40 @@ Um **survival horror 3D cinematográfico no autêntico estilo PlayStation 1** co
 
 ---
 
-## 📋 STATUS DO PROJETO: ETAPA 1 CONCLUÍDA
+## 📋 STATUS DO PROJETO: ETAPA 2 CONCLUÍDA
 
-### ✅ O Que Foi Corrigido na Etapa 1 (Bugs Críticos):
-1. **Remoção Absoluta de Menus ao Iniciar o Jogo:**
-   - Criada rotina estrita `hideAllOverlays()` em `UI` e `Game` que desativa todos os elementos de `.overlay` do DOM (`document.querySelectorAll('.overlay')`).
-   - A classe `.hidden` no CSS agora força `display: none !important; pointer-events: none !important; opacity: 0 !important; visibility: hidden !important;`.
-   - Ao iniciar qualquer campanha (**Daniel** ou **Clara**), continuar save, ou iniciar modo extra, nem a tela de título nem a de seleção de campanha permanecem na frente do jogo.
-2. **Causa Raiz de Tela Preta / Inicialização Eliminada:**
-   - Three.js importado via caminho relativo direto (`../vendor/three.module.min.js`), eliminando dependência do `importmap` que falhava em iframes/webviews.
-   - Fallback robusto no construtor do `WebGLRenderer` (tentativa em modo `default`, prevenção de falha por GPU).
-   - Servidor local sem cache (`serve.py`) com headers `no-store, no-cache, must-revalidate` e scripts versionados com cache-busting.
-   - Exceções de áudio silenciadas com `.catch(() => {})` em `AudioContext.resume()`.
-3. **Bloqueio Total dos 3 Modos Extras:**
-   - **The Mercenaries** (1.000 PTS), **Sobrevivente** (1.000 PTS) e **O Turno da Noite / Bento** (1.200 PTS) agora começam estritamente bloqueados.
-   - Qualquer tentativa de início direto ou por atalho sem compra é interceptada com recusa sonora e aviso para adquirir na Loja de Pontos.
-   - Cartões na tela de Modos Extras mostram etiquetas `🔒 BLOQUEADO` e botão dinâmico para abrir a Loja.
-4. **Sincronia Rigorosa de Dublagem e Legenda:**
-   - Alinhadas todas as falas de Daniel e Clara na introdução e no Encontro da Capela em `js/story.js`, garantindo correspondência 100% palavra por palavra com as faixas de áudio dubladas.
-5. **Iluminação e Contraste Aprimorados:**
-   - Brilho ambiente elevado para `0.85` e luz hemisférica para `0.65`.
-   - Facho da lanterna aumentado para intensidade `14` e alcance `22m`.
-   - Vinheta CRT suavizada no shader pós-processamento de PS1 (`psx.js`), eliminando a escuridão excessiva nas bordas da tela e garantindo que o jogador enxergue o cenário com nitidez mantendo o clima gótico de PS1.
-6. **Integridade de Cenários, Pickups e Inventário:**
-   - Corrigido bug crítico de descarte em `pickupAt`: o jogo agora verifica se o inventário está cheio antes de remover o item do cenário, impedindo que pickups sejam perdidos.
-   - Auditadas todas as 8 salas 3D (posicionamento de pickups, portas, câmeras e sólidos).
-7. **Renomeação Geral:**
-   - Nome atualizado para **SANTA LÚCIA** e produtora para **Equipe Nakamura** em todos os menus, cabeçalhos, títulos e documentação.
+### ✅ O Que Foi Feito na Etapa 2 (Melhorias Visuais e Cutscenes):
+1. **Tela de Título Atmosférica (Diorama 3D em Tempo Real):**
+   - Removido fundo preto estático e substituído por um **diorama 3D procedural do Sanatório Santa Lúcia (1997)**.
+   - Cenário com mesa de carvalho envelhecida, **vela acesa com chama oscilante e luz dinâmica pulsante alaranjada**.
+   - **Janela gótica com grades de ferro**, cortina rasgada balançando com o vento, **chuva torrencial de partículas 3D** lá fora e **relâmpagos volumétricos com som estéreo de trovão**.
+   - Prontuário médico confidencial aberto de Lúcia Silva, fotografia antiga de Daniel e Lúcia, crucifixo de ferro, livros e frascos de medicamentos em vidro âmbar.
+   - Câmera em travelling orbital suave e cinematográfico ao redor dos objetos.
+   - Destaque autêntico: **"Equipe Nakamura apresenta"** e logotipo clássico em alto relevo **SANTA LÚCIA**.
+2. **Cutscene de Introdução Animada e Estilizada (PS1):**
+   - Introdução cinematográfica em 4 planos com faixas pretas (*letterbox* 2.35:1) e legendas datilografadas contextualizando o mistério do sanatório lacrado há dez anos e a dor da perda.
+   - **Suporte completo para pular a qualquer instante**: basta pressionar `ENTER`, `ESPAÇO`, `E`, `ESC` ou clicar/tocar em qualquer parte da tela.
+   - Opção dedicada no Menu Principal: **"ASSISTIR INTRO (1997)"** para rever a cutscene quando desejar.
+3. **Cutscenes Dinâmicas nos Momentos Chave do Jogo:**
+   - **Encontro de Daniel & Clara na Capela:** planos de câmera cinematográficos alternados entre os bancos góticos, personagens armados frente a frente, sincronização de falas e áudio dublado, e entrega solene da Chave do Portão de Ferro.
+   - **Revelação no Memorial do Terraço:** órbita de câmera 3D em torno do monumento ao encaixar o 4º fragmento de memória, partículas azuis celestes ascendentes, relâmpago estrondoso e aparição assustadora do Boss Vulto com rugido.
+   - **Confronto do Dr. Alencastro nas Caldeiras do Porão (Campanha Clara):** travelling rasteiro por entre canos de ferro e vapor, lâmpadas de emergência pulsando em vermelho sangue e diálogo tenso antes da batalha de chefe.
+4. **Redesenho do Inventário, Máquina de Escrever e Cofre:**
+   - **Inventário:** estética metálica de prontuário clínico com rebites, alto contraste e slots chanfrados em 3D (*bevel*) com badges nítidos de `[EQUIPADO]` e quantidade de munição.
+   - **Monitor Cardíaco ECG:** moldura de osciloscópio hospitalar dos anos 90, grade milimetrada de fósforo verde, formas de onda P-Q-R-S-T sincronizadas e indicador de frequência em BPM (`72 BPM - FINO`, `116 BPM - ATENÇÃO`, `164 BPM - PERIGO`).
+   - **Máquina de Escrever & Diário (Salvar):** visual estilizado de papel timbrado envelhecido do sanatório com fita de tinta e opções de confirmação de registro de prontuário.
+   - **Cofre:** display de alta segurança de chapa de aço escovado com seletores numéricos chanfrados e iluminação âmbar.
+5. **Limpeza e Reset de Saves Legados:**
+   - Purga automática de chaves antigas e dados legados no carregamento, adotando versionamento isolado (`santa_lucia_*_v1`).
 
 ---
 
 ### ⏳ O Que Ainda Está Pendente (Para as Próximas Etapas):
-- [ ] **Etapa 2 e seguintes:**
-  - Melhorias visuais e cinematográficas na tela inicial (dioramas avançados, transições artísticas).
-  - Novas animações de introdução e cutscenes com câmera dinâmica.
-  - Novos puzzles e expansão de lore dos diários.
-  - Testes de balanceamento de combate e munição nos modos extras.
-  - Polimento adicional solicitado nas próximas etapas.
+- [ ] **Etapa 3 e seguintes:**
+  - Expansão de novos enigmas/puzzles ambientais nos cenários.
+  - Balanceamento de munição e tempo nos modos Mercenários e Sobrevivente.
+  - Novos documentos de lore e diários médicos secretos para coletar.
+  - Ajustes e polimentos adicionais conforme solicitado pelo usuário.
 
 ---
 

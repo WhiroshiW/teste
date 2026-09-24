@@ -25,7 +25,7 @@ class ReusableTCPServer(socketserver.TCPServer):
 
 if __name__ == '__main__':
     with ReusableTCPServer(('0.0.0.0', PORT), NoCacheHTTPRequestHandler) as httpd:
-        print(f"ECOS DO VAZIO Server listening on 0.0.0.0:{PORT} (No-Cache)", flush=True)
+        print(f"SANTA LÚCIA Server listening on 0.0.0.0:{PORT} (No-Cache)", flush=True)
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:

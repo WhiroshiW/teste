@@ -3,10 +3,11 @@
 // Desenvolvido por Equipe Nakamura
 // ============================================================
 
-export const SAVE_KEY = '[SECURITY_DATA]';
-export const POINTS_KEY = 'ecos_vazio_points';
-export const UNLOCKS_KEY = 'ecos_vazio_unlocks';
-export const HISCORES_KEY = 'ecos_vazio_scores';
+export const SAVE_KEY = 'santa_lucia_save_v1';
+export const POINTS_KEY = 'santa_lucia_points_v1';
+export const UNLOCKS_KEY = 'santa_lucia_unlocks_v1';
+export const HISCORES_KEY = 'santa_lucia_scores_v1';
+export const OPTS_KEY = 'santa_lucia_opts_v1';
 export const GAME_TITLE = 'SANTA LÚCIA';
 
 export const CFG = {

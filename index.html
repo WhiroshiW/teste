@@ -26,6 +26,20 @@
   <div class="titleFooter">© 1997 Equipe Nakamura • SANTA LÚCIA • ESTILO PS1 • 3ª PESSOA & CÂMERAS FIXAS • FONES 🎧<br>Use ENTER / clique para confirmar • CVV 188 (Você não está sozinho)</div>
 </div>
 
+<!-- ============ INTRO CINEMATOGRÁFICA DO SANATÓRIO ============ -->
+<div id="introCutscene" class="overlay hidden">
+  <div class="introCinematic">
+    <div class="cinematicLetterbox top"></div>
+    <div class="cinematicCenter">
+      <div id="introYearTag" class="introYearTag">SERRA DA MANTIQUEIRA · OUTUBRO DE 1997</div>
+      <div id="introQuoteText" class="introQuoteText"></div>
+    </div>
+    <div class="cinematicLetterbox bottom">
+      <div id="introSkipBtn" class="cinematicSkipPrompt">▶ [ ENTER / ESPAÇO / TOQUE ] PULAR INTRO</div>
+    </div>
+  </div>
+</div>
+
 <!-- ============ SELEÇÃO DE CAMPANHA (RE2 STYLE) ============ -->
 <div id="campaignSelect" class="overlay hidden">
   <div class="panel large">
@@ -235,11 +249,20 @@
 <div id="inventory" class="overlay hidden">
   <div class="panel inv">
     <div class="invHeader">
-      <h2>INVENTÁRIO</h2>
-      <!-- ECG Cardíaco animado estilo RE -->
-      <div class="ecgBox">
-        <canvas id="ecgCanvas" width="160" height="38"></canvas>
-        <span id="ecgStatus" class="ecgStatus">FINO</span>
+      <div class="invHeaderLeft">
+        <div class="panelStamp">SANATÓRIO SANTA LÚCIA · DIVISÃO CLÍNICA & BALÍSTICA</div>
+        <h2>PRONTUÁRIO & EQUIPAMENTO</h2>
+      </div>
+      <!-- ECG Cardíaco animado estilo Resident Evil com moldura de monitor -->
+      <div class="ecgMonitor">
+        <div class="ecgBezel">
+          <canvas id="ecgCanvas" width="160" height="40"></canvas>
+          <div class="ecgScanlines"></div>
+        </div>
+        <div class="ecgData">
+          <span id="ecgBpm" class="ecgBpm">72 BPM</span>
+          <span id="ecgStatus" class="ecgStatus">FINO</span>
+        </div>
       </div>
     </div>
     <div class="invMain">
@@ -269,25 +292,28 @@
 
 <!-- ============ COFRE ============ -->
 <div id="safe" class="overlay hidden">
-  <div class="panel small">
-    <h2>COFRE</h2>
-    <p class="tip">Digite a senha de 4 números.<br>← → escolhe • ↑ ↓ muda • ENTER confirma</p>
+  <div class="panel small safePanel">
+    <div class="panelStamp">SEGURANÇA REFORÇADA · SANATÓRIO SANTA LÚCIA</div>
+    <h2>COFRE DE ALTA SEGURANÇA</h2>
+    <p class="tip">Digite o código confidencial de 4 dígitos.<br>← → seleciona dígito • ↑ ↓ altera número • ENTER confirma</p>
     <div id="safeDigits"></div>
     <div class="rowBtns">
-      <button id="safeOk" class="btn">ABRIR</button>
-      <button id="safeCancel" class="btn">SAIR</button>
+      <button id="safeOk" class="btn">🔓 ABRIR COFRE</button>
+      <button id="safeCancel" class="btn">CANCELAR</button>
     </div>
   </div>
 </div>
 
 <!-- ============ SALVAR ============ -->
 <div id="saveBox" class="overlay hidden">
-  <div class="panel small">
+  <div class="panel small typewriterPanel">
+    <div class="panelStamp">ARQUIVO MORTO · SALA DE REGISTRO</div>
     <h2>MÁQUINA DE ESCREVER & DIÁRIO</h2>
-    <p>Deseja registrar o seu progresso?<br>(consome 1 Fita de Tinta)</p>
+    <div class="typewriterArt">⌨️ 🗎</div>
+    <p class="typewriterText">Deseja registrar o seu prontuário e progresso nesta noite sombria?<br><span class="typewriterHint">(Requer 1 Fita de Tinta para gravar na memória do sanatório)</span></p>
     <div class="rowBtns">
-      <button id="saveYes" class="btn">SIM (GRAVAR)</button>
-      <button id="saveNo" class="btn">NÃO</button>
+      <button id="saveYes" class="btn saveBtn">💾 REGISTRAR (SALVAR)</button>
+      <button id="saveNo" class="btn">CANCELAR</button>
     </div>
   </div>
 </div>
