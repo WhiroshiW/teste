@@ -77,15 +77,15 @@ void main() {
 
   // scanlines + vinheta (CRT)
   if (uCrt > 0.5) {
-    col *= 0.92 + 0.08 * sin(vUv.y * 180.0 * 3.14159);
+    col *= 0.94 + 0.06 * sin(vUv.y * 180.0 * 3.14159);
     vec2 d = vUv - 0.5;
-    col *= 1.0 - dot(d, d) * 0.9;
+    col *= 1.0 - dot(d, d) * 0.45;
     //_grade RGB sutil
-    col.r *= 0.97 + 0.03 * sin(vUv.x * 320.0 * 3.14159);
-    col.b *= 0.97 + 0.03 * sin(vUv.x * 320.0 * 3.14159 + 2.0);
+    col.r *= 0.98 + 0.02 * sin(vUv.x * 320.0 * 3.14159);
+    col.b *= 0.98 + 0.02 * sin(vUv.x * 320.0 * 3.14159 + 2.0);
   } else {
     vec2 d = vUv - 0.5;
-    col *= 1.0 - dot(d, d) * 0.55;
+    col *= 1.0 - dot(d, d) * 0.25;
   }
 
   // flash de clarão (relâmpago/tiro)
@@ -124,7 +124,7 @@ export function createPSX(THREE, renderer) {
     uShake: { value: new THREE.Vector2(0, 0) },
     uCrt: { value: 1 },
     uFlash: { value: 0 },
-    uBrightness: { value: 1.35 }, // Brilho calibrado para excelente visibilidade
+    uBrightness: { value: 1.55 }, // Brilho calibrado para excelente visibilidade
     uFilter: { value: 0 },
   };
   const postMat = new THREE.ShaderMaterial({

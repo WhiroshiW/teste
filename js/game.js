@@ -1,7 +1,8 @@
 // ============================================================
-// ECOS DO VAZIO - Game: laço principal, campanhas cruzadas,
+// SANTA LÚCIA - Game: laço principal, campanhas cruzadas,
 // câmera livre 3ª pessoa & clássica PS1, Mercenários, Sobrevivente,
 // loja de pontos, puzzles, combate e cutscenes.
+// Desenvolvido por Equipe Nakamura
 // ============================================================
 import {
   ITEMS, WEAPONS, ENEMIES, CAMPAIGNS, SHOP_ITEMS, GALLERY_MODELS,
@@ -23,9 +24,15 @@ export class Game {
   constructor(THREE, container) {
     this.THREE = THREE;
     this.container = container;
-    this.renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
+    try {
+      this.renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'default' });
+    } catch (e) {
+      this.renderer = new THREE.WebGLRenderer({ antialias: false });
+    }
     this.renderer.setPixelRatio(1);
-    this.renderer.setSize(container.clientWidth, container.clientHeight, false);
+    const initW = container.clientWidth || window.innerWidth || 320;
+    const initH = container.clientHeight || window.innerHeight || 240;
+    this.renderer.setSize(initW, initH, false);
     this.renderer.domElement.id = 'gl';
     container.appendChild(this.renderer.domElement);
 
@@ -34,13 +41,13 @@ export class Game {
     this.camera = new THREE.PerspectiveCamera(60, 16 / 9, 0.1, 140);
 
     // Iluminação refinada: mais clara, legível e atmosférica
-    this.ambLight = new THREE.AmbientLight(0xffffff, 0.65);
+    this.ambLight = new THREE.AmbientLight(0xffffff, 0.85);
     this.scene.add(this.ambLight);
-    this.hemiLight = new THREE.HemisphereLight(0xddeeff, 0x1a1522, 0.45);
+    this.hemiLight = new THREE.HemisphereLight(0xe8f0ff, 0x33283a, 0.65);
     this.scene.add(this.hemiLight);
 
     // Lanterna com facho mais amplo e potente
-    this.lantern = new THREE.PointLight(0xffedd2, 8, 16, 2);
+    this.lantern = new THREE.PointLight(0xfffaed, 14, 22, 1.8);
     this.scene.add(this.lantern);
 
     this.TEX = buildTextures(THREE);
@@ -203,9 +210,9 @@ export class Game {
   setBrightness(level) {
     this.opts.brightness = level;
     this.saveOpts();
-    const val = level === 'normal' ? 1.0 : level === 'max' ? 1.75 : 1.35;
+    const val = level === 'normal' ? 1.25 : level === 'max' ? 1.95 : 1.55;
     this.psx.setBrightness(val);
-    this.ambLight.intensity = level === 'normal' ? 0.45 : level === 'max' ? 0.85 : 0.65;
+    this.ambLight.intensity = level === 'normal' ? 0.65 : level === 'max' ? 1.15 : 0.85;
   }
 
   setFilter(f) {
@@ -1232,20 +1239,31 @@ export class Game {
 
   // ==================== ITENS NO CHÃO ====================
   pickupAt(p) {
-    p.taken = true;
-    p.mesh.visible = false;
-    this.roomState(this.room.id).takenPickups.add(p.uid);
-
     if (p.item === 'page') {
+      p.taken = true;
+      p.mesh.visible = false;
+      this.roomState(this.room.id).takenPickups.add(p.uid);
       this.flags.pages[p.page] = true;
       this.audio.sfx('pickup');
       this.readPage(p.page);
       return;
     }
 
+    const itDef = ITEMS[p.item];
+    const canStack = itDef && itDef.type !== 'weapon' && itDef.type !== 'key' && this.inv.some((i) => i.item === p.item);
+    if (!canStack && this.inv.length >= 8) {
+      this.ui.toast('Inventário cheio! Não é possível carregar mais itens.', 3);
+      this.audio.sfx('dryfire');
+      return;
+    }
+
+    p.taken = true;
+    p.mesh.visible = false;
+    this.roomState(this.room.id).takenPickups.add(p.uid);
+
     this.addItem(p.item, p.qty);
-    this.audio.sfx(ITEMS[p.item].type === 'key' ? 'pickupKey' : 'pickup');
-    this.ui.toast(`Coletou: ${ITEMS[p.item].icon} ${ITEMS[p.item].name}${p.qty > 1 ? ` x${p.qty}` : ''}`, 2.5);
+    this.audio.sfx(itDef && itDef.type === 'key' ? 'pickupKey' : 'pickup');
+    this.ui.toast(`Coletou: ${itDef ? itDef.icon : ''} ${itDef ? itDef.name : p.item}${p.qty > 1 ? ` x${p.qty}` : ''}`, 2.5);
     this.updateAmmoHud();
     this.checkObjective();
   }

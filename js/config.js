@@ -1,12 +1,13 @@
 // ============================================================
-// ECOS DO VAZIO - Config: itens, armas, inimigos, campanhas, loja
+// SANTA LÚCIA - Config: itens, armas, inimigos, campanhas, loja
+// Desenvolvido por Equipe Nakamura
 // ============================================================
 
 export const SAVE_KEY = '[SECURITY_DATA]';
 export const POINTS_KEY = 'ecos_vazio_points';
 export const UNLOCKS_KEY = 'ecos_vazio_unlocks';
 export const HISCORES_KEY = 'ecos_vazio_scores';
-export const GAME_TITLE = 'ECOS DO VAZIO';
+export const GAME_TITLE = 'SANTA LÚCIA';
 
 export const CFG = {
   rtW: 320,

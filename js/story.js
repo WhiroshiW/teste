@@ -86,12 +86,10 @@ export const D = {
   encontro_clara: [
     { who: 'n', text: 'Passos apressados ecoam pelo piso da Capela.' },
     { who: 'clara', text: 'Parado! Identifique-se!' },
-    { who: 'daniel', text: 'Não atire! Por favor... eu não sou um deles!', voiceClip: 'voice_daniel_meet' },
-    { who: 'clara', text: 'Um rapaz... segurando uma arma trêmula. Você... você se parece com ela.' },
-    { who: 'daniel', text: 'Com quem? Você conheceu a Lúcia?' },
-    { who: 'clara', text: 'Eu era a psiquiatra assistente dela, Daniel. Ela tinha um desenho de você na parede da enfermaria.' },
-    { who: 'daniel', text: 'Ela... ela ainda está aqui?' },
-    { who: 'clara', text: 'As memórias dela estão. Os ecos da dor que o Alencastro causou a todos nós. Tome este cartão e a chave do portão da floresta. Nós vamos terminar isso juntos.', voiceClip: 'voice_clara_meet' },
+    { who: 'daniel', text: 'Espere! Eu sou humano! Não sou uma daquelas coisas!', voiceClip: 'voice_daniel_meet' },
+    { who: 'clara', text: 'Um rapaz... segurando uma arma trêmula. Você... é o irmão da paciente Lúcia Silva.' },
+    { who: 'daniel', text: 'Você conheceu a minha irmã?! Onde ela está?!' },
+    { who: 'clara', text: 'Tome esta chave do portão de ferro. Dá acesso aos jardins e ao cemitério onde ele escondia os corpos. Vá, Daniel. Eu vou descer às caldeiras para dar um fim no monstro que ele se tornou.', voiceClip: 'voice_clara_meet' },
     { who: 'clara', text: 'Se você encontrar o Bento... diga a ele que eu cumpri minha promessa.' },
   ],
 
