@@ -505,6 +505,9 @@ function buildSaguao(THREE, TEX) {
   addPickup(THREE, R, TEX, 'ammo9', 6.8, 4.8, 12);
 
   addSpawn(R, 'sombra', 2.5, 1.5);
+  addSpawn(R, 'infectado', -2.0, 1.0);
+  addSpawn(R, 'rastejador', -4.5, -2.5);
+  addSpawn(R, 'infectado', 5.0, -1.5);
 
   R.fx = (dt, t, game) => {
     const on = game.flags.fuseOn;
@@ -616,7 +619,8 @@ function buildEnfermaria(THREE, TEX) {
   addPickup(THREE, R, TEX, 'page', 2, -2.2, 1, 3, 0.85);
 
   addSpawn(R, 'sombra', -3, 0.5);
-  addSpawn(R, 'sombra', 5.5, 1.5);
+  addSpawn(R, 'enfermeira', 5.5, 1.5);
+  addSpawn(R, 'infectado', 0.5, 0.8);
   addSpawn(R, 'lamento', 7.8, -1.5);
 
   R.fx = (dt, t) => {
@@ -695,7 +699,8 @@ function buildConsultorio(THREE, TEX) {
   addPickup(THREE, R, TEX, 'ammo9', 0.5, -3.3, 12);
   addPickup(THREE, R, TEX, 'page', 1.2, 0.8, 1, 4, 0.06);
 
-  addSpawn(R, 'sombra', 0.5, 1.5);
+  addSpawn(R, 'enfermeira', -1.5, 1.2);
+  addSpawn(R, 'infectado', 1.5, 1.5);
   return R;
 }
 
@@ -812,9 +817,10 @@ function buildPorao(THREE, TEX) {
   addPickup(THREE, R, TEX, 'page', 6, 4.5, 1, 5, 0.06);
   addPickup(THREE, R, TEX, 'page', -7.2, 0.5, 1, 6, 0.06);
 
-  addSpawn(R, 'sombra', 4, 2.5);
+  addSpawn(R, 'aberracao', -2.5, -4);
+  addSpawn(R, 'rastejador', 4, 2.5);
   addSpawn(R, 'lamento', -4, 2);
-  addSpawn(R, 'lamento', -2.5, -4);
+  addSpawn(R, 'infectado', 3.0, -1.5);
 
   R.fx = (dt, t, game) => {
     if (R.waterTex) { R.waterTex.offset.x = (t * 0.02) % 1; R.waterTex.offset.y = (t * 0.013) % 1; }

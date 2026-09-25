@@ -856,6 +856,49 @@ export function buildTextures(THREE) {
     reg('mercenaryTotem', c);
   }
 
+  // ---------- CAMISA DE FORÇA (PACIENTE INFECTADO) ----------
+  {
+    const [c, x] = cv(32, 64);
+    x.fillStyle = '#7a766c'; x.fillRect(0, 0, 32, 64);
+    // correias de couro marrom
+    x.fillStyle = '#3c2616';
+    x.fillRect(0, 16, 32, 5); x.fillRect(0, 34, 32, 5); x.fillRect(0, 52, 32, 4);
+    // fivelas de ferro
+    x.fillStyle = '#8a8e98';
+    x.fillRect(14, 15, 6, 7); x.fillRect(14, 33, 6, 7);
+    stains(x, 32, 64, 5, 'rgba(80,15,15,0.6)', 3, 10);
+    grain(x, 32, 64, 300, 0.25); poster15(x, 32, 64);
+    reg('straitjacket', c);
+  }
+
+  // ---------- UNIFORME DE ENFERMEIRA CIRÚRGICA ----------
+  {
+    const [c, x] = cv(32, 64);
+    x.fillStyle = '#cfd3d8'; x.fillRect(0, 0, 32, 64);
+    // gola e avental
+    x.fillStyle = '#b0b6c0'; x.fillRect(0, 28, 32, 36);
+    // cruz médica vermelha
+    x.fillStyle = '#aa1c22';
+    x.fillRect(14, 8, 4, 12); x.fillRect(10, 12, 12, 4);
+    stains(x, 32, 64, 6, 'rgba(110,18,24,0.7)', 3, 11);
+    grain(x, 32, 64, 250, 0.25); poster15(x, 32, 64);
+    reg('nurseUniform', c);
+  }
+
+  // ---------- CORPO DE CINZAS E BRASAS (CRIATURA DAS CALDEIRAS) ----------
+  {
+    const [c, x] = cv(32, 64);
+    x.fillStyle = '#1c1816'; x.fillRect(0, 0, 32, 64);
+    // veios de fogo/magma
+    x.fillStyle = '#ff5511';
+    x.fillRect(4, 10, 24, 3); x.fillRect(8, 25, 18, 4); x.fillRect(6, 44, 20, 3);
+    x.fillStyle = '#ffaa22';
+    x.fillRect(6, 11, 20, 1); x.fillRect(10, 26, 14, 2);
+    stains(x, 32, 64, 4, 'rgba(255,100,20,0.5)', 4, 8);
+    grain(x, 32, 64, 300, 0.3); poster15(x, 32, 64);
+    reg('emberBody', c);
+  }
+
   return T;
 }
 

@@ -20,8 +20,10 @@ export class UI {
       help: this.$('help'), helpRows: this.$('helpRows'),
       options: this.$('options'),
       hud: this.$('hud'), roomName: this.$('roomName'),
+      roomTitleText: this.$('roomTitleText'), roomSubText: this.$('roomSubText'),
       hpText: this.$('hpText'), hpStatus: this.$('hpStatus'),
       ammoBox: this.$('ammoBox'), ammoText: this.$('ammoText'),
+      ammoWeaponName: this.$('ammoWeaponName'), ammoIcon: this.$('ammoIcon'),
       prompt: this.$('prompt'), cross: this.$('cross'), target: this.$('target'),
       bossBar: this.$('bossBar'), bossName: this.$('bossName'), bossFill: this.$('bossFill'),
       toast: this.$('toast'),
@@ -33,12 +35,15 @@ export class UI {
       invIcon: this.$('invIcon'), invName: this.$('invName'), invDesc: this.$('invDesc'),
       invCmds: this.$('invCmds'), invObjective: this.$('invObjective'),
       invPages: this.$('invPages'), invWeapon: this.$('invWeapon'), invTime: this.$('invTime'),
-      invHeroName: this.$('invHeroName'),
+      invHeroName: this.$('invHeroName'), invCombineNotice: this.$('invCombineNotice'),
       ecgCanvas: this.$('ecgCanvas'), ecgStatus: this.$('ecgStatus'), ecgBpm: this.$('ecgBpm'),
       introCutscene: this.$('introCutscene'), introYearTag: this.$('introYearTag'),
       introQuoteText: this.$('introQuoteText'), introSkipBtn: this.$('introSkipBtn'),
       safe: this.$('safe'), safeDigits: this.$('safeDigits'),
       saveBox: this.$('saveBox'),
+      saveHeroName: this.$('saveHeroName'), saveRoomName: this.$('saveRoomName'),
+      saveCountVal: this.$('saveCountVal'), saveTimeVal: this.$('saveTimeVal'),
+      saveRibbonVal: this.$('saveRibbonVal'), saveStamp: this.$('saveStamp'),
       pause: this.$('pause'), pauseMenu: this.$('pauseMenu'),
       gameover: this.$('gameover'),
       ending: this.$('ending'), endTitle: this.$('endTitle'),
@@ -70,6 +75,7 @@ export class UI {
     this.pauseItems = ['resume', 'help', 'options', 'title'];
     // inventário
     this.invSel = 0; this.invCmd = 0; this.invMode = 'grid'; this.invCmds = [];
+    this.combineSource = null;
     // cofre
     this.safeDigits = [0, 0, 0, 0]; this.safeSel = 0;
     // save confirm
@@ -490,22 +496,31 @@ export class UI {
 
   // ==================== HUD ====================
   showHud(b) { b ? this.show(this.el.hud) : this.hide(this.el.hud); }
-  room(name) {
-    this.el.roomName.textContent = name;
-    this.el.roomName.classList.remove('hidden');
-    this.el.roomName.style.opacity = 1;
-    this.roomTimer = 3.2;
+  room(name, sub = '') {
+    if (this.el.roomTitleText) this.el.roomTitleText.textContent = name;
+    else if (this.el.roomName) this.el.roomName.textContent = name;
+    if (this.el.roomSubText) this.el.roomSubText.textContent = sub;
+    if (this.el.roomName) {
+      this.el.roomName.classList.remove('hidden');
+      this.el.roomName.style.opacity = 1;
+    }
+    this.roomTimer = 3.6;
   }
   hp(hp) {
     const st = healthStatus(hp);
-    this.el.hpText.textContent = `${Math.max(0, Math.ceil(hp))}`;
+    if (this.el.hpText) this.el.hpText.textContent = `${Math.max(0, Math.ceil(hp))} HP`;
     const s = this.el.hpStatus;
-    s.textContent = st.label;
-    s.className = 'hpStatus ' + st.cls;
+    if (s) {
+      s.textContent = st.label;
+      s.className = 'hpStatus ' + st.cls;
+    }
   }
-  ammo(str, visible) {
+  ammo(weaponName, ammoStr, icon = '🔫', visible = true) {
+    if (!this.el.ammoBox) return;
     this.el.ammoBox.classList.toggle('hidden', !visible);
-    this.el.ammoText.textContent = str;
+    if (this.el.ammoWeaponName) this.el.ammoWeaponName.textContent = weaponName ? weaponName.toUpperCase() : '';
+    if (this.el.ammoIcon) this.el.ammoIcon.textContent = icon;
+    if (this.el.ammoText) this.el.ammoText.textContent = ammoStr;
   }
   prompt(txt) {
     if (!txt) { this.hide(this.el.prompt); return; }
@@ -637,10 +652,14 @@ export class UI {
     this.invSel = 0;
     this.invMode = 'grid';
     this.invCmd = 0;
+    this.combineSource = null;
     this.renderInventory();
     this.show(this.el.inv);
   }
-  hideInventory() { this.hide(this.el.inv); }
+  hideInventory() {
+    this.combineSource = null;
+    this.hide(this.el.inv);
+  }
 
   drawECG(hp, dt) {
     const c = this.el.ecgCanvas;
@@ -710,10 +729,17 @@ export class UI {
     const g = this.el.invGrid;
     g.innerHTML = '';
     const SLOTS = 12;
+
+    if (this.el.invCombineNotice) {
+      this.el.invCombineNotice.classList.toggle('hidden', this.combineSource === null);
+    }
+
     for (let i = 0; i < SLOTS; i++) {
       const it = inv[i];
       const slot = document.createElement('div');
-      slot.className = 'invCell' + (i === this.invSel ? ' sel' : '') + (it ? (it.equipped ? ' equipped' : '') : ' empty');
+      const isSel = i === this.invSel;
+      const isComb = this.combineSource === i;
+      slot.className = 'invCell' + (isSel ? ' sel' : '') + (isComb ? ' combining' : '') + (it ? (it.equipped ? ' equipped' : '') : ' empty');
       if (it) {
         const itemCfg = ITEMS[it.item] || { name: it.item, icon: '📦' };
         const num = it.qty > 1 ? `<span class="invQty">${it.qty}</span>` : '';
@@ -721,12 +747,40 @@ export class UI {
       } else {
         slot.innerHTML = '<span class="invIcon" style="opacity:0.25">◻</span>';
       }
+
       slot.onclick = () => {
+        if (this.combineSource !== null) {
+          if (this.combineSource === i) {
+            this.combineSource = null;
+            this.audio.sfx('uiBack');
+            this.renderInventory();
+            return;
+          }
+          const srcIdx = this.combineSource;
+          this.combineSource = null;
+          this.game.combineItems(srcIdx, i);
+          this.renderInventory();
+          return;
+        }
         this.invSel = i;
         this.invMode = 'grid';
         this.audio.sfx('uiMove');
         this.renderInventory();
       };
+
+      slot.ondblclick = () => {
+        if (it) {
+          const cfg = ITEMS[it.item];
+          if (cfg && cfg.type === 'weapon') {
+            this.game.equipWeapon(it);
+            this.renderInventory();
+          } else if (cfg && cfg.type === 'heal') {
+            this.game.useItem(it);
+            this.renderInventory();
+          }
+        }
+      };
+
       g.appendChild(slot);
     }
     this.renderInvDetail();
@@ -762,12 +816,13 @@ export class UI {
     if (cfg.type === 'weapon') this.invCmds.push(it.equipped ? 'DESEQUIPAR' : 'EQUIPAR');
     if (cfg.type === 'heal') this.invCmds.push('USAR');
     if (cfg.type === 'page') this.invCmds.push('LER');
+    this.invCmds.push('COMBINAR');
     this.invCmds.push('EXAMINAR');
 
     this.el.invCmds.innerHTML = '';
     this.invCmds.forEach((cmd, i) => {
       const b = document.createElement('button');
-      b.className = 'btn small' + (this.invMode === 'cmds' && i === this.invCmd ? ' selCmd' : '');
+      b.className = 'btn small cmdBtn' + (this.invMode === 'cmds' && i === this.invCmd ? ' selCmd' : '');
       b.textContent = cmd;
       b.onclick = () => { this.invCmd = i; this.execInvCmd(cmd, it); };
       this.el.invCmds.appendChild(b);
@@ -808,6 +863,12 @@ export class UI {
     }
   }
   invBack() {
+    if (this.combineSource !== null) {
+      this.combineSource = null;
+      this.audio.sfx('uiBack');
+      this.renderInventory();
+      return;
+    }
     if (this.invMode === 'cmds') {
       this.invMode = 'grid';
       this.audio.sfx('uiBack');
@@ -828,6 +889,12 @@ export class UI {
       this.renderInventory();
     } else if (cmd === 'LER') {
       this.game.readPage(it.page);
+    } else if (cmd === 'COMBINAR') {
+      this.combineSource = this.invSel;
+      this.invMode = 'grid';
+      this.audio.sfx('uiSelect');
+      this.toast('⚙️ Selecione o segundo item para combinar.', 3);
+      this.renderInventory();
     } else if (cmd === 'EXAMINAR') {
       this.game.examineItem(it);
     }
@@ -865,8 +932,16 @@ export class UI {
   }
 
   // ==================== SALVAR (CONFIRMAÇÃO) ====================
-  showSaveBox() {
+  showSaveBox(data = {}) {
     this.saveSel = 0;
+    if (this.el.saveHeroName) this.el.saveHeroName.textContent = (data.hero || 'DANIEL SILVA').toUpperCase();
+    if (this.el.saveRoomName) this.el.saveRoomName.textContent = (data.room || 'SAGUÃO PRINCIPAL').toUpperCase();
+    if (this.el.saveCountVal) this.el.saveCountVal.textContent = `${String(data.saves || 0).padStart(2, '0')} VEZES`;
+    if (this.el.saveTimeVal) this.el.saveTimeVal.textContent = data.time || '00:00:00';
+    if (this.el.saveRibbonVal) {
+      this.el.saveRibbonVal.textContent = data.infiniteInk ? 'INFINITA (BÔNUS DA LOJA)' : `x${data.ribbons || 0} RESTANTES`;
+    }
+    if (this.el.saveStamp) this.hide(this.el.saveStamp);
     this.show(this.el.saveBox);
   }
   hideSaveBox() { this.hide(this.el.saveBox); }

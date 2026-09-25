@@ -206,11 +206,31 @@
 
 <!-- ============ HUD ============ -->
 <div id="hud" class="hidden">
-  <div id="roomName" class="hidden"></div>
-  <div id="hpBox">
-    ❤ <span id="hpText">100</span> <span id="hpStatus" class="hpStatus ok">FINO</span>
+  <div id="roomName" class="roomNameBanner hidden">
+    <div class="roomStamp">SANATÓRIO SANTA LÚCIA · 1997</div>
+    <div id="roomTitleText" class="roomTitleText">SAGUÃO PRINCIPAL</div>
+    <div id="roomSubText" class="roomSubText">ALA CENTRAL · PISO 1</div>
   </div>
-  <div id="ammoBox" class="hidden">🔫 <span id="ammoText"></span></div>
+  <div id="hpBox" class="hudTacticalBox">
+    <div class="hudTacticalTop">
+      <span class="hudLabel">ECG STATUS</span>
+      <span id="hpStatus" class="hpStatus ok">FINE</span>
+    </div>
+    <div class="hudTacticalMain">
+      <div class="hudPulseBeat"></div>
+      <span id="hpText" class="hudHpVal">100 HP</span>
+    </div>
+  </div>
+  <div id="ammoBox" class="hudTacticalBox ammoTactical hidden">
+    <div class="hudTacticalTop">
+      <span class="hudLabel">EQUIPAMENTO</span>
+      <span id="ammoWeaponName" class="hudWeaponName">PISTOLA M9</span>
+    </div>
+    <div class="hudTacticalMain">
+      <span id="ammoIcon" class="hudAmmoIcon">🔫</span>
+      <span id="ammoText" class="hudAmmoVal">15 / 60</span>
+    </div>
+  </div>
   <div id="prompt" class="hidden"></div>
   <div id="cross" class="hidden">＋</div>
   <div id="target" class="hidden">◇</div>
@@ -245,15 +265,15 @@
   </div>
 </div>
 
-<!-- ============ INVENTÁRIO ============ -->
+<!-- ============ INVENTÁRIO (ESTILO RESIDENT EVIL CLÁSSICO) ============ -->
 <div id="inventory" class="overlay hidden">
-  <div class="panel inv">
+  <div class="panel inv reInv">
     <div class="invHeader">
       <div class="invHeaderLeft">
-        <div class="panelStamp">SANATÓRIO SANTA LÚCIA · DIVISÃO CLÍNICA & BALÍSTICA</div>
+        <div class="panelStamp">SANATÓRIO SANTA LÚCIA · MALETA DE SOBREVIVÊNCIA</div>
         <h2>PRONTUÁRIO & EQUIPAMENTO</h2>
       </div>
-      <!-- ECG Cardíaco animado estilo Resident Evil com moldura de monitor -->
+      <!-- ECG Cardíaco animado estilo Resident Evil clássico -->
       <div class="ecgMonitor">
         <div class="ecgBezel">
           <canvas id="ecgCanvas" width="160" height="40"></canvas>
@@ -261,31 +281,40 @@
         </div>
         <div class="ecgData">
           <span id="ecgBpm" class="ecgBpm">72 BPM</span>
-          <span id="ecgStatus" class="ecgStatus">FINO</span>
+          <span id="ecgStatus" class="ecgStatus">FINE</span>
         </div>
       </div>
     </div>
+
+    <!-- Aviso de Modo de Combinação (RE style) -->
+    <div id="invCombineNotice" class="invCombineNotice hidden">
+      <span>⚙️ SELECIONE O SEGUNDO ITEM PARA COMBINAR (ESC PARA CANCELAR)</span>
+    </div>
+
     <div class="invMain">
       <div id="invGrid"></div>
       <div class="invSide">
         <div class="invDetail">
-          <div id="invIcon">—</div>
+          <div class="invIconWrap">
+            <div id="invIcon">—</div>
+          </div>
           <div id="invName">Vazio</div>
-          <div id="invDesc"></div>
+          <div id="invDesc">Espaço livre na maleta de sobrevivência.</div>
           <div id="invCmds"></div>
         </div>
         <div class="invMeta">
-          <div id="invHeroName"></div>
-          <div id="invWeapon"></div>
-          <div id="invPages"></div>
-          <div id="invTime"></div>
+          <div id="invHeroName">DANIEL SILVA</div>
+          <div id="invWeapon">ARMA: Nenhuma</div>
+          <div id="invPages">PÁGINAS: 0/8</div>
+          <div id="invTime">TEMPO: 00:00:00</div>
         </div>
       </div>
     </div>
     <div class="invObj">◎ <span id="invObjective"></span></div>
     <div class="invFoot">
+      <div class="invHelpTip">💡 [2 Cliques / ENTER] Usar ou Equipar rápido</div>
       <button id="invCamSwitch" class="btn small">📷 CÂMERA (V)</button>
-      <button id="invClose" class="btn">FECHAR [TAB]</button>
+      <button id="invClose" class="btn">FECHAR [TAB / ESC]</button>
     </div>
   </div>
 </div>
@@ -304,16 +333,52 @@
   </div>
 </div>
 
-<!-- ============ SALVAR ============ -->
+<!-- ============ SALVAMENTO (ESTILO RESIDENT EVIL / MÁQUINA DE ESCREVER) ============ -->
 <div id="saveBox" class="overlay hidden">
-  <div class="panel small typewriterPanel">
-    <div class="panelStamp">ARQUIVO MORTO · SALA DE REGISTRO</div>
-    <h2>MÁQUINA DE ESCREVER & DIÁRIO</h2>
-    <div class="typewriterArt">⌨️ 🗎</div>
-    <p class="typewriterText">Deseja registrar o seu prontuário e progresso nesta noite sombria?<br><span class="typewriterHint">(Requer 1 Fita de Tinta para gravar na memória do sanatório)</span></p>
-    <div class="rowBtns">
-      <button id="saveYes" class="btn saveBtn">💾 REGISTRAR (SALVAR)</button>
-      <button id="saveNo" class="btn">CANCELAR</button>
+  <div class="panel typewriterPanel">
+    <div class="typewriterHeader">
+      <div class="panelStamp">SANATÓRIO SANTA LÚCIA · SALA DE ARQUIVO & REGISTRO CLÍNICO</div>
+      <h2>MÁQUINA DE ESCREVER</h2>
+    </div>
+
+    <div class="typewriterDocket">
+      <div class="docketHeader">
+        <span class="docketBadge">PRONTUÁRIO CLÍNICO & REGISTRO DE MEMÓRIA</span>
+        <span class="docketStampDate">ARQUIVO MORTO · 1997</span>
+      </div>
+      <div class="docketBody">
+        <div class="docketRow">
+          <span class="docketLabel">SOBREVIVENTE / AGENTE:</span>
+          <span id="saveHeroName" class="docketVal highlight">DANIEL SILVA</span>
+        </div>
+        <div class="docketRow">
+          <span class="docketLabel">LOCAL DO REGISTRO:</span>
+          <span id="saveRoomName" class="docketVal">SAGUÃO PRINCIPAL</span>
+        </div>
+        <div class="docketRow">
+          <span class="docketLabel">REGISTROS EFETUADOS:</span>
+          <span id="saveCountVal" class="docketVal">00 VEZES</span>
+        </div>
+        <div class="docketRow">
+          <span class="docketLabel">TEMPO DECORRIDO:</span>
+          <span id="saveTimeVal" class="docketVal">00:15:30</span>
+        </div>
+        <div class="docketRow ribbonRow">
+          <span class="docketLabel">FITA DE TINTA DISPONÍVEL:</span>
+          <span id="saveRibbonVal" class="docketVal ribbonVal">x2 RESTANTES</span>
+        </div>
+      </div>
+      <div id="saveStamp" class="saveStamp hidden">ARQUIVADO</div>
+    </div>
+
+    <div class="typewriterQuestion">
+      <p>Deseja registrar o seu prontuário nesta máquina de escrever?<br>
+      <span class="typewriterTip">Cada salvamento consome 1 Fita de Tinta da sua maleta de sobrevivência.</span></p>
+    </div>
+
+    <div class="typewriterBtns">
+      <button id="saveYes" class="btn typewriterBtn confirm">► SIM (DATILOGRAFAR PRONTUÁRIO)</button>
+      <button id="saveNo" class="btn typewriterBtn cancel">NÃO (RETORNAR)</button>
     </div>
   </div>
 </div>

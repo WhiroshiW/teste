@@ -80,6 +80,18 @@ export const ENEMIES = {
     name: 'Sombra', hp: 55, dmg: 12, speed: 1.8, range: 1.25, cooldown: 1.4,
     notice: 10, scale: 1.0, eye: 0xfff6c8, stagger: 0.55, points: 60,
   },
+  infectado: {
+    name: 'Paciente Contorcido', hp: 75, dmg: 16, speed: 2.1, range: 1.3, cooldown: 1.1,
+    notice: 12, scale: 0.95, eye: 0xff3333, stagger: 0.50, points: 90, patient: true,
+  },
+  enfermeira: {
+    name: 'Sombra Cirúrgica', hp: 95, dmg: 20, speed: 2.35, range: 1.45, cooldown: 1.0,
+    notice: 13, scale: 0.98, eye: 0xffee55, stagger: 0.45, points: 130, nurse: true,
+  },
+  aberracao: {
+    name: 'Amálgama de Cinzas', hp: 180, dmg: 28, speed: 1.6, range: 1.8, cooldown: 1.5,
+    notice: 11, scale: 1.25, eye: 0xff5511, stagger: 0.25, points: 220, brute: true,
+  },
   lamento: {
     name: 'Lamento', hp: 110, dmg: 22, speed: 2.4, range: 1.35, cooldown: 1.1,
     notice: 12, scale: 1.12, eye: 0xbfe8ff, stagger: 0.35, points: 120,
@@ -308,10 +320,10 @@ export const GALLERY_MODELS = [
 ];
 
 export function healthStatus(hp) {
-  if (hp > 66) return { label: 'FINO', cls: 'ok' };
-  if (hp > 33) return { label: 'CUIDADO', cls: 'warn' };
-  if (hp > 0) return { label: 'PERIGO', cls: 'bad' };
-  return { label: 'MORTO', cls: 'bad' };
+  if (hp > 66) return { label: 'FINE', cls: 'ok' };
+  if (hp > 33) return { label: 'CAUTION', cls: 'warn' };
+  if (hp > 0) return { label: 'DANGER', cls: 'bad' };
+  return { label: 'DEAD', cls: 'bad' };
 }
 
 export function rankFor(timeSec, saves) {

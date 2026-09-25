@@ -245,6 +245,7 @@ export class Game {
 
   // ==================== EXECUÇÃO / RESETS ====================
   resetRun() {
+    if (this.particles) this.particles.clear();
     this.timeSec = 0;
     this.saves = 0;
     this.kills = 0;
@@ -891,6 +892,7 @@ export class Game {
     if (this.room) {
       this.scene.remove(this.room.group);
     }
+    if (this.particles) this.particles.clear();
     this.enemies = [];
     this.npcs = [];
     this.totems = [];
@@ -987,8 +989,19 @@ export class Game {
       this.startBoilerBossCutscene(boss);
     }
 
+    const ROOM_SUBS = {
+      quarto: 'ALA DE INTERNAÇÃO · PISO 1',
+      saguao: 'ALA CENTRAL · PISO 1',
+      enfermaria: 'ALA CLÍNICA GERAL · PISO 1',
+      consultorio: 'SALA MÉDICA DO DR. ALENCASTRO',
+      porao: 'SUBTERRÂNEO · ÁREA DAS CALDEIRAS',
+      terraco: 'COBERTURA · O MEMORIAL',
+      floresta: 'JARDINS EXTERNOS & CEMITÉRIO',
+      capela: 'SANTUÁRIO ESQUECIDO',
+    };
+
     if (!opts.backdrop) {
-      this.ui.room(r.name);
+      this.ui.room(r.name, ROOM_SUBS[id] || 'SANATÓRIO SANTA LÚCIA');
       if (r.music) this.audio.music(r.music);
       else if (r.ambient) this.audio.ambient(r.ambient);
     }
@@ -1195,14 +1208,59 @@ export class Game {
     this.ui.toast(`${cfg.icon} ${cfg.name}: ${cfg.desc}`, 4.5);
   }
 
+  combineItems(srcIdx, destIdx) {
+    const src = this.inv[srcIdx];
+    const dest = this.inv[destIdx];
+    if (!src || !dest || src === dest) return;
+
+    const sDef = ITEMS[src.item];
+    const dDef = ITEMS[dest.item];
+    if (!sDef || !dDef) return;
+
+    // 1. Munição + Arma
+    if (sDef.type === 'ammo' && dDef.type === 'weapon') {
+      if (dDef.ammo === src.item) {
+        this.equipWeapon(dest);
+        this.audio.sfx('pickupKey');
+        this.ui.toast(`⚙️ ${dDef.name} recarregada com ${sDef.name}!`, 3.5);
+        this.updateAmmoHud();
+        return;
+      }
+    } else if (sDef.type === 'weapon' && dDef.type === 'ammo') {
+      if (sDef.ammo === dest.item) {
+        this.equipWeapon(src);
+        this.audio.sfx('pickupKey');
+        this.ui.toast(`⚙️ ${sDef.name} recarregada com ${dDef.name}!`, 3.5);
+        this.updateAmmoHud();
+        return;
+      }
+    }
+
+    // 2. Remédios ou Munições combinadas (empilhamento de mesmo tipo)
+    if (src.item === dest.item && (sDef.type === 'heal' || sDef.type === 'ammo' || src.item === 'ribbon')) {
+      dest.qty += src.qty;
+      this.inv.splice(srcIdx, 1);
+      this.audio.sfx('pickup');
+      this.ui.toast(`📦 Doses de ${dDef.name} agrupadas no mesmo frasco (x${dest.qty}).`, 3);
+      return;
+    }
+
+    this.audio.sfx('dryfire');
+    this.ui.toast('Não é possível combinar estes dois itens.', 2.5);
+  }
+
   updateAmmoHud() {
     const w = WEAPONS[this.equipped];
     const def = ITEMS[this.equipped];
-    if (!w || !def.ammo) {
-      this.ui.ammo('', false);
+    if (!w) {
+      this.ui.ammo('', '', '', false);
+      return;
+    }
+    if (!def.ammo) {
+      this.ui.ammo(w.name, 'BRANCA', def.icon || '🔪', true);
     } else {
-      const c = this.infiniteAmmo ? '♾️' : this.countItem(def.ammo);
-      this.ui.ammo(`${w.name}: ${c}`, true);
+      const c = this.infiniteAmmo ? '∞' : this.countItem(def.ammo);
+      this.ui.ammo(w.name, `${c} / ${this.infiniteAmmo ? '∞' : c}`, def.icon || '🔫', true);
     }
   }
 
@@ -1262,15 +1320,35 @@ export class Game {
     }
     this.state = 'savebox';
     this.player.setAim(false);
-    this.ui.showSaveBox();
+    const heroCfg = CAMPAIGNS[this.currentCampaign] || CAMPAIGNS.daniel;
+    const roomTitle = this.room ? (this.room.name || this.room.id) : 'SAGUÃO';
+    this.ui.showSaveBox({
+      hero: heroCfg.name,
+      room: roomTitle,
+      saves: this.saves,
+      time: this.formattedTime(),
+      ribbons: this.countItem('ribbon'),
+      infiniteInk: !!this.unlocks.infinite_ink,
+    });
   }
 
   saveConfirm(yes) {
-    this.ui.hideSaveBox();
-    this.state = 'play';
-    if (!yes) return;
+    if (!yes) {
+      this.ui.hideSaveBox();
+      this.state = 'play';
+      return;
+    }
+    this.audio.sfx('typewriter');
+    if (this.ui.el.saveStamp) {
+      this.ui.show(this.ui.el.saveStamp);
+    }
     if (!this.unlocks.infinite_ink) this.removeItem('ribbon', 1);
     this.doSave();
+    setTimeout(() => {
+      this.ui.hideSaveBox();
+      this.state = 'play';
+      this.ui.toast(`💾 Prontuário arquivado com sucesso no Sanatório. (${this.saves} registros)`, 4);
+    }, 650);
   }
 
   doSave() {

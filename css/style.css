@@ -222,35 +222,90 @@ html, body {
 
 /* ============ HUD ============ */
 #hud { position: fixed; inset: 0; z-index: 20; pointer-events: none; }
-#roomName {
-  position: absolute; top: 6%; width: 100%; text-align: center;
-  font-size: clamp(16px, 3.4vw, 26px); letter-spacing: 5px; color: #e8e8e8;
-  text-shadow: 2px 2px 0 #000, 0 0 12px rgba(200,160,40,0.4);
-  transition: opacity 0.3s;
+/* ============ HUD TÁTICO ESTILO RESIDENT EVIL ============ */
+#hud { position: fixed; inset: 0; z-index: 20; pointer-events: none; }
+
+.roomNameBanner {
+  position: absolute; top: 5%; left: 50%; transform: translateX(-50%);
+  text-align: center; background: rgba(5, 7, 10, 0.78);
+  border: 2px outset #525a6e; padding: 6px 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.85), inset 0 0 10px rgba(0,0,0,0.6);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
 }
-#hpBox {
-  position: absolute; left: 14px; bottom: 12px;
-  background: rgba(0,0,0,0.65); border: 1px solid #444;
-  padding: 6px 12px; font-size: clamp(13px, 2.4vw, 17px); font-weight: bold;
+.roomStamp {
+  font-size: 10px; letter-spacing: 3px; color: #c8a028; font-weight: bold; margin-bottom: 2px;
 }
-.hpStatus { padding: 1px 8px; margin-left: 6px; font-size: 0.85em; }
-.hpStatus.ok { background: #1a5a1a; color: #cfc; }
-.hpStatus.warn { background: #6a5a10; color: #ffc; }
-.hpStatus.bad { background: #6a1010; color: #fcc; animation: blink 0.8s infinite; }
-@keyframes blink { 50% { opacity: 0.5; } }
-#ammoBox {
-  position: absolute; right: 14px; bottom: 12px;
-  background: rgba(0,0,0,0.65); border: 1px solid #444;
-  padding: 6px 12px; font-size: clamp(12px, 2.2vw, 15px);
+.roomTitleText {
+  font-size: clamp(16px, 3.2vw, 24px); letter-spacing: 4px; color: #f5f6fa; font-weight: bold;
+  text-shadow: 2px 2px 0 #000, 0 0 10px rgba(255,255,255,0.3);
 }
+.roomSubText {
+  font-size: 11px; letter-spacing: 2px; color: #8e95a5; margin-top: 2px;
+}
+
+.hudTacticalBox {
+  position: absolute; left: 16px; bottom: 16px;
+  background: linear-gradient(135deg, rgba(20,24,32,0.92) 0%, rgba(10,12,18,0.95) 100%);
+  border: 2px outset #5a647d;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.9), inset 1px 1px 0 rgba(255,255,255,0.1);
+  padding: 6px 14px; min-width: 140px;
+  display: flex; flex-direction: column; gap: 4px;
+  pointer-events: auto;
+}
+.hudTacticalBox.ammoTactical {
+  left: auto; right: 16px; min-width: 155px; text-align: right;
+}
+.hudTacticalTop {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 2px;
+}
+.hudLabel {
+  font-size: 9px; letter-spacing: 1.5px; color: #8a92a6; font-weight: bold;
+}
+.hudWeaponName {
+  font-size: 11px; font-weight: bold; color: #ffe066; letter-spacing: 1px;
+}
+.hudTacticalMain {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.hudHpVal {
+  font-family: 'Courier New', monospace; font-size: 18px; font-weight: bold;
+  color: #f4f6fa; text-shadow: 0 0 6px rgba(255,255,255,0.3);
+}
+.hudAmmoIcon { font-size: 20px; }
+.hudAmmoVal {
+  font-family: 'Courier New', monospace; font-size: 18px; font-weight: bold;
+  color: #55ff88; text-shadow: 0 0 6px rgba(85,255,136,0.5); letter-spacing: 1px;
+}
+
+.hpStatus {
+  padding: 1px 8px; font-size: 11px; font-weight: bold; letter-spacing: 1.5px;
+  border: 1px solid transparent; border-radius: 2px;
+}
+.hpStatus.ok {
+  background: #0d3814; color: #55ff77; border-color: #1e6b2c;
+  box-shadow: 0 0 8px rgba(85,255,119,0.4);
+}
+.hpStatus.warn {
+  background: #423508; color: #ffe644; border-color: #8a7012;
+  box-shadow: 0 0 8px rgba(255,230,68,0.4);
+}
+.hpStatus.bad {
+  background: #4a0c0c; color: #ff5555; border-color: #991c1c;
+  box-shadow: 0 0 10px rgba(255,85,85,0.6);
+  animation: reHeartAlert 0.7s infinite;
+}
+@keyframes reHeartAlert { 50% { opacity: 0.45; } }
+
 #prompt {
-  position: absolute; bottom: 11%; width: 100%; text-align: center;
-  font-size: clamp(13px, 2.6vw, 17px); color: #ffe9b0;
+  position: absolute; bottom: 12%; width: 100%; text-align: center;
+  font-size: clamp(14px, 2.6vw, 17px); color: #ffe9b0;
   text-shadow: 2px 2px 0 #000;
 }
 #prompt b {
-  background: #c8a028; color: #000; padding: 0 8px; margin-right: 6px;
-  border: 2px solid #fff;
+  background: #c8a028; color: #000; padding: 2px 8px; margin-right: 6px;
+  border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.8);
 }
 #cross {
   position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%);
@@ -268,6 +323,11 @@ html, body {
 #bossFill { height: 100%; width: 100%; background: linear-gradient(to right, #f00, #f66); }
 #toast {
   position: absolute; top: 9%; left: 50%; transform: translateX(-50%);
+  background: rgba(10,12,18,0.92); border: 2px solid #ffe066;
+  color: #f4f6fa; padding: 8px 18px; font-size: clamp(12px, 2.4vw, 15px);
+  box-shadow: 0 0 16px rgba(0,0,0,0.9); pointer-events: none;
+  letter-spacing: 1px; z-index: 30;
+}
   max-width: 88vw; background: rgba(0,0,0,0.78); border: 1px solid #c8a028;
   padding: 8px 16px; font-size: clamp(11px, 2.2vw, 14px); color: #ffe9b0; text-align: center;
 }
@@ -300,7 +360,7 @@ html, body {
 #dlgText { font-size: clamp(13px, 2.6vw, 16px); line-height: 1.65; min-height: 56px; white-space: pre-wrap; color: #f4f6fa; text-shadow: 1px 1px 2px #000; }
 .dlgHint { text-align: right; color: #8a90a0; font-size: 11px; animation: blink 1s infinite; letter-spacing: 1px; }
 
-/* ============ inventário ============ */
+/* ============ INVENTÁRIO (ESTILO RESIDENT EVIL CLÁSSICO) ============ */
 .panelStamp {
   font-size: clamp(9px, 1.8vw, 11px);
   letter-spacing: 3px;
@@ -310,38 +370,48 @@ html, body {
   text-shadow: 1px 1px 0 #000;
   font-weight: bold;
 }
-.panel.inv {
-  max-width: min(760px, 96vw);
-  background: linear-gradient(135deg, #161822 0%, #0e1017 50%, #090a0f 100%);
-  border: 3px solid #4a5062;
-  box-shadow: inset 0 0 0 2px #181920, 0 0 0 3px #000, 0 0 40px rgba(0,0,0,0.9);
+.panel.inv.reInv {
+  max-width: min(780px, 96vw);
+  background: linear-gradient(135deg, #181b24 0%, #10121a 50%, #0a0b10 100%);
+  border: 4px outset #5a647d;
+  box-shadow: inset 0 0 0 2px #202430, 0 0 0 4px #000, 0 10px 40px rgba(0,0,0,0.95);
 }
 .invHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
-  border-bottom: 2px solid #292d3a;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #292f3f;
   padding-bottom: 10px;
 }
 .invHeaderLeft { text-align: left; }
-.invHeaderLeft h2 { margin-bottom: 0; }
+.invHeaderLeft h2 { margin-bottom: 0; font-size: clamp(16px, 3.4vw, 22px); letter-spacing: 3px; }
 
-/* ECG Cardíaco Retrô */
+/* Aviso de combinação clássico de RE */
+.invCombineNotice {
+  background: #0f3050; border: 2px outset #3080d0; color: #a0d8ff;
+  font-size: 11px; font-weight: bold; letter-spacing: 1.5px;
+  padding: 6px 12px; margin-bottom: 10px; text-align: center;
+  box-shadow: 0 0 10px rgba(48,128,208,0.4);
+  animation: reCombineBlink 0.9s infinite;
+}
+@keyframes reCombineBlink { 50% { opacity: 0.65; } }
+
+/* ECG Cardíaco Retrô estilo Resident Evil */
 .ecgMonitor {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #03060a;
+  background: #020508;
   border: 2px inset #384252;
   padding: 5px 12px;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.95);
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.95);
 }
 .ecgBezel {
   position: relative;
   width: 140px;
   height: 36px;
-  background: #020904;
+  background: #010603;
   border: 1px solid #143a18;
   overflow: hidden;
 }
@@ -380,21 +450,33 @@ html, body {
 #invGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; flex: 1; }
 .invCell {
   aspect-ratio: 1.15;
-  background: #0d0f16;
+  background: #0c0f16;
   border: 2px outset #474f63;
   box-shadow: inset 1px 1px 0 rgba(255,255,255,0.08), inset -2px -2px 0 rgba(0,0,0,0.85);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   cursor: pointer; position: relative;
-  transition: transform 0.1s ease;
+  transition: transform 0.1s ease, border-color 0.1s ease;
+  user-select: none;
 }
 .invCell:hover {
   transform: translateY(-2px);
   border-color: #929bb4;
 }
 .invCell.sel {
-  background: #242214;
+  background: #252210;
   border: 2px outset #ffe066;
-  box-shadow: 0 0 12px rgba(255,224,102,0.45), inset 1px 1px 0 rgba(255,255,255,0.3);
+  box-shadow: 0 0 14px rgba(255,224,102,0.6), inset 1px 1px 0 rgba(255,255,255,0.4);
+  animation: reSelPulse 1.2s infinite ease-in-out;
+}
+@keyframes reSelPulse {
+  0%, 100% { border-color: #ffe066; box-shadow: 0 0 12px rgba(255,224,102,0.5); }
+  50% { border-color: #fff4a0; box-shadow: 0 0 18px rgba(255,244,160,0.8); }
+}
+.invCell.combining {
+  background: #082438;
+  border: 2px outset #38b0ff;
+  box-shadow: 0 0 14px rgba(56,176,255,0.7);
+  animation: reCombineBlink 0.8s infinite;
 }
 .invCell.equipped {
   border-color: #2ecc71;
@@ -405,55 +487,68 @@ html, body {
   font-size: 9px; font-weight: bold;
   color: #2ecc71; background: #06180c;
   padding: 1px 4px; border: 1px solid #2ecc71;
+  box-shadow: 0 0 4px rgba(46,204,113,0.5);
 }
 .invCell.empty {
-  background: #07080d;
+  background: #06070b;
   border-style: inset;
-  border-color: #202430;
+  border-color: #1e222c;
   cursor: default;
 }
 .invCell.empty:hover { transform: none; }
-.invIcon { font-size: clamp(22px, 4.5vw, 32px); }
+.invIcon { font-size: clamp(24px, 4.8vw, 34px); }
 .invQty {
   font-family: 'Courier New', monospace;
-  font-size: 12px; font-weight: bold;
+  font-size: 13px; font-weight: bold;
   color: #55ff88;
   position: absolute; top: 3px; right: 5px;
-  text-shadow: 0 0 4px rgba(85,255,136,0.6);
+  text-shadow: 0 0 5px rgba(85,255,136,0.7);
 }
 
 .invSide { width: 38%; display: flex; flex-direction: column; gap: 10px; text-align: left; }
 .invDetail {
-  background: #0c0e15;
+  background: #0a0c12;
   border: 2px inset #2d3344;
   padding: 12px;
-  min-height: 155px;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.7);
+  min-height: 165px;
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.85);
+  display: flex; flex-direction: column;
 }
-#invIcon { font-size: 32px; }
-#invName { color: #ffe9b0; font-weight: bold; margin: 4px 0; font-size: clamp(13px, 2.4vw, 16px); }
-#invDesc { color: #a4a8b5; font-size: clamp(11px, 2vw, 13px); line-height: 1.5; }
+.invIconWrap {
+  display: flex; justify-content: center; align-items: center;
+  height: 48px; background: rgba(0,0,0,0.4); border: 1px inset #222634;
+  margin-bottom: 6px;
+}
+#invIcon { font-size: 34px; }
+#invName { color: #ffe066; font-weight: bold; margin: 4px 0; font-size: clamp(14px, 2.5vw, 17px); letter-spacing: 1px; }
+#invDesc { color: #aab0c2; font-size: clamp(11px, 2vw, 13px); line-height: 1.5; flex: 1; }
 #invCmds { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
 .cmdBtn {
   font-family: inherit; font-size: 12px; font-weight: bold;
-  background: #181b26; color: #d8d8d8;
-  border: 2px outset #515970; padding: 5px 12px; cursor: pointer;
+  background: #1a1e2a; color: #e0e4f0;
+  border: 2px outset #515970; padding: 6px 12px; cursor: pointer;
+  letter-spacing: 1px; transition: background 0.1s;
 }
 .cmdBtn.sel, .cmdBtn:hover {
-  background: #6e1717; border-color: #ffd700; color: #fff;
+  background: #7a1616; border-color: #ffd700; color: #fff;
+  box-shadow: 0 0 8px rgba(255,215,0,0.4);
 }
 .invMeta { font-size: clamp(10px, 2vw, 12px); color: #9aa0b4; display: flex; flex-direction: column; gap: 4px; }
 .invMeta div {
-  background: #0c0e15; border: 1px solid #222736; padding: 5px 8px;
+  background: #090b10; border: 1px solid #1e222e; padding: 5px 8px; font-family: 'Courier New', monospace;
 }
 .invObj {
   margin-top: 12px; text-align: left; color: #ffe9b0;
-  font-size: clamp(11px, 2.2vw, 13px);
-  background: #161208; border: 2px inset #6a531a; padding: 8px 12px;
+  font-size: clamp(12px, 2.2vw, 14px);
+  background: #141108; border: 2px inset #6a531a; padding: 8px 12px;
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.6);
 }
-.invFoot { margin-top: 10px; display: flex; justify-content: flex-end; gap: 8px; }
+.invFoot {
+  margin-top: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+}
+.invHelpTip { font-size: 11px; color: #828a9c; }
 
-/* ============ cofre ============ */
+/* ============ COFRE ============ */
 .safePanel {
   background: linear-gradient(135deg, #20232b 0%, #15171e 50%, #0d0f14 100%);
   border: 3px solid #60687c;
@@ -474,29 +569,99 @@ html, body {
   box-shadow: 0 0 14px rgba(255,221,68,0.5), inset 0 0 8px rgba(0,0,0,0.8);
 }
 
-/* ============ máquina de escrever (salvar) ============ */
+/* ============ MÁQUINA DE ESCREVER & SALVAMENTO (ESTILO RESIDENT EVIL) ============ */
 .typewriterPanel {
-  background: linear-gradient(135deg, #1d1712 0%, #14100c 50%, #0c0a08 100%);
-  border: 3px solid #6a4a2a;
-  box-shadow: inset 0 0 0 2px #22180e, 0 0 40px rgba(0,0,0,0.9);
+  max-width: min(600px, 94vw);
+  background: linear-gradient(135deg, #1b1612 0%, #120e0a 50%, #0a0806 100%);
+  border: 4px outset #6a4a2a;
+  box-shadow: inset 0 0 0 2px #26190e, 0 0 45px rgba(0,0,0,0.95);
+  padding: 20px;
 }
-.typewriterArt { font-size: 38px; margin: 6px 0; }
-.typewriterText {
-  color: #dfd8c8;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(12px, 2.4vw, 15px);
-  line-height: 1.6;
+.typewriterHeader h2 {
+  font-size: clamp(18px, 3.6vw, 24px); letter-spacing: 3px; color: #ffe6a0; margin: 4px 0 12px 0;
 }
-.typewriterHint { color: #9c8a74; font-size: 11px; font-style: italic; }
-.saveBtn {
-  background: #3a2210;
-  border-color: #c8a028;
-  color: #ffe9b0;
+
+/* Prontuário datilografado estilo folha de arquivo RE */
+.typewriterDocket {
+  position: relative;
+  background: #ded7c4;
+  color: #1a1612;
+  border: 3px solid #3a2c1e;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.85), inset 0 0 14px rgba(0,0,0,0.15);
+  padding: 14px 18px; margin: 12px 0;
+  text-align: left; overflow: hidden;
 }
-.saveBtn:hover {
-  background: #5a3215;
-  border-color: #ffd700;
-  color: #fff;
+.docketHeader {
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 2px solid #3a2c1e; padding-bottom: 6px; margin-bottom: 10px;
+}
+.docketBadge {
+  font-size: 11px; font-weight: bold; letter-spacing: 2px; color: #6a1a1a;
+  text-transform: uppercase;
+}
+.docketStampDate {
+  font-family: 'Courier New', monospace; font-size: 11px; font-weight: bold; color: #4a3e2a;
+}
+.docketBody {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.docketRow {
+  display: flex; justify-content: space-between; align-items: baseline;
+  border-bottom: 1px dashed rgba(58,44,30,0.35); padding-bottom: 3px;
+}
+.docketRow.ribbonRow {
+  border-bottom: 2px solid #3a2c1e; margin-top: 4px; padding-top: 4px;
+}
+.docketLabel {
+  font-size: 11px; font-weight: bold; letter-spacing: 1px; color: #3a2c1e;
+}
+.docketVal {
+  font-family: 'Courier New', monospace; font-size: 13px; font-weight: bold; color: #1a1612;
+}
+.docketVal.highlight { color: #8a1212; }
+.docketVal.ribbonVal { color: #1a5a22; font-size: 14px; }
+
+/* Carimbo [ARQUIVADO] */
+.saveStamp {
+  position: absolute; right: 18px; bottom: 12px;
+  font-family: 'Courier New', monospace; font-size: 26px; font-weight: bold;
+  color: #b81c22; border: 4px double #b81c22;
+  padding: 4px 14px; letter-spacing: 3px;
+  transform: rotate(-10deg);
+  opacity: 0.88; text-shadow: 0 0 2px rgba(184,28,34,0.4);
+  pointer-events: none;
+  animation: stampSlam 0.3s ease-out;
+}
+@keyframes stampSlam {
+  0% { transform: scale(2.2) rotate(-18deg); opacity: 0; }
+  100% { transform: scale(1) rotate(-10deg); opacity: 0.88; }
+}
+
+.typewriterQuestion {
+  margin: 12px 0 16px 0; color: #e8e2d4; font-size: clamp(12px, 2.4vw, 15px); line-height: 1.6;
+}
+.typewriterTip {
+  font-size: 11px; color: #ad9e88; font-style: italic;
+}
+.typewriterBtns {
+  display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;
+}
+.typewriterBtn {
+  font-family: inherit; font-size: 13px; font-weight: bold; letter-spacing: 1px;
+  padding: 8px 18px; cursor: pointer; border: 2px outset #8a6234;
+}
+.typewriterBtn.confirm {
+  background: #3e2614; color: #ffe6a0; border-color: #d4a034;
+}
+.typewriterBtn.confirm:hover {
+  background: #5e3a1e; color: #fff; border-color: #ffd700;
+  box-shadow: 0 0 10px rgba(255,215,0,0.5);
+}
+.typewriterBtn.cancel {
+  background: #1a1614; color: #a49e98; border-color: #443c34;
+}
+.typewriterBtn.cancel:hover {
+  background: #2a2420; color: #e4ded8; border-color: #746c64;
 }
 
 /* ============ game over / final ============ */

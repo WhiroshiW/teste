@@ -50,6 +50,12 @@ export class Particles {
     this.col = new Float32Array(this.N * 3);
     this.sz = new Float32Array(this.N);
 
+    // Inicializa todos os vértices fora da câmera para nunca poluir o mapa
+    for (let i = 0; i < this.N; i++) {
+      this.pos[i * 3 + 1] = -9999;
+      this.life[i] = 0;
+    }
+
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(this.pos, 3));
     geo.setAttribute('color', new THREE.BufferAttribute(this.col, 3));
@@ -68,7 +74,10 @@ export class Particles {
   }
 
   clear() {
-    for (let i = 0; i < this.N; i++) this.life[i] = 0;
+    for (let i = 0; i < this.N; i++) {
+      this.life[i] = 0;
+      this.pos[i * 3 + 1] = -9999;
+    }
     this.geo.attributes.position.needsUpdate = true;
   }
 
@@ -103,11 +112,17 @@ export class Particles {
   }
 
   update(dt) {
-    let alive = 0;
+    let modified = false;
     for (let i = 0; i < this.N; i++) {
       if (this.life[i] <= 0) continue;
       this.life[i] -= dt;
-      alive++;
+      if (this.life[i] <= 0) {
+        this.life[i] = 0;
+        this.pos[i * 3 + 1] = -9999;
+        modified = true;
+        continue;
+      }
+      modified = true;
       const i3 = i * 3;
       this.vel[i3 + 1] -= this.grav[i] * dt;
       this.pos[i3] += this.vel[i3] * dt;
@@ -119,7 +134,7 @@ export class Particles {
         this.vel[i3 + 1] = 0;
       }
     }
-    if (alive > 0) this.geo.attributes.position.needsUpdate = true;
+    if (modified) this.geo.attributes.position.needsUpdate = true;
   }
 }
 
@@ -509,6 +524,129 @@ export class Enemy {
       this.mats.push(m);
       return m;
     };
+
+    // ================= PACIENTE CONTORCIDO (INFECTADO) =================
+    if (this.type === 'infectado') {
+      const jacketM = lam(0x7a766c, 0x000000, this.TEX.straitjacket);
+      const skinM = lam(0x8a928c);
+      const pantsM = lam(0x404448);
+
+      for (const side of [-0.14, 0.14]) {
+        const leg = new this.THREE.Mesh(new this.THREE.BoxGeometry(0.14 * s, 0.75 * s, 0.16 * s), pantsM);
+        leg.position.set(side * s, 0.38 * s, 0);
+        this.group.add(leg);
+        this.legs.push(leg);
+      }
+      const torso = new this.THREE.Mesh(new this.THREE.BoxGeometry(0.48 * s, 0.72 * s, 0.32 * s), jacketM);
+      torso.position.y = 1.05 * s;
+      torso.rotation.x = 0.18;
+      this.group.add(torso);
+      this.torso = torso;
+
+      const head = new this.THREE.Mesh(new this.THREE.BoxGeometry(0.26 * s, 0.28 * s, 0.26 * s), skinM);
+      head.position.set(0, 1.55 * s, 0.08 * s);
+      head.rotation.z = 0.22;
+      this.group.add(head);
+
+      const eyeM = new this.THREE.MeshBasicMaterial({ color: 0xff2222 });
+      this.mats.push(eyeM);
+      const f1 = new this.THREE.Mesh(new this.THREE.PlaneGeometry(0.06 * s, 0.04 * s), eyeM);
+      f1.position.set(-0.06 * s, 1.57 * s, 0.22 * s);
+      const f2 = new this.THREE.Mesh(new this.THREE.PlaneGeometry(0.06 * s, 0.04 * s), eyeM);
+      f2.position.set(0.06 * s, 1.57 * s, 0.22 * s);
+      this.group.add(f1, f2);
+
+      const armM = new this.THREE.Mesh(new this.THREE.BoxGeometry(0.44 * s, 0.16 * s, 0.22 * s), jacketM);
+      armM.position.set(0, 1.05 * s, 0.18 * s);
+      this.group.add(armM);
+      return;
+    }
+
+    // ================= SOMBRA CIRÚRGICA (ENFERMEIRA) =================
+    if (this.type === 'enfermeira') {
+      const dressM = lam(0xd0d4dc, 0x000000, this.TEX.nurseUniform);
+      const skinM = lam(0x828a88);
+      const metalM = lam(0xa0a8b4);
+
+      for (const side of [-0.13, 0.13]) {
+        const leg = new this.THREE.Mesh(new this.THREE.BoxGeometry(0.12 * s, 0.75 * s, 0.14 * s), skinM);
+        leg.position.set(side * s, 0.38 * s, 0);
+        this.group.add(leg);
+        this.legs.push(leg);
+      }
+      const dress = new this.THREE.Mesh(new this.THREE.CylinderGeometry(0.2 * s, 0.32 * s, 0.75 * s, 7), dressM);
+      dress.position.y = 1.02 * s;
+      this.group.add(dress);
+      this.torso = dress;
+
+      const head = new this.THREE.Mesh(new this.THREE.BoxGeometry(0.24 * s, 0.26 * s, 0.24 * s), skinM);
+      head.position.set(0, 1.52 * s, 0);
+      this.group.add(head);
+
+      const cap = new this.THREE.Mesh(new this.THREE.BoxGeometry(0.2 * s, 0.08 * s, 0.16 * s), dressM);
+      cap.position.set(0, 1.68 * s, -0.02 * s);
+      this.group.add(cap);
+
+      const eyeM = new this.THREE.MeshBasicMaterial({ color: 0xffee44 });
+      this.mats.push(eyeM);
+      const eL = new this.THREE.Mesh(new this.THREE.PlaneGeometry(0.05 * s, 0.04 * s), eyeM);
+      eL.position.set(-0.06 * s, 1.54 * s, 0.13 * s);
+      const eR = new this.THREE.Mesh(new this.THREE.PlaneGeometry(0.05 * s, 0.04 * s), eyeM);
+      eR.position.set(0.06 * s, 1.54 * s, 0.13 * s);
+      this.group.add(eL, eR);
+
+      const armL = new this.THREE.Group(); armL.position.set(-0.28 * s, 1.35 * s, 0);
+      const alMesh = new this.THREE.Mesh(new this.THREE.BoxGeometry(0.1 * s, 0.65 * s, 0.1 * s), skinM);
+      alMesh.position.y = -0.28 * s; armL.add(alMesh);
+      this.group.add(armL); this.arms.push(armL);
+
+      const armR = new this.THREE.Group(); armR.position.set(0.28 * s, 1.35 * s, 0);
+      const arMesh = new this.THREE.Mesh(new this.THREE.BoxGeometry(0.1 * s, 0.65 * s, 0.1 * s), skinM);
+      arMesh.position.y = -0.28 * s; armR.add(arMesh);
+
+      const blade = new this.THREE.Mesh(new this.THREE.BoxGeometry(0.03 * s, 0.35 * s, 0.08 * s), metalM);
+      blade.position.set(0, -0.58 * s, 0.12 * s);
+      blade.rotation.x = Math.PI / 4;
+      armR.add(blade);
+      this.group.add(armR); this.arms.push(armR);
+      return;
+    }
+
+    // ================= AMÁLGAMA DE CINZAS (ABERRAÇÃO DAS CALDEIRAS) =================
+    if (this.type === 'aberracao') {
+      const emberM = lam(0x221a16, 0x331005, this.TEX.emberBody);
+      const rockM = lam(0x141010);
+
+      for (const side of [-0.22, 0.22]) {
+        const leg = new this.THREE.Mesh(new this.THREE.BoxGeometry(0.22 * s, 0.85 * s, 0.24 * s), rockM);
+        leg.position.set(side * s, 0.42 * s, 0);
+        this.group.add(leg);
+        this.legs.push(leg);
+      }
+      const torso = new this.THREE.Mesh(new this.THREE.BoxGeometry(0.72 * s, 0.95 * s, 0.48 * s), emberM);
+      torso.position.y = 1.25 * s;
+      this.group.add(torso);
+      this.torso = torso;
+
+      const head = new this.THREE.Mesh(new this.THREE.BoxGeometry(0.36 * s, 0.42 * s, 0.36 * s), rockM);
+      head.position.set(0, 1.85 * s, 0.05 * s);
+      this.group.add(head);
+
+      const eyeM = new this.THREE.MeshBasicMaterial({ color: 0xff5511 });
+      this.mats.push(eyeM);
+      const eG = new this.THREE.PlaneGeometry(0.12 * s, 0.06 * s);
+      const f1 = new this.THREE.Mesh(eG, eyeM);
+      f1.position.set(0, 1.86 * s, 0.24 * s);
+      this.group.add(f1);
+
+      for (const side of [-1, 1]) {
+        const arm = new this.THREE.Group(); arm.position.set(side * 0.45 * s, 1.55 * s, 0);
+        const aMesh = new this.THREE.Mesh(new this.THREE.BoxGeometry(0.2 * s, 0.95 * s, 0.2 * s), emberM);
+        aMesh.position.y = -0.4 * s; arm.add(aMesh);
+        this.group.add(arm); this.arms.push(arm);
+      }
+      return;
+    }
 
     // ================= 1. CARNIÇAL RASTEJADOR =================
     if (this.type === 'rastejador') {

@@ -22,17 +22,27 @@ Um **survival horror 3D cinematográfico no autêntico estilo PlayStation 1** co
 3. **Persistência da Drenagem de Água no Porão:**
    - Ao drenar a água com a Manivela de Ferro na válvula, os sólidos com tag `'water'` e a malha de água são removidos.
    - `loadRoom('porao')` agora verifica `flags.valveOpen`, garantindo que o solo do porão continue permanentemente seco e desobstruído ao entrar e sair da sala.
-4. **Inventário Otimizado & Empilhamento de Fragmentos de Memória:**
-   - Fragmentos de Memória (`frag`) agora empilham em um **único slot**, liberando espaço vital na maleta.
-   - Maleta expandida para **12 slots (grade 4x3)** com navegação completa por teclado, mouse e touch, compatível com a estilização retrô PS1 (`.invCell`, badges `EQUIP` e contadores `invQty`).
-   - Prevenção total contra inventário cheio bloqueando itens críticos da história.
-5. **Legibilidade e HUD Contextual:**
-   - Indicadores contextuais em tempo real nos prompts das portas:
-     - `[Destrancada]` em verde para portas já abertas.
-     - `(Usar Chave)` em amarelo quando o jogador possui a chave necessária na maleta.
-     - `[Trancada]` em vermelho quando requer chave que ainda não foi encontrada.
-     - `[Energizado]` / `[Sem Energia]` no elevador de acesso ao terraço.
-   - Objetivos do HUD atualizados passo a passo com guia claro para o jogador nunca se perder.
+4. **Inventário Estilo Resident Evil Clássico & Sistema de Combinação:**
+   - Maleta de sobrevivência com acabamento chanfrado PS1 (`border: 4px outset #5a647d`), slots nítidos e monitor **ECG** hospitalar animado em tempo real com CRT scanlines e frequência cardíaca em BPM.
+   - **Sistema de Combinação Autêntico (COMBINAR):** botão dedicado na maleta que permite combinar munição com armas de fogo (recarregando e preparando a arma) e agrupar doses de remédios e fitas.
+   - **Uso / Equipar Rápido (Duplo Clique / ENTER):** dê 2 cliques em qualquer remédio para curar instantaneamente ou em qualquer arma para equipar sem burocracia.
+   - Fragmentos de Memória (`frag`) agora empilham em um **único slot**, liberando espaço vital na maleta de 12 slots.
+5. **Máquina de Escrever & Salvamento Estilo Resident Evil Clássico:**
+   - Redesenhada como uma ficha clínica datilografada autêntica de 1997 do arquivo confidencial do Sanatório Santa Lúcia.
+   - Exibe em tempo real o Sobrevivente, Sala Atual, Tempo Decorrido, Contagem de Salvamentos e Fitas de Tinta restantes.
+   - Efeito sonoro percussivo de datilografia e sino (*ding!*) acompanhado do carimbo vermelho em relevo escarlate **[ARQUIVADO]** que bate na folha ao salvar.
+6. **Eliminação de Resíduos de Partículas no Mapa:**
+   - Partículas mortas (`life <= 0`) agora são imediatamente descartadas para fora do frustum da câmera (`y = -9999`), impedindo que pontos fiquem congelados no chão poluindo o cenário.
+   - `loadRoom()` e `resetRun()` executam limpeza total imediata (`clear()`) em todas as transições de cenários.
+7. **Novos Inimigos & Maior Tensão na Campanha de Daniel:**
+   - **Paciente Contorcido (`infectado`):** internos do sanatório em camisas de força arrebentadas, com marcha espasmódica e investidas ferozes.
+   - **Sombra Cirúrgica (`enfermeira`):** enfermeiras corrompidas com aventais manchados, toucas hospitalares e bisturis afiados que atacam no corpo a corpo.
+   - **Amálgama de Cinzas (`aberracao`):** criatura carbonizada resistente que emergiu das fornalhas do porão, com carvão em brasa ardente no peito.
+   - Densidade de inimigos expandida estrategicamente no Saguão, Enfermaria, Consultório e Porão para combates tensos e gratificantes.
+8. **HUD Tático de Gameplay:**
+   - Monitor de pulso cardíaco no canto inferior esquerdo com status clássico de sobrevivência: `[FINE]` verde, `[CAUTION]` amarelo e `[DANGER]` vermelho pulsante.
+   - Caixa de munição tática chanfrada no canto inferior direito com nome da arma ativa em dourado, ícone e mostrador digital limpo (`15 / 60`).
+   - Título cinematográfico de locação com subtítulo ao entrar em qualquer sala (`roomNameBanner`).
 
 ---
 
@@ -133,5 +143,8 @@ node test/test_linear_flow.mjs
 
 # 3. Teste de compra, persistência e inicialização da Loja Secreta e Modos Extras
 node test/test_shop_and_extras.mjs
+
+# 4. Teste de partículas limpas, novos inimigos e HUD clássico de Resident Evil
+node test/test_particles_and_re_hud.mjs
 ```
 
