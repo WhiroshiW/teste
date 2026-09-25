@@ -1,5 +1,5 @@
 // ============================================================
-// ECOS DO VAZIO - Mundo: salas 3D, câmeras fixas, colisões,
+// SANTA LÚCIA - Equipe Nakamura - Mundo: salas 3D, câmeras fixas, colisões,
 // portas, itens, inimigos e efeitos por sala.
 // ============================================================
 import { pointInSolids } from './entities.js';

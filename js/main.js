@@ -1,5 +1,5 @@
 // ============================================================
-// ECOS DO VAZIO - Boot
+// SANTA LÚCIA - Equipe Nakamura - Boot
 // ============================================================
 import * as THREE from '../vendor/three.module.min.js';
 import { Game } from './game.js';

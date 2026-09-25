@@ -1,5 +1,5 @@
 // ============================================================
-// ECOS DO VAZIO - Entidades: colisão, partículas, jogador, inimigos, NPCs
+// SANTA LÚCIA - Equipe Nakamura - Entidades: colisão, partículas, jogador, inimigos, NPCs
 // Modelos low-poly construídos com primitivas (estilo PS1 autêntico).
 // ============================================================
 import { WEAPONS, ENEMIES, CAMPAIGNS } from './config.js';

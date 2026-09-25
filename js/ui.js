@@ -1,5 +1,5 @@
 // ============================================================
-// ECOS DO VAZIO - Interface: telas, HUD, inventário, diálogos, loja, extras
+// SANTA LÚCIA - Equipe Nakamura - Interface: telas, HUD, inventário, diálogos, loja, extras
 // ============================================================
 import { ITEMS, WEAPONS, healthStatus, SHOP_ITEMS, GALLERY_MODELS, CAMPAIGNS } from './config.js';
 import { HELP_ROWS as HH } from './story.js';
@@ -709,18 +709,17 @@ export class UI {
     const inv = this.game.inv;
     const g = this.el.invGrid;
     g.innerHTML = '';
-    const SLOTS = 8;
+    const SLOTS = 12;
     for (let i = 0; i < SLOTS; i++) {
       const it = inv[i];
       const slot = document.createElement('div');
-      slot.className = 'invSlot' + (i === this.invSel ? ' sel' : '') + (it && it.equipped ? ' eq' : '');
+      slot.className = 'invCell' + (i === this.invSel ? ' sel' : '') + (it ? (it.equipped ? ' equipped' : '') : ' empty');
       if (it) {
-        const itemCfg = ITEMS[it.item];
-        const num = it.qty > 1 ? `<span class="qty">${it.qty}</span>` : '';
-        const eq = it.equipped ? '<span class="eqBadge">E</span>' : '';
-        slot.innerHTML = `<span class="icon">${itemCfg.icon}</span><span class="name">${itemCfg.name}</span>${num}${eq}`;
+        const itemCfg = ITEMS[it.item] || { name: it.item, icon: '📦' };
+        const num = it.qty > 1 ? `<span class="invQty">${it.qty}</span>` : '';
+        slot.innerHTML = `<span class="invIcon">${itemCfg.icon}</span>${num}`;
       } else {
-        slot.innerHTML = '<span class="icon" style="opacity:0.25">◻</span>';
+        slot.innerHTML = '<span class="invIcon" style="opacity:0.25">◻</span>';
       }
       slot.onclick = () => {
         this.invSel = i;
@@ -754,7 +753,7 @@ export class UI {
       this.invCmds = [];
       return;
     }
-    const cfg = ITEMS[it.item];
+    const cfg = ITEMS[it.item] || { name: it.item, icon: '📦', desc: '', type: 'item' };
     this.el.invIcon.textContent = cfg.icon;
     this.el.invName.textContent = cfg.name + (it.qty > 1 ? ` (x${it.qty})` : '') + (it.equipped ? ' [EQUIPADA]' : '');
     this.el.invDesc.textContent = cfg.desc;
@@ -777,10 +776,12 @@ export class UI {
 
   invNav(dx, dy) {
     if (this.invMode === 'grid') {
-      let r = Math.floor(this.invSel / 2), c = this.invSel % 2;
-      r = (r + dy + 4) % 4;
-      c = (c + dx + 2) % 2;
-      this.invSel = r * 2 + c;
+      const COLS = 4;
+      const ROWS = 3;
+      let r = Math.floor(this.invSel / COLS), c = this.invSel % COLS;
+      r = (r + dy + ROWS) % ROWS;
+      c = (c + dx + COLS) % COLS;
+      this.invSel = r * COLS + c;
       this.audio.sfx('uiMove');
       this.renderInventory();
     } else {

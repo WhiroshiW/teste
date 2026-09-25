@@ -255,9 +255,11 @@ export class Game {
       pages: [false, false, false, false, false, false, false, false],
       frags: [false, false, false, false],
       bedKey: false, drawerOpen: false, pistol: false, rustKey: false,
-      poraoOpen: false, fuseOn: false, crank: false, valveOpen: false,
-      safeOpened: false, memorialOpen: false, bossDead: false, vase: false,
-      forestUnlocked: false, chapelEncounterMet: false, claraDossierGot: false,
+      consultOpen: false, poraoOpen: false, fuseOn: false, hasFuse: false,
+      crank: false, valveOpen: false, safeOpened: false, safeEasterEgg: false,
+      memorialOpen: false, bossDead: false, vase: false, forestUnlocked: false,
+      chapelEncounterMet: false, claraDossierGot: false, luciaLocketGot: false,
+      hasForestKey: false,
     };
   }
 
@@ -917,6 +919,12 @@ export class Game {
       }
     }
 
+    // Persistência de drenagem do porão (a água não volta se a válvula já foi aberta)
+    if (id === 'porao' && this.flags.valveOpen) {
+      r.solids = r.solids.filter((s) => s.tag !== 'water');
+      if (r.waterMesh) r.waterMesh.visible = false;
+    }
+
     // Inimigos
     if (!opts.backdrop && this.gameMode === 'story') {
       for (const s of r.spawns) {
@@ -1112,9 +1120,10 @@ export class Game {
   hasItem(id) { return this.countItem(id) > 0; }
 
   addItem(id, qty = 1) {
-    const ex = this.inv.find((i) => i.item === id && ITEMS[id].type !== 'weapon' && ITEMS[id].type !== 'key');
+    const isStackable = ITEMS[id] && ITEMS[id].type !== 'weapon' && (ITEMS[id].type !== 'key' || id === 'frag');
+    const ex = isStackable ? this.inv.find((i) => i.item === id) : null;
     if (ex) { ex.qty += qty; return; }
-    if (this.inv.length >= 8) {
+    if (this.inv.length >= 12) {
       this.ui.toast('Inventário cheio!', 2.5);
       return;
     }
@@ -1211,14 +1220,14 @@ export class Game {
     // Easter Egg código Resident Evil (1996)
     if (code === '1996') {
       this.audio.sfx('puzzle');
-      this.flags.safeOpened = true;
+      this.flags.safeEasterEgg = true;
       this.addItem('magnum_ammo', 6);
       this.addItem('lightflask', 1);
       this.addPoints(500, 'Easter Egg: Ano do PS1 Clássico');
       this.say([
-        { who: 'n', text: 'O cofre destravou emitindo um zumbido clássico!' },
+        { who: 'n', text: 'O cofre destravou um compartimento secreto clássico!' },
         { who: 'n', text: '"Para os sobreviventes do terror de 1996. Vocês ainda se lembram da mansão."' },
-        { who: 'n', text: 'Você encontrou BALAS MAGNUM e um FRASCO DE LUZ!' },
+        { who: 'n', text: 'Você encontrou BALAS MAGNUM e um FRASCO DE LUZ! O cofre principal com a chave ainda aguarda a combinação de 4 dígitos.' },
       ]);
       return;
     }
@@ -1322,25 +1331,83 @@ export class Game {
 
   // ==================== PORTAS ====================
   useDoor(door) {
+    // 1. Se a porta já foi destrancada permanentemente por flag anterior
+    if (door.setFlag && this.flags[door.setFlag]) {
+      this.doorSequence(door);
+      return;
+    }
+
     if (door.need) {
+      const isClara = this.currentCampaign === 'clara';
+      const isBento = this.currentCampaign === 'bento';
+
+      // Chave especial da Dra. Clara: cartão magnético destranca o consultório
+      if (door.need.item === 'rustkey' && isClara && this.hasItem('clara_card')) {
+        if (door.setFlag) this.flags[door.setFlag] = true;
+        this.audio.sfx('puzzle');
+        this.say([
+          { who: 'clara', text: 'Aproximei meu Cartão Magnético Médico. A fechadura eletrônica liberou o consultório!' }
+        ], () => {
+          this.checkObjective();
+          this.doorSequence(door);
+        });
+        return;
+      }
+
+      // Chave especial de Bento: chave mestra destranca o porão
+      if (door.need.item === 'basekey' && isBento && this.hasItem('bento_key')) {
+        if (door.setFlag) this.flags[door.setFlag] = true;
+        this.audio.sfx('puzzle');
+        this.say([
+          { who: 'bento', text: 'Usei a Chave Mestra das saídas de emergência. A porta pesada do porão destrancou!' }
+        ], () => {
+          this.checkObjective();
+          this.doorSequence(door);
+        });
+        return;
+      }
+
+      // Verificação de posse do item requerido
       if (door.need.item && !this.hasItem(door.need.item)) {
         this.say([{ who: 'n', text: door.msg || 'A porta está trancada.' }]);
         this.audio.sfx('dryfire');
         return;
       }
+
+      // Verificação de flag (ex: elevador sem energia)
       if (door.need.flag && !this.flags[door.need.flag]) {
         if (door.msg === 'elevador_off') this.say(D.elevador_off);
         else this.say([{ who: 'n', text: door.msg || 'Não há energia.' }]);
         this.audio.sfx('dryfire');
         return;
       }
-      if (door.consume && door.need.item) this.removeItem(door.need.item, 1);
-      if (door.setFlag) this.flags[door.setFlag] = true;
+
+      // O jogador tem a chave requerida: destrancar com som e mensagem clássica
+      const itDef = ITEMS[door.need.item];
+      const keyName = itDef ? itDef.name : 'chave';
+
+      if (door.consume && door.need.item) {
+        this.removeItem(door.need.item, 1);
+      }
+      if (door.setFlag) {
+        this.flags[door.setFlag] = true;
+      }
+
+      this.audio.sfx('puzzle');
+      this.say([
+        { who: 'n', text: `Você usou a ${keyName}. A fechadura estalou e a porta foi destrancada!` }
+      ], () => {
+        this.checkObjective();
+        this.doorSequence(door);
+      });
+      return;
     }
+
     this.doorSequence(door);
   }
 
   doorSequence(door) {
+    if (!door) return;
     this.state = 'door';
     this.keys.clear();
     this.player.setAim(false);
@@ -1372,6 +1439,7 @@ export class Game {
         if (!f.bedKey) {
           f.bedKey = true;
           this.addItem('smallkey');
+          this.checkObjective();
           say(D.cama_key, () => this.showBanner('smallkey'));
         } else say(f.drawerOpen ? D.cama_after : D.cama_locked);
         break;
@@ -1541,8 +1609,8 @@ export class Game {
     }
 
     const itDef = ITEMS[p.item];
-    const canStack = itDef && itDef.type !== 'weapon' && itDef.type !== 'key' && this.inv.some((i) => i.item === p.item);
-    if (!canStack && this.inv.length >= 8) {
+    const canStack = itDef && itDef.type !== 'weapon' && (itDef.type !== 'key' || p.item === 'frag') && this.inv.some((i) => i.item === p.item);
+    if (!canStack && this.inv.length >= 12) {
       this.ui.toast('Inventário cheio! Não é possível carregar mais itens.', 3);
       this.audio.sfx('dryfire');
       return;
@@ -1553,6 +1621,11 @@ export class Game {
     this.roomState(this.room.id).takenPickups.add(p.uid);
 
     this.addItem(p.item, p.qty);
+    if (p.item === 'fuse') this.flags.hasFuse = true;
+    if (p.item === 'alencastro_dossier') this.flags.claraDossierGot = true;
+    if (p.item === 'lucia_locket') this.flags.luciaLocketGot = true;
+    if (p.item === 'forest_key') this.flags.hasForestKey = true;
+
     this.audio.sfx(itDef && itDef.type === 'key' ? 'pickupKey' : 'pickup');
     this.ui.toast(`Coletou: ${itDef ? itDef.icon : ''} ${itDef ? itDef.name : p.item}${p.qty > 1 ? ` x${p.qty}` : ''}`, 2.5);
     this.updateAmmoHud();
@@ -2016,7 +2089,27 @@ export class Game {
     const c = this.currentCandidate();
     if (!c) this.ui.prompt(null);
     else if (c.kind === 'totem') this.ui.prompt('<b>E</b> — Quebrar Cristal (+30s)');
-    else if (c.kind === 'door') this.ui.prompt(`<b>E</b> — ${c.ref.label}`);
+    else if (c.kind === 'door') {
+      const d = c.ref;
+      let tag = '';
+      if (d.setFlag && this.flags[d.setFlag]) {
+        tag = ' <span style="color:#7dff8a;">[Destrancada]</span>';
+      } else if (d.need) {
+        if (d.need.item) {
+          const hasKey = this.hasItem(d.need.item) ||
+            (this.currentCampaign === 'clara' && d.need.item === 'rustkey' && this.hasItem('clara_card')) ||
+            (this.currentCampaign === 'bento' && d.need.item === 'basekey' && this.hasItem('bento_key'));
+          tag = hasKey
+            ? ' <span style="color:#ffe970;">(Usar Chave)</span>'
+            : ' <span style="color:#ff6b6b;">[Trancada]</span>';
+        } else if (d.need.flag) {
+          tag = this.flags[d.need.flag]
+            ? ' <span style="color:#7dff8a;">[Energizado]</span>'
+            : ' <span style="color:#ff6b6b;">[Sem Energia]</span>';
+        }
+      }
+      this.ui.prompt(`<b>E</b> — ${d.label}${tag}`);
+    }
     else if (c.kind === 'act') this.ui.prompt(`<b>E</b> — ${c.ref.prompt}`);
     else if (c.kind === 'pickup') {
       const it = ITEMS[c.ref.item];

@@ -1,5 +1,5 @@
 // ============================================================
-// ECOS DO VAZIO - Áudio sintetizado via WebAudio
+// SANTA LÚCIA - Equipe Nakamura - Áudio sintetizado via WebAudio
 // SFX, ambientes e músicas gerados proceduralmente. Sem arquivos.
 // ============================================================
 

@@ -1,5 +1,5 @@
 // ============================================================
-// ECOS DO VAZIO - Pós-processamento PS1
+// SANTA LÚCIA - Equipe Nakamura - Pós-processamento PS1
 // Renderiza a cena em baixa resolução e aplica:
 // dithering Bayer, cor 15-bit, scanlines, vinheta, ruído,
 // dano (vermelho), fade, flash branco e tremor de câmera.

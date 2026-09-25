@@ -1,5 +1,5 @@
 // ============================================================
-// ECOS DO VAZIO - Texturas procedurais (estética PS1)
+// SANTA LÚCIA - Equipe Nakamura - Texturas procedurais (estética PS1)
 // Todas as texturas são geradas em canvas, baixa resolução,
 // filtro Nearest e cores quantizadas (15-bit) para o clima PS1.
 // ============================================================

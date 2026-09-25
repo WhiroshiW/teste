@@ -1,5 +1,5 @@
 // ============================================================
-// ECOS DO VAZIO - Roteiro: diálogos, diário, objetivos, finais
+// SANTA LÚCIA - Equipe Nakamura - Roteiro: diálogos, diário, objetivos, finais
 // Todos os textos do jogo em PT-BR.
 // Linha: { who:'daniel'|'lucia'|'medico'|'vulto'|'q'|'n', text:'...' }
 // who 'n' = narrador (sem retrato). 'q' = voz desconhecida.
@@ -334,26 +334,30 @@ export const TIPS = [
 // ------------------------------ OBJETIVOS ------------------------------
 export function objectiveFor(f, campaign = 'daniel') {
   if (campaign === 'clara') {
-    if (f.bossDead) return 'O Dr. Alencastro foi derrotado! Atravesse o portal de luz e escape com os dossiês.';
+    if (f.bossDead) return 'O Dr. Alencastro foi derrotado! Atravesse o portal de luz nas caldeiras e escape.';
     if (f.chapelEncounterMet) return 'Desça às caldeiras do porão e enfrente o Dr. Alencastro!';
-    return 'Explore os jardins da floresta e encontre Daniel na Capela Esquecida.';
+    if (f.luciaLocketGot) return 'Vá até a Capela no final do caminho para encontrar Daniel.';
+    return 'Explore os jardins da floresta, examine o túmulo de Lúcia e encontre Daniel na Capela.';
   }
   if (campaign === 'bento') {
-    if (f.bossDead) return 'O turno terminou. As caldeiras foram salvas.';
-    return 'Elimine as criaturas nas caldeiras e proteja as passagens do sanatório!';
+    if (f.bossDead) return 'O turno terminou. As caldeiras foram salvas e as criaturas eliminadas!';
+    return 'Elimine as aberrações nas caldeiras do porão e proteja as passagens de serviço!';
   }
+
   const frags = (f.frags || []).filter(Boolean).length;
-  if (f.bossDead) return 'Atravesse a luz no terraço.';
-  if (f.memorialOpen) return 'Derrote o VULTO!';
-  if (frags >= 4 && f.fuseOn) return 'Suba de elevador e acenda o memorial no terraço.';
-  if (frags >= 4) return 'Restabeleça a energia e suba ao terraço.';
-  if (f.valveOpen) return `Explore o fundo do porão. Fragmentos: ${frags}/4.`;
-  if (f.baseKey || f.safeOpened) return `Abra o porão (porta oeste do saguão). Fragmentos: ${frags}/4.`;
-  if (f.fuseOn) return 'O elevador funciona! Explore o consultório (porta norte da enfermaria).';
-  if (f.hasFuse) return 'Instale o FUSÍVEL no quadro de força da enfermaria.';
-  if (f.rustKey) return `Entre no consultório. Fragmentos: ${frags}/4.`;
-  if (f.pistol) return 'Explore o saguão e a enfermaria. Encontre 4 Fragmentos de Memória.';
-  return 'Vasculhe o quarto. Encontre um jeito de se defender.';
+  if (f.bossDead) return 'O VULTO foi derrotado! Atravesse o portal de luz no terraço.';
+  if (f.memorialOpen) return 'Derrote o VULTO com sua escopeta e armas!';
+  if (frags >= 4 && f.fuseOn) return 'Suba de elevador e ative o memorial de memórias no terraço.';
+  if (frags >= 4 && !f.fuseOn) return 'Instale o FUSÍVEL 30A no quadro de força da enfermaria para ligar o elevador.';
+  if (f.valveOpen) return `Água drenada! Vasculhe o engradado no fundo do porão. Fragmentos: ${frags}/4.`;
+  if (f.poraoOpen) return `Desça ao porão e use a MANIVELA na válvula para drenar a água. Fragmentos: ${frags}/4.`;
+  if (f.safeOpened) return `Use a CHAVE DO PORÃO para abrir a porta oeste do saguão. Fragmentos: ${frags}/4.`;
+  if (f.hasFuse) return 'Você tem o FUSÍVEL! Leve-o ao quadro de força na enfermaria.';
+  if (f.consultOpen) return `Explore o consultório do Dr. Alencastro. Abra o cofre (senha: data da gaveta). Fragmentos: ${frags}/4.`;
+  if (f.rustKey) return `Use a CHAVE ENFERRUJADA na porta norte da enfermaria. Fragmentos: ${frags}/4.`;
+  if (f.pistol) return 'Vá ao saguão. Examine a estátua central para encontrar a chave do consultório.';
+  if (f.bedKey) return 'Abra a gaveta trancada com a Chave Pequena para se armar.';
+  return 'Vasculhe a cama do quarto para encontrar a Chave Pequena da gaveta.';
 }
 
 export const OBJECTIVES = objectiveFor;
