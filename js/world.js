@@ -372,7 +372,7 @@ function buildQuarto(THREE, TEX) {
   addCam(R, [-5, -4, 0.8, 4], [-4.2, 2.5, 3.2], [-1, 1.2, -1.0], 62);
   addCam(R, [0.8, -4, 5, 4], [4.2, 2.5, -3.2], [2.5, 1.2, 1.8], 62);
 
-  addDoor(R, 2.5, 3.3, 1.25, 'Abrir a porta', 'saguao', -5.2, 3.6, Math.PI);
+  addDoor(R, 2.5, 3.3, 1.25, 'Sair para o Corredor dos Quartos', 'corredor_quartos', -4.0, -2.5, 0);
   addInteract(R, -2.8, -1.1, 1.5, 'Examinar a cama', 'bed');
   addInteract(R, 2.8, -2.7, 1.3, 'Abrir a gaveta', 'drawer');
   addInteract(R, -3.6, 1.9, 1.2, 'Pegar o urso', 'teddy');
@@ -450,6 +450,11 @@ function buildSaguao(THREE, TEX) {
   box(THREE, R.group, 0.6, 1.0, 1.8, cntM, 0.7, 0.5, 0.9);
   solid(R, 0.4, -0.3, 3.6, 1.8);
 
+  // Máquina de Escrever clássica (Typewriter) em cima do Balcão de Recepção
+  box(THREE, R.group, 0.44, 0.15, 0.38, tm(THREE, TEX.typewriter, 1, 1), 2.0, 1.08, 0.0);
+  box(THREE, R.group, 0.32, 0.32, 0.18, flat(THREE, 0x1b4d2e), 1.2, 1.25, 0.0);
+  pointLight(THREE, R, 0xffdd99, 7, 7, 2.0, 1.45, 0.0);
+
   // Bebedouro com galão de água (Folha P1)
   box(THREE, R.group, 0.4, 1.3, 0.4, flat(THREE, 0xd0d8e0), -3.5, 0.65, 4.6);
   solid(R, -3.8, 4.3, -3.2, 4.9);
@@ -502,8 +507,7 @@ function buildSaguao(THREE, TEX) {
   addCam(R, [-1, -6, 3, 6], [1.0, 3.7, -1.2], [0.0, 1.2, 2.0], 60);
   addCam(R, [3, -6, 8, 6], [3.5, 3.5, -0.5], [6.0, 1.2, 0.0], 58);
 
-  addDoor(R, -5.5, 5.0, 1.3, 'Abrir a porta', 'quarto', 2.5, 1.8, Math.PI);
-  addDoor(R, -7.1, 3.5, 1.3, 'Corredor dos Quartos (Ala Oeste)', 'corredor_quartos', 5.5, 0.0, -Math.PI / 2);
+  addDoor(R, -7.1, 3.5, 1.4, 'Ala de Internação (Corredor dos Quartos)', 'corredor_quartos', 5.5, 0.0, -Math.PI / 2);
   addDoor(R, 7.1, 1, 1.3, 'Ir para a enfermaria', 'enfermaria', -6.4, 1.0, Math.PI / 2);
   addDoor(R, -7.1, -2, 1.3, 'Descer ao porão', 'porao', 5.4, -2.0, -Math.PI / 2,
     { need: { item: 'basekey' }, consume: true, setFlag: 'poraoOpen', msg: 'Trancada. A placa diz "PORÃO — PROIBIDO". Precisa da CHAVE DO PORÃO.' });
@@ -518,11 +522,11 @@ function buildSaguao(THREE, TEX) {
   addDoor(R, -6.4, -4.0, 1.4, 'Subir ao Mezanino (2º Andar)', 'mezanino', 5.5, 3.0, 0);
 
   addInteract(R, 0, -2.1, 1.5, 'Examinar a estátua', 'statue');
-  addInteract(R, -6.5, 1.9, 1.4, 'Escrever no diário', 'save');
+  addInteract(R, 2.0, 1.1, 1.6, 'Usar a Máquina de Escrever da Recepção', 'save');
   addInteract(R, 6.5, -3.9, 1.2, 'Vasculhar o vaso', 'vase');
   addInteract(R, -6.4, -3.6, 1.6, 'Olhar a escada', 'stairs');
 
-  addPickup(THREE, R, TEX, 'ribbon', -5.5, 2.5, 2);
+  addPickup(THREE, R, TEX, 'ribbon', 2.8, 1.0, 2);
   addPickup(THREE, R, TEX, 'page', -6.0, 3.4, 1, 1, 0.06);
   addPickup(THREE, R, TEX, 'ammo9', 6.8, 4.8, 12);
 
@@ -1220,157 +1224,120 @@ function buildCapela(THREE, TEX) {
   return R;
 }
 
-// ---------------- DIORAMA DO TÍTULO (SANATÓRIO 1997) ----------------
+// ---------------- DIORAMA DO TÍTULO (FACHADA EXTERNA DO SANATÓRIO 3D - FOLHA DO CADERNO) ----------------
 function buildTitleDiorama(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'title_diorama', 'SANATÓRIO SANTA LÚCIA (1997)', 12, 10, 3.8);
+  const R = baseRoom(THREE, TEX, 'title_diorama', 'SANATÓRIO SANTA LÚCIA (1997)', 24, 20, 12);
+  R.ambient = 'floresta';
+  R.openSky = true;
 
-  // Piso de madeira nobre envelhecida e paredes com lambril
-  plane(THREE, R.group, 12, 10, tm(THREE, TEX.wood, 4, 3), 0, 0, 0, -Math.PI / 2);
-  plane(THREE, R.group, 12, 3.8, tm(THREE, TEX.wallpaper, 4, 1.2), 0, 1.9, -5);
-  plane(THREE, R.group, 12, 3.8, tm(THREE, TEX.wallpaper, 4, 1.2), 0, 1.9, 5, Math.PI);
-  plane(THREE, R.group, 10, 3.8, tm(THREE, TEX.wood, 3, 1.2), -6, 1.9, 0, Math.PI / 2);
-  plane(THREE, R.group, 10, 3.8, tm(THREE, TEX.wood, 3, 1.2), 6, 1.9, 0, -Math.PI / 2);
-  plane(THREE, R.group, 12, 10, tm(THREE, TEX.ceiling, 3, 3), 0, 3.8, 0, Math.PI / 2);
+  // Gramado e terreno do sanatório sob tempestade
+  const groundM = tm(THREE, TEX.forestGround, 6, 5);
+  plane(THREE, R.group, 24, 20, groundM, 0, 0, 0, -Math.PI / 2);
 
-  // Moldura e vidros da Janela Gótica com tempestade lá fora
-  box(THREE, R.group, 3.6, 2.6, 0.15, flat(THREE, 0x1a1c22), 0, 2.2, -4.95);
-  plane(THREE, R.group, 3.2, 2.2, new THREE.MeshBasicMaterial({
-    color: 0x335577, transparent: true, opacity: 0.45,
-  }), 0, 2.2, -4.9, 0);
+  // Muro perimetral baixo de pedra
+  const wallM = tm(THREE, TEX.wallStone, 4, 1);
+  box(THREE, R.group, 22.0, 1.4, 0.4, wallM, 0, 0.7, 7.5);
+  box(THREE, R.group, 0.4, 1.4, 18.0, wallM, 10.5, 0.7, -1.0);
+  box(THREE, R.group, 0.4, 1.4, 18.0, wallM, -10.5, 0.7, -1.0);
 
-  // Grades de ferro gótico na janela
-  for (let i = -1.2; i <= 1.2; i += 0.6) {
-    box(THREE, R.group, 0.04, 2.2, 0.05, flat(THREE, 0x111318), i, 2.2, -4.88);
-  }
-  for (let j = 1.4; j <= 3.0; j += 0.8) {
-    box(THREE, R.group, 3.2, 0.04, 0.05, flat(THREE, 0x111318), 0, j, -4.88);
-  }
+  // Calçada de pedra da entrada
+  const stoneM = tm(THREE, TEX.stoneFloor, 3, 2);
+  box(THREE, R.group, 5.5, 0.2, 4.0, stoneM, -1.5, 0.1, 3.5);
+  box(THREE, R.group, 4.0, 0.2, 2.0, stoneM, -1.5, 0.25, 4.0);
 
-  // Cortina de tecido bordô rasgada balançando com o vento
-  const curtain = plane(THREE, R.group, 1.1, 2.6, new THREE.MeshLambertMaterial({
-    map: TEX.sheet, color: 0x5a1a1a, side: THREE.DoubleSide,
-  }), -2.0, 2.0, -4.8, 0);
-  R.titleCurtain = curtain;
+  // 1. Bloco Principal da Mansão (Sanatório Santa Lúcia)
+  const mansionM = tm(THREE, TEX.wallStone, 2, 2);
+  box(THREE, R.group, 8.5, 5.2, 6.5, mansionM, -1.5, 2.6, -1.5);
 
-  // Chuva de partículas lá fora da janela
-  const RN = 300;
+  // 2. Torre Sineira / Torreão à esquerda (Folha Superior do Caderno)
+  box(THREE, R.group, 3.4, 9.0, 3.4, mansionM, -6.0, 4.5, 0.0);
+  const towerRoof = new THREE.Mesh(new THREE.ConeGeometry(2.6, 3.5, 4), flat(THREE, 0x1a1e24));
+  towerRoof.position.set(-6.0, 10.75, 0.0);
+  towerRoof.rotation.y = Math.PI / 4;
+  R.group.add(towerRoof);
+
+  // 3. Telhado em duas águas do bloco principal
+  const roofL = box(THREE, R.group, 8.8, 0.18, 4.2, flat(THREE, 0x22262e), -1.5, 6.0, -2.8);
+  roofL.rotation.x = 0.52;
+  const roofR = box(THREE, R.group, 8.8, 0.18, 4.2, flat(THREE, 0x22262e), -1.5, 6.0, -0.2);
+  roofR.rotation.x = -0.52;
+
+  // 4. A Grande Porta Dupla Frontal em Arco (Folha do Caderno)
+  box(THREE, R.group, 2.4, 3.2, 0.35, flat(THREE, 0x161820), -1.5, 1.6, 1.8);
+  plane(THREE, R.group, 1.9, 2.7, new THREE.MeshLambertMaterial({ map: TEX.doorWood }), -1.5, 1.5, 1.99, 0, 0);
+
+  // 5. Janelas iluminadas com luz interna amarelada
+  const winGlowM = new THREE.MeshBasicMaterial({ color: 0xffbb44 });
+  // Janela na Torre
+  plane(THREE, R.group, 1.1, 1.8, winGlowM, -6.0, 6.8, 1.72, 0, 0);
+  box(THREE, R.group, 1.3, 2.0, 0.1, flat(THREE, 0x1a1c22), -6.0, 6.8, 1.68);
+  // Janelas do andar superior da mansão
+  plane(THREE, R.group, 1.2, 1.7, winGlowM, 0.5, 3.8, 1.77, 0, 0);
+  plane(THREE, R.group, 1.2, 1.7, winGlowM, -3.5, 3.8, 1.77, 0, 0);
+
+  // Iluminação que vaza das janelas e portas
+  pointLight(THREE, R, 0xffaa33, 8, 14, -1.5, 2.2, 3.0);
+  pointLight(THREE, R, 0xffcc55, 6, 10, -6.0, 6.8, 2.5);
+
+  // Chuva de partículas volumétrica em toda a fachada externa
+  const RN = 600;
   const rpos = new Float32Array(RN * 3);
   for (let i = 0; i < RN; i++) {
-    rpos[i * 3] = (Math.random() - 0.5) * 8;
-    rpos[i * 3 + 1] = 0.5 + Math.random() * 4.5;
-    rpos[i * 3 + 2] = -5.3 - Math.random() * 2.0;
+    rpos[i * 3] = (Math.random() - 0.5) * 22;
+    rpos[i * 3 + 1] = 0.5 + Math.random() * 12.0;
+    rpos[i * 3 + 2] = -5.0 + Math.random() * 15.0;
   }
   const rgeo = new THREE.BufferGeometry();
   rgeo.setAttribute('position', new THREE.BufferAttribute(rpos, 3));
-  const rmat = new THREE.PointsMaterial({ color: 0x88bbff, size: 0.09, transparent: true, opacity: 0.75 });
+  const rmat = new THREE.PointsMaterial({ color: 0x88bbff, size: 0.12, transparent: true, opacity: 0.8 });
   const rain = new THREE.Points(rgeo, rmat);
   R.group.add(rain);
   R.rain = rain;
 
-  // Mesa central de carvalho do sanatório
-  box(THREE, R.group, 2.6, 0.1, 1.4, tm(THREE, TEX.wood, 1, 1), 0, 0.95, -1.8);
-  // Pernas torneadas
-  for (const [px, pz] of [[-1.15, -1.25], [1.15, -1.25], [-1.15, -2.35], [1.15, -2.35]]) {
-    box(THREE, R.group, 0.12, 0.95, 0.12, flat(THREE, 0x22140c), px, 0.475, pz);
-  }
-
-  // Cadeira clássica de espaldar alto atrás da mesa
-  box(THREE, R.group, 0.7, 0.08, 0.7, flat(THREE, 0x2e1810), 0, 0.65, -2.8);
-  box(THREE, R.group, 0.7, 0.85, 0.08, flat(THREE, 0x2e1810), 0, 1.15, -3.1);
-  box(THREE, R.group, 0.08, 0.65, 0.08, flat(THREE, 0x1a0e08), -0.28, 0.32, -2.5);
-  box(THREE, R.group, 0.08, 0.65, 0.08, flat(THREE, 0x1a0e08), 0.28, 0.32, -2.5);
-
-  // 1. Castiçal de ferro fundido com vela acesa
-  box(THREE, R.group, 0.24, 0.05, 0.24, flat(THREE, 0x1a1a1a), -0.55, 1.02, -1.6);
-  box(THREE, R.group, 0.06, 0.35, 0.06, flat(THREE, 0xded8c0), -0.55, 1.22, -1.6);
-  // Chama low-poly da vela
-  const flameGeo = new THREE.ConeGeometry(0.04, 0.11, 5);
-  const flameMat = new THREE.MeshBasicMaterial({ color: 0xffdd44 });
-  const flame = new THREE.Mesh(flameGeo, flameMat);
-  flame.position.set(-0.55, 1.45, -1.6);
-  R.group.add(flame);
-  R.candleFlame = flame;
-
-  // Luz pulsante alaranjada da vela
-  const candleLight = pointLight(THREE, R, 0xffa033, 16, 12, -0.55, 1.55, -1.6, { amp: 3.5, speed: 12 });
-  R.candleLight = candleLight;
-
-  // 2. Prontuário Médico Aberto de Lúcia Silva
-  const dossier = box(THREE, R.group, 0.65, 0.03, 0.5, tm(THREE, TEX.paper, 1, 1), 0.25, 1.01, -1.7);
-  dossier.rotation.y = 0.12;
-
-  // 3. Fotografia antiga de Daniel e Lúcia
-  const photo = box(THREE, R.group, 0.28, 0.02, 0.22, tm(THREE, TEX.faceDaniel, 1, 1), -0.05, 1.02, -1.38);
-  photo.rotation.y = -0.25;
-
-  // 4. Crucifixo de ferro inclinado sobre livros antigos
-  box(THREE, R.group, 0.45, 0.14, 0.35, flat(THREE, 0x3d2015), 0.75, 1.07, -1.5);
-  box(THREE, R.group, 0.42, 0.12, 0.32, flat(THREE, 0x1f2838), 0.77, 1.20, -1.52);
-  box(THREE, R.group, 0.04, 0.45, 0.04, flat(THREE, 0x6a5830), 0.75, 1.35, -1.9);
-  box(THREE, R.group, 0.24, 0.04, 0.04, flat(THREE, 0x6a5830), 0.75, 1.45, -1.9);
-
-  // 5. Frascos de medicamentos de vidro âmbar e verde
-  box(THREE, R.group, 0.08, 0.22, 0.08, flat(THREE, 0x7a4412), -0.85, 1.11, -1.9);
-  box(THREE, R.group, 0.07, 0.18, 0.07, flat(THREE, 0x225533), -0.96, 1.09, -1.82);
-
-  // 6. Relógio de bolso antigo
-  const pocketWatch = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.03, 8), flat(THREE, 0xc8a028));
-  pocketWatch.position.set(-0.25, 1.02, -1.45);
-  R.group.add(pocketWatch);
-
-  // Relâmpagos ocasionais vindos de fora da janela
-  const stormLight = new THREE.DirectionalLight(0x7799ee, 0.2);
-  stormLight.position.set(0, 4, -8);
+  // Luz da tempestade (relâmpagos)
+  const stormLight = new THREE.DirectionalLight(0x7799ee, 0.35);
+  stormLight.position.set(5, 12, 10);
   R.group.add(stormLight);
   R.stormLight = stormLight;
 
-  // Luz ambiente suave da tempestade
-  pointLight(THREE, R, 0x334466, 6, 15, 0, 2.8, -3.5);
+  // Luz ambiente fria da noite
+  pointLight(THREE, R, 0x223355, 8, 30, 0, 7.0, 5.0);
 
-  // Sólidos e limites
-  solid(R, -6, -5.2, 6, -4.8);
-  solid(R, -6, 4.8, 6, 5.2);
-  solid(R, -6.2, -5, -5.8, 5);
-  solid(R, 5.8, -5, 6.2, 5);
-  solid(R, -1.4, -2.5, 1.4, -1.1);
+  // Sólidos
+  solid(R, -11, 7.2, 11, 7.8);
+  solid(R, -11, -9.0, 11, -8.2);
+  solid(R, -11.2, -9.0, -10.5, 8.0);
+  solid(R, 10.5, -9.0, 11.2, 8.0);
+  solid(R, -8, -5, 5, 2);
 
-  // Porta
-  addDoor(R, 0, 4.8, 1.5, 2.4, 'saguao', 0, 0, 0);
+  // Porta para o saguão
+  addDoor(R, -1.5, 2.5, 1.5, 'Entrar no Sanatório', 'saguao', 0, 0, 0);
 
-  // Câmera do Diorama
-  addCam(R, [-6, -5, 6, 5], [-0.5, 1.65, -0.65], [-0.2, 1.25, -1.8], 55);
+  // Câmera Isométrica (mostrando a Mansão 3D na metade esquerda da tela)
+  addCam(R, [-12, -10, 12, 10], [4.2, 4.5, 8.8], [-2.0, 2.4, -0.5], 54);
 
-  // FX: animação da vela, cortina, chuva e relâmpagos
-  let lightningTimer = 4.0;
+  // Animação da chuva e relâmpagos
+  let lightningTimer = 3.5;
   R.fx = (dt, t, game) => {
-    if (R.candleFlame) {
-      const wobble = Math.sin(t * 14) * 0.08 + Math.cos(t * 23) * 0.05;
-      R.candleFlame.scale.set(1 + wobble, 1 + wobble * 1.5, 1 + wobble);
-      R.candleFlame.position.x = -0.55 + Math.sin(t * 11) * 0.008;
-    }
-    if (R.titleCurtain) {
-      R.titleCurtain.rotation.y = Math.sin(t * 1.8) * 0.12;
-      R.titleCurtain.position.z = -4.8 + Math.cos(t * 1.5) * 0.05;
-    }
     if (R.rain) {
       const pos = R.rain.geometry.attributes.position.array;
       for (let i = 1; i < pos.length; i += 3) {
-        pos[i] -= dt * 14.0;
-        if (pos[i] < 0.2) pos[i] = 4.8;
+        pos[i] -= dt * 18.0;
+        if (pos[i] < 0.2) pos[i] = 12.0;
       }
       R.rain.geometry.attributes.position.needsUpdate = true;
     }
     lightningTimer -= dt;
     if (lightningTimer <= 0) {
-      lightningTimer = 5.0 + Math.random() * 7.0;
+      lightningTimer = 4.5 + Math.random() * 6.0;
       if (R.stormLight) {
-        R.stormLight.intensity = 3.5;
-        setTimeout(() => { if (R.stormLight) R.stormLight.intensity = 0.5; }, 80);
-        setTimeout(() => { if (R.stormLight) R.stormLight.intensity = 4.0; }, 160);
-        setTimeout(() => { if (R.stormLight) R.stormLight.intensity = 0.2; }, 320);
+        R.stormLight.intensity = 4.0;
+        setTimeout(() => { if (R.stormLight) R.stormLight.intensity = 0.5; }, 70);
+        setTimeout(() => { if (R.stormLight) R.stormLight.intensity = 4.5; }, 140);
+        setTimeout(() => { if (R.stormLight) R.stormLight.intensity = 0.35; }, 280);
       }
       if (game && game.flashBoost !== undefined) {
-        game.flashBoost = 0.45;
+        game.flashBoost = 0.5;
       }
       if (game && game.audio) {
         game.audio.sfx('thunder');

@@ -113,11 +113,16 @@ assert(game.flags.drawerOpen, 'Flag drawerOpen marcada como true');
 game.doAct('teddy');
 assert(game.flags.frags[0], 'Obteve o Fragmento 1 (Ursinho)');
 
-// Sair para o Saguão
+// Sair para o Corredor dos Quartos e depois para o Saguão (Planta Folha P1)
+const doorToCorredor = game.room.doors.find(d => d.target === 'corredor_quartos');
+assert(!!doorToCorredor, 'Porta para o Corredor dos Quartos encontrada no quarto');
+game.doorSequence(doorToCorredor);
+assert(game.room.id === 'corredor_quartos', 'Transição Quarto -> Corredor dos Quartos bem sucedida');
+
 const doorToSaguao = game.room.doors.find(d => d.target === 'saguao');
-assert(!!doorToSaguao, 'Porta para o Saguão encontrada no quarto');
+assert(!!doorToSaguao, 'Porta para o Saguão encontrada no corredor');
 game.doorSequence(doorToSaguao);
-assert(game.room.id === 'saguao', 'Transição Quarto -> Saguão bem sucedida');
+assert(game.room.id === 'saguao', 'Transição Corredor -> Saguão bem sucedida');
 
 // 2. Saguão
 assert(game.currentObjective().includes('estátua central'), 'Objetivo indica examinar a estátua');

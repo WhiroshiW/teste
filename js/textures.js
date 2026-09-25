@@ -529,6 +529,24 @@ export function buildTextures(THREE) {
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
     T.fence = t;
   }
+  // ---------- máquina de escrever (savepoint clássico) ----------
+  {
+    const [c, x] = cv(64, 64);
+    x.fillStyle = '#1c1e22'; x.fillRect(0, 0, 64, 64);
+    x.fillStyle = '#2d3238'; x.fillRect(4, 12, 56, 40);
+    // rolo de papel e folha
+    x.fillStyle = '#f0ece0'; x.fillRect(10, 4, 44, 14);
+    x.fillStyle = '#111'; x.fillRect(8, 16, 48, 4);
+    // teclas mecânicas
+    for (let r = 0; r < 3; r++) {
+      for (let k = 0; k < 7; k++) {
+        x.fillStyle = '#dcdcdc'; x.fillRect(10 + k * 6, 26 + r * 7, 4, 4);
+        x.fillStyle = '#111'; x.fillRect(11 + k * 6, 27 + r * 7, 2, 2);
+      }
+    }
+    grain(x, 64, 64, 200, 0.15); poster15(x, 64, 64);
+    reg('typewriter', c);
+  }
   // ---------- sangue (decalque, com alpha) ----------
   {
     const [c, x] = cv(64, 64);
