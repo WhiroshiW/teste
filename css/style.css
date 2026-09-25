@@ -62,37 +62,54 @@ html, body {
 .btn:hover, .btn.sel { background: #5a1a1a; border-color: #c8a028; color: #fff; }
 .rowBtns { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
 
-/* ============ título ============ */
+/* ============ TÍTULO (DIORAMA 3D À ESQUERDA + MENU À DIREITA) ============ */
 #title {
-  flex-direction: column;
-  background: radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(5,6,10,0.5) 60%, rgba(0,0,0,0.85) 100%);
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  padding-right: clamp(16px, 6vw, 80px);
+  background: radial-gradient(ellipse at 75% 50%, rgba(0,0,0,0.1) 0%, rgba(5,6,10,0.45) 55%, rgba(0,0,0,0.85) 100%);
 }
 .titleBackdrop {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, transparent 25%, transparent 75%, rgba(0,0,0,0.85) 100%);
+  background: linear-gradient(to right, transparent 0%, transparent 40%, rgba(0,0,0,0.6) 70%, rgba(0,0,0,0.88) 100%);
+}
+.titleRightBlock {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: min(440px, 90vw);
+  background: rgba(10, 12, 18, 0.82);
+  border: 3px double #5a647d;
+  box-shadow: 0 0 40px rgba(0,0,0,0.95), inset 0 0 15px rgba(0,0,0,0.8);
+  padding: clamp(16px, 3vw, 28px);
+  backdrop-filter: blur(3px);
 }
 .titleTop {
   color: #c8a028;
-  letter-spacing: 8px;
-  font-size: clamp(11px, 2.2vw, 15px);
-  margin-bottom: 12px;
+  letter-spacing: 6px;
+  font-size: clamp(10px, 1.8vw, 13px);
+  margin-bottom: 8px;
   text-transform: uppercase;
-  text-shadow: 0 0 10px rgba(200,160,40,0.5), 2px 2px 0 #000;
+  text-shadow: 0 0 10px rgba(200,160,40,0.5), 1px 1px 0 #000;
   font-weight: bold;
 }
 .logo {
   font-family: 'Cinzel', Georgia, 'Times New Roman', serif;
-  font-size: clamp(48px, 12vw, 115px);
+  font-size: clamp(40px, 7vw, 72px);
   line-height: 0.95;
-  text-align: center;
-  letter-spacing: 10px;
+  text-align: left;
+  letter-spacing: 6px;
   color: #c01e1e;
   text-shadow:
     0 0 25px rgba(220,30,30,0.7),
-    4px 4px 0 #000,
-    -2px -2px 0 #200,
+    3px 3px 0 #000,
+    -1px -1px 0 #200,
     2px 2px 8px rgba(0,0,0,0.9);
   animation: flicker 4s infinite;
 }
@@ -101,16 +118,24 @@ html, body {
   92% { opacity: 1; } 93% { opacity: 0.4; } 94% { opacity: 1; }
   96% { opacity: 0.7; } 97% { opacity: 1; }
 }
-.subtitle { color: #8a8a92; font-style: italic; margin: 10px 0 20px; font-size: clamp(11px, 2.4vw, 15px); }
-.menu { display: flex; flex-direction: column; gap: 4px; min-width: min(320px, 80vw); }
+.subtitle { color: #8a8a92; font-style: italic; margin: 8px 0 18px; font-size: clamp(11px, 2vw, 14px); }
+.menu { display: flex; flex-direction: column; gap: 6px; width: 100%; }
 .menuItem {
-  padding: 8px 12px; cursor: pointer; text-align: left;
-  font-size: clamp(13px, 2.6vw, 17px); letter-spacing: 2px;
-  color: #b8b8b8; border: 1px solid transparent;
+  padding: 10px 14px; cursor: pointer; text-align: left;
+  font-size: clamp(14px, 2.2vw, 18px); letter-spacing: 2px;
+  color: #d0d0d0; border: 1px solid #2a2e38;
+  background: rgba(18, 20, 26, 0.7);
+  transition: all 0.15s ease;
+  font-weight: bold;
 }
-.menuItem.sel { color: #fff; background: #3a0d0d; border-color: #5a1a1a; }
-.saveInfo { color: #c8a028; margin-top: 12px; font-size: 12px; min-height: 16px; }
-.titleFooter { position: absolute; bottom: 12px; color: #555; font-size: 11px; text-align: center; line-height: 1.7; }
+.menuItem:hover, .menuItem.sel {
+  color: #fff; background: #4a1212; border-color: #d6ad2a;
+  text-shadow: 0 0 8px rgba(255,215,0,0.6);
+  padding-left: 20px;
+}
+.saveInfo { color: #50c868; margin-top: 10px; font-size: 11px; min-height: 16px; letter-spacing: 1px; }
+.titlePoints { color: #ffd700; font-size: 13px; font-weight: bold; margin-top: 4px; letter-spacing: 1px; }
+.titleFooter { margin-top: 14px; color: #666e7a; font-size: 10px; text-align: left; line-height: 1.5; border-top: 1px solid #222834; padding-top: 8px; width: 100%; }
 
 /* ============ INTRO CINEMATOGRÁFICA DO SANATÓRIO ============ */
 #introCutscene {
@@ -753,7 +778,7 @@ html, body {
 .btn.lockedBtn { background: #261414; color: #ff9999; border-color: #772222; }
 .btn.lockedBtn:hover { background: #441818; border-color: #ff4444; color: #fff; }
 
-/* Loja de Pontos */
+/* Loja de Pontos & Extras Unificados */
 .shopHeader {
   display: flex; justify-content: space-between; align-items: center;
   background: #1a1622; padding: 10px 16px; border: 1px solid #c8a028;
@@ -764,6 +789,11 @@ html, body {
 .shopItem {
   background: #101218; border: 1px solid #333a48; padding: 10px 14px;
   display: flex; justify-content: space-between; align-items: center;
+  cursor: pointer; transition: all 0.15s ease;
+}
+.shopItem:hover, .shopItem.sel {
+  border-color: #c8a028;
+  background: #221c24;
 }
 .shopItem.bought { border-color: #3a6844; }
 .shopItemLeft { display: flex; gap: 12px; align-items: center; }
@@ -772,6 +802,270 @@ html, body {
 .shopItemDesc { font-size: 11px; color: #889098; }
 .shopItemRight { display: flex; align-items: center; gap: 10px; }
 .shopItemCost { color: #ffd700; font-size: 13px; font-weight: bold; }
+
+/* ============ EXTRAS: ESTANTE & MESA COM VELA (FOLHA DO MEIO) ============ */
+.extraContainer {
+  display: flex;
+  gap: 20px;
+  width: min(920px, 95vw);
+  max-height: 88vh;
+  background: rgba(12, 14, 20, 0.94);
+  border: 4px outset #4a5468;
+  padding: 16px 20px;
+  box-shadow: 0 0 35px rgba(0,0,0,0.95);
+  box-sizing: border-box;
+}
+
+/* Estante de Prateleiras (Lado Esquerdo) */
+.extraShelfCol {
+  flex: 1.1;
+  display: flex;
+  flex-direction: column;
+  background: #18120e;
+  border: 3px solid #3d2618;
+  padding: 12px;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.85);
+}
+.shelfTitle {
+  color: #d6ad2a;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-align: center;
+  border-bottom: 2px solid #523420;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+.shelfFrame {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 65vh;
+  padding-right: 4px;
+}
+
+/* Mesa com Vela e Expositor 3D (Lado Direito) */
+.extraRightCol {
+  flex: 1.4;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.extraHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #444c5c;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+}
+.extraMainTitle {
+  color: #ffd700;
+  font-size: 15px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+.extraPointsTag {
+  color: #55ff77;
+  font-size: 13px;
+  font-weight: bold;
+}
+.extraTable {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 16px;
+  background: linear-gradient(to bottom, #2b1a11 0%, #170d08 70%, #0d0704 100%);
+  border: 3px solid #4a2f1c;
+  border-radius: 4px;
+  padding: 14px 10px 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.8);
+  min-height: 230px;
+}
+.extraCandle {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 32px;
+  margin-bottom: 6px;
+}
+.candleFlame {
+  width: 12px;
+  height: 22px;
+  background: radial-gradient(ellipse at center, #ffffff 0%, #ffdd44 35%, #ff5500 80%, rgba(255,50,0,0) 100%);
+  border-radius: 50% 50% 30% 30%;
+  animation: flameWobble 0.8s infinite alternate ease-in-out;
+  box-shadow: 0 0 16px #ffaa22, 0 0 30px #ff6600;
+}
+@keyframes flameWobble {
+  0% { transform: scale(1, 1) rotate(-2deg); }
+  100% { transform: scale(1.1, 1.25) rotate(3deg); }
+}
+.candleStick {
+  width: 14px;
+  height: 60px;
+  background: #d8d4c4;
+  border: 1px solid #999484;
+  border-radius: 2px 2px 0 0;
+  box-shadow: inset -2px 0 4px rgba(0,0,0,0.5);
+}
+.candleWax {
+  width: 28px;
+  height: 8px;
+  background: #4a3e2c;
+  border-radius: 4px;
+  border: 1px solid #2a2216;
+}
+
+.extraPedestal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#galleryCanvas {
+  background: radial-gradient(circle at center, #1b202c 0%, #090a0f 85%);
+  border: 2px solid #5a647d;
+  box-shadow: 0 0 20px rgba(0,0,0,0.9);
+  width: 280px;
+  height: 190px;
+  cursor: grab;
+}
+#galleryCanvas:active { cursor: grabbing; }
+
+.extraDetailsPanel {
+  background: #10131a;
+  border: 1px solid #333a4a;
+  padding: 10px 14px;
+  margin-top: 10px;
+  text-align: left;
+}
+.extraDetailsPanel h3 {
+  color: #ffd700;
+  font-size: 15px;
+  margin: 0 0 4px;
+}
+.extraActionRow {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* ============ CONFIGURAÇÕES: PAINEL ELÉTRICO (FOLHA INFERIOR) ============ */
+.electricCabinet {
+  position: relative;
+  width: min(640px, 92vw);
+  background: #1c1e24;
+  border: 6px outset #4a505e;
+  box-shadow: 0 0 50px rgba(0,0,0,0.95), inset 0 0 30px rgba(0,0,0,0.8);
+  padding: 20px 24px;
+  box-sizing: border-box;
+  text-align: left;
+}
+.electricHeader {
+  position: relative;
+  border-bottom: 3px solid #333842;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+}
+.electricHeader h2 {
+  color: #e0e4ec;
+  font-size: 16px;
+  letter-spacing: 3px;
+  margin: 6px 0 0;
+  text-shadow: 1px 1px 0 #000;
+}
+.pilotLightContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pilotLight {
+  width: 12px;
+  height: 12px;
+  background: #33ff55;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #33ff55;
+  animation: pilotPulse 2s infinite ease-in-out;
+}
+@keyframes pilotPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.pilotLabel {
+  font-size: 11px;
+  color: #88aa99;
+  letter-spacing: 1px;
+  font-family: monospace;
+}
+.screw {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(circle, #7a8292 20%, #2e3440 80%);
+  border-radius: 50%;
+  border: 1px solid #1a1e24;
+}
+.screw::after {
+  content: '';
+  position: absolute;
+  top: 5px; left: 2px;
+  width: 8px; height: 2px;
+  background: #11141a;
+}
+.screw.top-left { top: -10px; left: -14px; }
+.screw.top-right { top: -10px; right: -14px; }
+.screw.btm-left { bottom: -10px; left: -14px; }
+.screw.btm-right { bottom: -10px; right: -14px; }
+
+.electricBody {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+}
+.cableLeft, .cableRight {
+  display: flex;
+  gap: 4px;
+  padding: 4px 2px;
+}
+.cableLine {
+  width: 6px;
+  border-radius: 3px;
+  box-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+}
+.cableLine.red { background: #aa2222; }
+.cableLine.black { background: #11141a; }
+.cableLine.blue { background: #2255aa; }
+.cableLine.yellow { background: #cca422; }
+.cableLine.green { background: #228833; }
+
+.electricControls {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #14161c;
+  border: 2px inset #2a2e38;
+  padding: 12px 16px;
+}
+.electricFooter {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  border-top: 3px solid #333842;
+  padding-top: 14px;
+  margin-top: 14px;
+}
+.sparkBtn {
+  background: #2a2216;
+  border-color: #ffd700;
+  color: #ffd700;
+}
+.sparkBtn:hover {
+  background: #554418;
+  box-shadow: 0 0 14px #ffd700;
+  color: #fff;
+}
 
 /* Galeria 3D */
 .galleryBody { display: flex; gap: 18px; margin: 16px 0; text-align: left; }

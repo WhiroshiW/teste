@@ -94,6 +94,28 @@ A arquitetura do Sanatório Santa Lúcia foi totalmente recriada a partir da pla
 
 ---
 
+## 🎨 Novo Design de Menus (Fiel ao Caderno de Criação)
+
+1. **Tela de Título (Menu Principal):**
+   - **Lado Esquerdo:** Visão aberta do **Diorama 3D da Mansão/Sanatório** sob chuva torrencial, névoa e relâmpagos.
+   - **Lado Direito:** Painel alinhado com "Equipe Nakamura apresenta", o logotipo estilizado "SANTA LÚCIA" e as **4 opções diretas**:
+     - `JOGAR`
+     - `CARREGAR`
+     - `CONFIGURAÇÕES`
+     - `EXTRA`
+2. **Extras (Loja de Pontos & Modelos 3D):**
+   - **Lado Esquerdo:** **Estante de Prateleiras de Madeira** onde ficam dispostos os colecionáveis, itens e modos extras.
+   - **Lado Direito:** Título "LOJA DE PONTOS · MODELOS 3D" e a **Mesa de Investigação** com:
+     - Uma **vela acesa** com chama bruxuleante no canto esquerdo da mesa;
+     - O **pedestal giratório circular 3D** no centro exibindo a estatueta tridimensional em tempo real (com suporte a giro 360°);
+     - Painel inferior com detalhes, valor em pontos e botões de ação dinâmica (*Comprar*, *Jogar Modo Extra* ou *Inspecionar*).
+3. **Configurações (Painel Elétrico de Fundo):**
+   - Gabinete de aço rebitado com textura industrial, parafusos nos 4 cantos e cabos elétricos coloridos descendo pelas laterais.
+   - Luz piloto verde indicadora `[ ALIMENTAÇÃO ATIVA ]` com pulsação suave.
+   - Controles montados no painel com botão funcional de **"⚡ TESTE DE CIRCUITO"** que gera faiscamento sonoro e visual.
+
+---
+
 ## 🎭 Cutscenes e Dublagem em Tempo Real
 
 - **Dublagem Exclusiva das Legendas:** em conformidade com o direcionamento do projeto, foram eliminados todos os áudios pré-programados de arquivos MP3 externos. Toda a narrativa e diálogos são dublados dinamicamente via síntese de voz (Web Speech Synthesis API em `pt-BR`) em perfeita sincronia com as legendas.
@@ -197,5 +219,8 @@ node test/test_particles_and_re_hud.mjs
 
 # 5. Teste da Planta Remasterizada Completa (4 Folhas: P1, P2, P3 e Extras)
 node test/test_remastered_plant.mjs
+
+# 6. Teste do Novo Design de Menus (Título, Loja na Estante com Mesa e Painel Elétrico)
+node test/test_new_menus.mjs
 ```
 

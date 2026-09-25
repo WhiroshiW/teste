@@ -119,12 +119,10 @@ export class UI {
     if (c2) drawPortrait(c2, 'clara');
   }
 
-  // ==================== TÍTULO ====================
+  // ==================== TÍTULO (LAYOUT 4 OPÇÕES DO CADERNO) ====================
   showTitle(hasSave) {
     this.show(this.el.title);
-    this.titleItems = hasSave
-      ? ['new', 'continue', 'intro', 'extras', 'shop', 'options', 'help']
-      : ['new', 'intro', 'extras', 'shop', 'options', 'help'];
+    this.titleItems = ['play', 'load', 'options', 'extras'];
     this.menuIdx.title = 0;
     if (this.el.titlePointsVal) {
       this.el.titlePointsVal.textContent = (this.game.points || 0).toLocaleString();
@@ -135,26 +133,29 @@ export class UI {
 
   renderTitleMenu(hasSave) {
     const labels = {
-      new: 'NOVO JOGO',
-      continue: 'CONTINUAR',
-      intro: 'ASSISTIR INTRO (1997)',
-      extras: 'MODOS EXTRAS',
-      shop: 'LOJA DE PONTOS',
-      options: 'OPÇÕES',
-      help: 'COMO JOGAR',
+      play: 'JOGAR',
+      load: 'CARREGAR',
+      options: 'CONFIGURAÇÕES',
+      extras: 'EXTRA',
+      // compatibilidade retroativa
+      new: 'JOGAR',
+      continue: 'CARREGAR',
+      intro: 'ASSISTIR INTRO',
+      shop: 'EXTRA',
+      help: 'AJUDA',
     };
     this.el.titleMenu.innerHTML = '';
     this.titleItems.forEach((act, i) => {
       const d = document.createElement('div');
       d.className = 'menuItem' + (i === this.menuIdx.title ? ' sel' : '');
-      d.textContent = (i === this.menuIdx.title ? '▶ ' : '　') + labels[act];
+      d.textContent = (i === this.menuIdx.title ? '▶ ' : '　') + (labels[act] || act.toUpperCase());
       d.onclick = () => { this.menuIdx.title = i; this.audio.sfx('uiSelect'); this.game.titleAction(act); };
       d.onmouseenter = () => {
         if (this.menuIdx.title !== i) { this.menuIdx.title = i; this.audio.sfx('uiMove'); this.renderTitleMenu(hasSave); }
       };
       this.el.titleMenu.appendChild(d);
     });
-    this.$('titleSaveInfo').textContent = hasSave ? '▲ DADOS DE JOGO ENCONTRADOS' : '';
+    this.$('titleSaveInfo').textContent = hasSave ? '▲ PRONTUÁRIO ENCONTRADO NO DIÁRIO' : '• NENHUM SALVAMENTO REGISTRADO';
   }
 
   titleNav(dir) {
@@ -211,15 +212,70 @@ export class UI {
   }
   hideExtraModes() { this.hide(this.el.extraModes); }
 
-  // ==================== LOJA DE PONTOS ====================
+  // ==================== LOJA DE PONTOS & MODELOS 3D (FOLHA DO MEIO) ====================
   showShop(points, unlocks) {
     if (this.el.shopPointsVal) this.el.shopPointsVal.textContent = points.toLocaleString();
+    this.setupGallery3D();
     const list = this.el.shopList;
     list.innerHTML = '';
-    SHOP_ITEMS.forEach((it) => {
+
+    const modelMap = {
+      model_viewer: 'daniel',
+      extra_mercenaries: 'aberracao',
+      extra_survivor: 'vulto',
+      extra_bento: 'bento',
+      skin_clara_classic: 'clara',
+      skin_daniel_battered: 'daniel',
+      infinite_ammo: 'alencastro',
+      infinite_ink: 'enfermeira',
+    };
+
+    let activeItem = SHOP_ITEMS[0];
+
+    const selectShopItem = (it, row) => {
+      list.querySelectorAll('.shopItem').forEach((r) => r.classList.remove('sel'));
+      if (row) row.classList.add('sel');
+      activeItem = it;
+      const modelId = modelMap[it.id] || 'daniel';
+      this.updateGalleryItem(modelId);
+      if (this.el.galleryName) this.el.galleryName.textContent = it.name.toUpperCase();
+      if (this.el.gallerySub) this.el.gallerySub.textContent = unlocks[it.id] ? '✓ ITEM DESBLOQUEADO' : `VALOR: ${it.cost.toLocaleString()} PONTOS`;
+      if (this.el.galleryBio) this.el.galleryBio.textContent = it.desc;
+
+      const actRow = this.$('extraActionRow');
+      if (actRow) {
+        actRow.innerHTML = '';
+        const bought = !!unlocks[it.id];
+        const btn = document.createElement('button');
+        btn.className = 'btn' + (bought ? '' : ' lockedBtn');
+        if (bought) {
+          if (it.id === 'extra_mercenaries') {
+            btn.textContent = '▶ JOGAR MERCENÁRIOS';
+            btn.onclick = () => { this.hideAllOverlays(); this.game.startMercenaries(); };
+          } else if (it.id === 'extra_survivor') {
+            btn.textContent = '▶ JOGAR SOBREVIVENTE';
+            btn.onclick = () => { this.hideAllOverlays(); this.game.startSurvivor(); };
+          } else if (it.id === 'extra_bento') {
+            btn.textContent = '▶ JOGAR TURNO DO BENTO';
+            btn.onclick = () => { this.hideAllOverlays(); this.game.startCampaign('bento'); };
+          } else {
+            btn.textContent = '✓ DESBLOQUEADO (GIRAR 360°)';
+          }
+        } else {
+          btn.textContent = `🛒 COMPRAR (${it.cost.toLocaleString()} PTS)`;
+          btn.onclick = () => {
+            this.game.buyShopItem(it);
+            selectShopItem(it, row);
+          };
+        }
+        actRow.appendChild(btn);
+      }
+    };
+
+    SHOP_ITEMS.forEach((it, idx) => {
       const row = document.createElement('div');
       const bought = !!unlocks[it.id];
-      row.className = 'shopItem' + (bought ? ' bought' : '');
+      row.className = 'shopItem' + (bought ? ' bought' : '') + (idx === 0 ? ' sel' : '');
       row.innerHTML = `
         <div class="shopItemLeft">
           <div class="shopItemIcon">${it.icon}</div>
@@ -239,30 +295,40 @@ export class UI {
       if (bought) {
         if (it.id === 'model_viewer') {
           btn.textContent = 'VER 3D';
-          btn.onclick = () => { this.hideShop(); this.showGallery(); };
+          btn.onclick = (e) => { e.stopPropagation(); selectShopItem(it, row); };
         } else if (it.id === 'extra_mercenaries') {
           btn.textContent = 'JOGAR';
-          btn.onclick = () => { this.hideAllOverlays(); this.game.startMercenaries(); };
+          btn.onclick = (e) => { e.stopPropagation(); this.hideAllOverlays(); this.game.startMercenaries(); };
         } else if (it.id === 'extra_survivor') {
           btn.textContent = 'JOGAR';
-          btn.onclick = () => { this.hideAllOverlays(); this.game.startSurvivor(); };
+          btn.onclick = (e) => { e.stopPropagation(); this.hideAllOverlays(); this.game.startSurvivor(); };
         } else if (it.id === 'extra_bento') {
           btn.textContent = 'JOGAR';
-          btn.onclick = () => { this.hideAllOverlays(); this.game.startCampaign('bento'); };
+          btn.onclick = (e) => { e.stopPropagation(); this.hideAllOverlays(); this.game.startCampaign('bento'); };
         } else {
           btn.textContent = '✓';
           btn.disabled = true;
         }
       } else {
         btn.textContent = 'COMPRAR';
-        btn.onclick = () => this.game.buyShopItem(it);
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          this.game.buyShopItem(it);
+        };
       }
 
       if (right) right.appendChild(btn);
       else row.appendChild(btn);
 
+      row.onclick = () => {
+        this.audio.sfx('uiMove');
+        selectShopItem(it, row);
+      };
+
       list.appendChild(row);
     });
+
+    selectShopItem(SHOP_ITEMS[0], list.children[0]);
     this.show(this.el.pointsShop);
   }
   hideShop() { this.hide(this.el.pointsShop); }
@@ -392,6 +458,19 @@ export class UI {
     // Navegação principal
     click('helpBack', () => { this.audio.sfx('uiBack'); this.hideHelp(); this.showTitle(this.game.hasSave()); });
     click('optBack', () => { this.audio.sfx('uiBack'); this.hideOptions(); this.showTitle(this.game.hasSave()); });
+    click('optTestSpark', () => {
+      this.audio.sfx('spark');
+      this.toast('⚡ TESTE DO PAINEL ELÉTRICO: CIRCUITO NOMINAL DE 220V ESTABILIZADO.', 3);
+      const pilot = document.querySelector('.pilotLight');
+      if (pilot) {
+        pilot.style.background = '#ffd700';
+        pilot.style.boxShadow = '0 0 25px #ffd700';
+        setTimeout(() => {
+          pilot.style.background = '#33ff55';
+          pilot.style.boxShadow = '0 0 10px #33ff55';
+        }, 500);
+      }
+    });
     click('campBack', () => { this.audio.sfx('uiBack'); this.hideCampaignSelect(); this.showTitle(this.game.hasSave()); });
     click('extraBack', () => { this.audio.sfx('uiBack'); this.hideExtraModes(); this.showTitle(this.game.hasSave()); });
     click('extraToShop', () => { this.audio.sfx('uiSelect'); this.hideExtraModes(); this.showShop(this.game.points, this.game.unlocks); });

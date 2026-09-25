@@ -410,23 +410,32 @@ export class Game {
     else if (this.state === 'inventory') this.closeInventory();
   }
 
-  // ==================== AÇÕES DE MENU ====================
+  // ==================== AÇÕES DE MENU (NOVO MENU 4 OPÇÕES) ====================
   titleAction(act) {
-    this.ui.hideTitle();
-    if (act === 'new') {
+    if (act === 'play' || act === 'new') {
+      this.ui.hideTitle();
       this.ui.showCampaignSelect();
-    } else if (act === 'intro') {
-      this.playIntroCinematic(() => this.toTitle());
-    } else if (act === 'continue') {
-      this.continueGame();
-    } else if (act === 'extras') {
-      this.ui.showExtraModes(this.hiscores.mercenaries, this.hiscores.survivor);
-    } else if (act === 'shop') {
+    } else if (act === 'load' || act === 'continue') {
+      if (this.hasSave()) {
+        this.ui.hideTitle();
+        this.continueGame();
+      } else {
+        this.audio.sfx('dryfire');
+        this.ui.toast('• Nenhum prontuário médico registrado no Diário.', 3);
+        this.ui.showTitle(false);
+      }
+    } else if (act === 'extras' || act === 'shop') {
+      this.ui.hideTitle();
       this.ui.showShop(this.points, this.unlocks);
     } else if (act === 'options') {
+      this.ui.hideTitle();
       this.optionsFrom = 'title';
       this.ui.showOptions();
+    } else if (act === 'intro') {
+      this.ui.hideTitle();
+      this.playIntroCinematic(() => this.toTitle());
     } else if (act === 'help') {
+      this.ui.hideTitle();
       this.helpFrom = 'title';
       this.ui.showHelp();
     }
