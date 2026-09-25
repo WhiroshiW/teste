@@ -605,8 +605,8 @@ export class UI {
     this.el.dlgName.textContent = NAMES[line.who] || line.who.toUpperCase();
     this.el.dlgText.textContent = '';
     drawPortrait(this.el.dlgPortrait, line.who);
-    if (line.voiceClip && this.audio && this.audio.playVoice) {
-      this.audio.playVoice(line.voiceClip);
+    if (this.audio && this.audio.speakSubtitle) {
+      this.audio.speakSubtitle(line.text, line.who);
     }
   }
   advanceDialog() {
@@ -616,6 +616,9 @@ export class UI {
       this.dlg.chars = line.text.length;
       this.el.dlgText.textContent = line.text;
       return;
+    }
+    if (this.audio && this.audio.stopVoice) {
+      this.audio.stopVoice();
     }
     this.dlg.i++;
     if (this.dlg.i >= this.dlg.lines.length) {

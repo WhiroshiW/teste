@@ -174,7 +174,7 @@ export class Game {
     if (item.id === 'infinite_ammo') {
       this.infiniteAmmo = true;
       this.opts.infAmmo = true;
-      localStorage.setItem('ecoVazioOpts', JSON.stringify(this.opts));
+      this.saveOpts();
     }
   }
 
@@ -182,7 +182,7 @@ export class Game {
   toggleCamMode() {
     this.camMode = this.camMode === 'fixed' ? 'chase' : 'fixed';
     this.opts.cam = this.camMode;
-    localStorage.setItem('ecoVazioOpts', JSON.stringify(this.opts));
+    this.saveOpts();
     this.audio.sfx('uiSelect');
     const msg = this.camMode === 'chase' ? '📷 CÂMERA: 3ª PESSOA (LIVRE)' : '📷 CÂMERA: FIXA (PS1 CLÁSSICO)';
     this.ui.toast(msg, 2.5);
@@ -601,7 +601,7 @@ export class Game {
 
     const lines = [
       { who: 'n', text: 'O vapor das caldeiras silva alto... As correntes de ferro tremem sob a névoa.' },
-      { who: 'clara', text: 'Alencastro... o que você fez com seu próprio corpo?!', voiceClip: 'voice_clara_intro' },
+      { who: 'clara', text: 'Alencastro... o que você fez com seu próprio corpo?!' },
       { who: 'vulto', text: 'O VAZIO... FINALMENTE... ME PREENCHEU!' },
     ];
 
@@ -930,8 +930,32 @@ export class Game {
     }
 
     // Spawn do jogador
-    this.player.place(sx, sz, angle);
-    this.chaseCamPos.set(sx - Math.sin(angle) * 3.4, 1.9, sz - Math.cos(angle) * 3.4);
+    const validX = Number.isFinite(sx) ? sx : 0;
+    const validZ = Number.isFinite(sz) ? sz : 0;
+    const validAngle = Number.isFinite(angle) ? angle : 0;
+
+    this.player.place(validX, validZ, validAngle);
+    if (!opts.backdrop) {
+      this.player.group.visible = true;
+      this.player.group.position.y = 0;
+      this.player.moving = false;
+      this.lantern.position.set(validX, 1.7, validZ);
+      this.lantern.intensity = 14;
+    } else {
+      this.player.group.visible = false;
+      this.lantern.intensity = 0;
+    }
+
+    // Chase Cam posicionada sempre DENTRO da sala e sem colidir com paredes externas
+    const hw = Math.max(2, (r.w || 16) / 2 - 0.9);
+    const hd = Math.max(2, (r.d || 12) / 2 - 0.9);
+    const idealDist = 2.8;
+    let cx = validX - Math.sin(validAngle) * idealDist;
+    let cz = validZ - Math.cos(validAngle) * idealDist;
+    cx = Math.max(-hw, Math.min(hw, cx));
+    cz = Math.max(-hd, Math.min(hd, cz));
+    this.chaseCamPos.set(cx, 1.95, cz);
+    collideCircle(this.chaseCamPos, 0.45, r.solids);
 
     // Cutscene do encontro de Daniel & Clara na Capela
     if (id === 'capela' && !this.flags.chapelEncounterMet && !opts.backdrop && this.gameMode === 'story') {
@@ -961,26 +985,43 @@ export class Game {
       else if (r.ambient) this.audio.ambient(r.ambient);
     }
 
+    this.curCam = null;
+    this.curCamLook = null;
     this.selectCam(true);
   }
 
   // ==================== CÂMERAS ====================
   selectCam(snap = false) {
     const p = this.player;
+    if (!this.room) return;
+
+    const px = Number.isFinite(p.x) ? p.x : 0;
+    const pz = Number.isFinite(p.z) ? p.z : 0;
+    const pAngle = Number.isFinite(p.angle) ? p.angle : 0;
 
     // Modo 3ª pessoa over-the-shoulder (estilo GTA / livre)
     if (this.camMode === 'chase' && this.state !== 'title') {
-      const dist = 3.4;
-      const targetX = p.x - Math.sin(p.angle) * dist;
-      const targetZ = p.z - Math.cos(p.angle) * dist;
+      const dist = 3.0;
+      const hw = Math.max(2, (this.room.w || 16) / 2 - 0.7);
+      const hd = Math.max(2, (this.room.d || 12) / 2 - 0.7);
+      const targetX = Math.max(-hw, Math.min(hw, px - Math.sin(pAngle) * dist));
+      const targetZ = Math.max(-hd, Math.min(hd, pz - Math.cos(pAngle) * dist));
       const targetY = 1.95;
 
       const rate = snap ? 1 : 0.18;
+      if (!Number.isFinite(this.chaseCamPos.x)) this.chaseCamPos.x = targetX;
+      if (!Number.isFinite(this.chaseCamPos.y)) this.chaseCamPos.y = targetY;
+      if (!Number.isFinite(this.chaseCamPos.z)) this.chaseCamPos.z = targetZ;
+
       this.chaseCamPos.x += (targetX - this.chaseCamPos.x) * rate;
       this.chaseCamPos.z += (targetZ - this.chaseCamPos.z) * rate;
       this.chaseCamPos.y += (targetY - this.chaseCamPos.y) * rate;
 
-      // Impede atravessar paredes
+      // Clamping rígido dentro das paredes
+      this.chaseCamPos.x = Math.max(-hw, Math.min(hw, this.chaseCamPos.x));
+      this.chaseCamPos.z = Math.max(-hd, Math.min(hd, this.chaseCamPos.z));
+
+      // Impede atravessar paredes e sólidos
       collideCircle(this.chaseCamPos, 0.45, this.room.solids);
 
       const sh = 0.015 + this.dmgVal * 0.04 + this.camShake * 0.12;
@@ -990,20 +1031,22 @@ export class Game {
         this.chaseCamPos.y + Math.cos(t * 2.2) * sh * 0.5,
         this.chaseCamPos.z + Math.cos(t * 1.4) * sh
       );
-      this.camera.lookAt(p.x + Math.sin(p.angle) * 1.2, 1.35, p.z + Math.cos(p.angle) * 1.2);
+      this.camera.lookAt(px + Math.sin(pAngle) * 1.2, 1.35, pz + Math.cos(pAngle) * 1.2);
       this.camShake = Math.max(0, this.camShake - 0.03);
       return;
     }
 
     // Modo Câmera Fixa (PS1 Clássico)
+    if (!this.room.cams || this.room.cams.length === 0) return;
+
     let cam = this.room.cams[0];
     for (const c of this.room.cams) {
       const [x0, z0, x1, z1] = c.rect;
-      if (p.x >= x0 && p.x <= x1 && p.z >= z0 && p.z <= z1) { cam = c; break; }
+      if (px >= x0 && px <= x1 && pz >= z0 && pz <= z1) { cam = c; break; }
     }
     if (cam !== this.curCam || snap) {
       this.curCam = cam;
-      this.camera.fov = cam.fov;
+      this.camera.fov = cam.fov || 60;
       this.camera.updateProjectionMatrix();
     }
 
@@ -1014,7 +1057,18 @@ export class Game {
       cam.pos[1] + Math.sin(t * 2.3) * sh * 0.6,
       cam.pos[2] + Math.cos(t * 1.3) * sh
     );
-    this.camera.lookAt(cam.look[0], cam.look[1], cam.look[2]);
+
+    // O enquadramento acompanha o tronco do jogador (y = 1.25), garantindo que
+    // o personagem fique SEMPRE 100% visível na tela em qualquer porta e cômodo
+    const tx = px, ty = 1.25, tz = pz;
+    if (snap || !this.curCamLook || !Number.isFinite(this.curCamLook.x)) {
+      this.curCamLook = new this.THREE.Vector3(tx, ty, tz);
+    } else {
+      this.curCamLook.x += (tx - this.curCamLook.x) * 0.18;
+      this.curCamLook.y += (ty - this.curCamLook.y) * 0.18;
+      this.curCamLook.z += (tz - this.curCamLook.z) * 0.18;
+    }
+    this.camera.lookAt(this.curCamLook.x, this.curCamLook.y, this.curCamLook.z);
     this.camShake = Math.max(0, this.camShake - 0.03);
   }
 
@@ -1044,11 +1098,11 @@ export class Game {
   }
 
   checkObjective(force = false) {
-    const txt = OBJECTIVES(this.flags);
+    const txt = OBJECTIVES(this.flags, this.currentCampaign);
     this.currentObjText = txt;
     if (force) this.ui.toast('OBJETIVO: ' + txt, 4);
   }
-  currentObjective() { return this.currentObjText || OBJECTIVES(this.flags); }
+  currentObjective() { return this.currentObjText || OBJECTIVES(this.flags, this.currentCampaign); }
 
   // ==================== INVENTÁRIO ====================
   countItem(id) {
@@ -1288,13 +1342,22 @@ export class Game {
 
   doorSequence(door) {
     this.state = 'door';
+    this.keys.clear();
     this.player.setAim(false);
     this.ui.crosshair(false);
     this.ui.target(0, 0, false);
     this.audio.sfx('doorCreak');
+    const rot = Number.isFinite(door.srot) ? door.srot : (Number.isFinite(door.sa) ? door.sa : 0);
     this.ui.doorAnim(door.elevator, () => {
-      this.loadRoom(door.target, door.sx, door.sz, door.srot);
+      this.loadRoom(door.target, door.sx, door.sz, rot);
+      this.player.group.visible = true;
+      this.player.group.position.y = 0;
+      this.player.moving = false;
+      this.keys.clear();
       this.state = 'play';
+      this.curCam = null;
+      this.curCamLook = null;
+      this.selectCam(true);
     });
   }
 
@@ -1854,7 +1917,12 @@ export class Game {
 
     this.ui.update(dt);
     this.particles.update(dt);
-    this.lantern.intensity = this.player.group.visible ? 8 : 0;
+    if (this.player && this.player.group && this.player.group.visible) {
+      this.lantern.position.set(this.player.x, 1.7, this.player.z);
+      this.lantern.intensity = 14;
+    } else {
+      this.lantern.intensity = 0;
+    }
     this.psx.render(this.scene, this.camera, dt);
   }
 

@@ -65,21 +65,71 @@ export class AudioSys {
     this.pendingMusic = null;
     this.heartTimer = null;
     this.noiseBuf = null;
-    this.currentVoiceAudio = null;
+
+    // Inicialização segura de vozes para o leitor de legendas
+    this.voices = [];
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      const getV = () => {
+        try { this.voices = window.speechSynthesis.getVoices() || []; } catch (e) {}
+      };
+      getV();
+      try { window.speechSynthesis.onvoiceschanged = getV; } catch (e) {}
+    }
   }
 
-  playVoice(clipName) {
-    if (!clipName) return;
+  stopVoice() {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+      } catch (e) {}
+    }
+  }
+
+  // Dublagem direta das legendas via síntese de voz (sem MP3s pré-gravados)
+  speakSubtitle(text, who) {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window) || !text) return;
     try {
-      if (this.currentVoiceAudio) {
-        this.currentVoiceAudio.pause();
-        this.currentVoiceAudio = null;
+      this.stopVoice();
+
+      const clean = text
+        .replace(/<[^>]*>/g, '')
+        .replace(/[—"'\(\)\[\]]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (!clean) return;
+
+      const utter = new SpeechSynthesisUtterance(clean);
+      utter.lang = 'pt-BR';
+      const vol = Math.max(0.2, Math.min(1.0, this.vMaster * this.vSfx));
+      utter.volume = vol;
+
+      // Personalização de afinação e ritmo por personagem
+      if (who === 'clara') {
+        utter.pitch = 1.25; utter.rate = 1.05;
+      } else if (who === 'bento') {
+        utter.pitch = 0.72; utter.rate = 0.95;
+      } else if (who === 'daniel') {
+        utter.pitch = 1.0; utter.rate = 1.0;
+      } else if (who === 'vulto' || who === 'medico') {
+        utter.pitch = 0.55; utter.rate = 0.85;
+      } else if (who === 'lucia' || who === 'q') {
+        utter.pitch = 1.35; utter.rate = 0.92;
+      } else {
+        // Narrador ('n') e mensagens de sistema
+        utter.pitch = 0.95; utter.rate = 1.0;
       }
-      const a = new Audio(`./audio/${clipName}.mp3`);
-      a.volume = Math.max(0, Math.min(1, this.vMaster * this.vSfx));
-      a.play().catch(() => {});
-      this.currentVoiceAudio = a;
-    } catch (e) { /* no-op se áudio bloqueado */ }
+
+      if (!this.voices || this.voices.length === 0) {
+        try { this.voices = window.speechSynthesis.getVoices() || []; } catch (e) {}
+      }
+      const pt = this.voices.find((v) => v.lang && (v.lang.startsWith('pt') || v.lang.includes('PT') || v.lang.includes('pt-BR')));
+      if (pt) utter.voice = pt;
+
+      window.speechSynthesis.speak(utter);
+    } catch (e) {}
   }
 
   unlock() {

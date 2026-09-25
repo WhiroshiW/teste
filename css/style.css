@@ -288,16 +288,17 @@ html, body {
 
 #dialog {
   position: fixed; bottom: 4%; left: 50%; transform: translateX(-50%); z-index: 30;
-  width: min(680px, 93vw); display: flex; gap: 12px;
-  background: rgba(4,4,8,0.93); border: 2px solid #5a5a66; padding: 12px;
+  width: min(680px, 93vw); display: flex; gap: 14px;
+  background: rgba(6, 7, 12, 0.96); border: 2px solid #6c7285;
+  box-shadow: 0 0 24px rgba(0,0,0,0.95), inset 0 0 0 1px #1a1c26; padding: 14px;
 }
-#dialog.evil { border-color: #a01818; box-shadow: 0 0 24px rgba(160,20,20,0.4); }
-#dlgPortrait { width: 84px; height: 84px; image-rendering: pixelated; border: 2px solid #333; flex-shrink: 0; background: #060608; }
+#dialog.evil { border-color: #c42020; box-shadow: 0 0 28px rgba(196,32,32,0.5), inset 0 0 0 1px #300a0a; }
+#dlgPortrait { width: 88px; height: 88px; image-rendering: pixelated; border: 2px solid #444c5c; flex-shrink: 0; background: #060608; }
 .dlgBody { flex: 1; }
-#dlgName { color: #c8a028; font-weight: bold; letter-spacing: 2px; font-size: 13px; margin-bottom: 6px; }
-#dialog.evil #dlgName { color: #ff4444; }
-#dlgText { font-size: clamp(12px, 2.4vw, 15px); line-height: 1.65; min-height: 56px; white-space: pre-wrap; }
-.dlgHint { text-align: right; color: #666; font-size: 11px; animation: blink 1s infinite; }
+#dlgName { color: #f2cb42; font-weight: bold; letter-spacing: 2px; font-size: 14px; margin-bottom: 6px; text-shadow: 1px 1px 2px #000, 0 0 8px rgba(242,203,66,0.4); }
+#dialog.evil #dlgName { color: #ff5555; text-shadow: 1px 1px 2px #000, 0 0 8px rgba(255,85,85,0.6); }
+#dlgText { font-size: clamp(13px, 2.6vw, 16px); line-height: 1.65; min-height: 56px; white-space: pre-wrap; color: #f4f6fa; text-shadow: 1px 1px 2px #000; }
+.dlgHint { text-align: right; color: #8a90a0; font-size: 11px; animation: blink 1s infinite; letter-spacing: 1px; }
 
 /* ============ inventário ============ */
 .panelStamp {

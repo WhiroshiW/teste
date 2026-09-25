@@ -155,7 +155,7 @@ export function createPSX(THREE, renderer) {
       shader.vertexShader = shader.vertexShader.replace(
         '#include <project_vertex>',
         `#include <project_vertex>
-        {
+        if (gl_Position.w > 0.001) {
           vec4 p = gl_Position;
           p.xyz /= p.w;
           vec2 res = vec2(160.0, 90.0);
@@ -165,8 +165,7 @@ export function createPSX(THREE, renderer) {
         }`
       );
     };
-    // garante programa próprio (alguns materiais compartilham cache)
-    mat.customProgramCacheKey = () => 'psx-snap';
+    mat.customProgramCacheKey = () => 'psx-snap-' + (mat.map ? 'map' : 'nomap') + '-' + mat.type;
     mat.needsUpdate = true;
   }
 

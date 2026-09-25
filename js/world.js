@@ -66,16 +66,24 @@ function perimeter(THREE, room, w, d, h, wallMat, gaps = [], th = 0.5) {
   for (const [a, b] of buildSide('S', -w / 2, w / 2)) mkWall((a + b) / 2, d / 2, b - a, true);
   for (const [a, b] of buildSide('W', -d / 2, d / 2)) mkWall(-w / 2, (a + b) / 2, b - a, false);
   for (const [a, b] of buildSide('E', -d / 2, d / 2)) mkWall(w / 2, (a + b) / 2, b - a, false);
-  // sólidos invisíveis nos vãos (impedem sair) + verga acima
+  // barreira nos vãos (lado externo da parede, sem invadir o interior) + verga acima
   for (const g of gaps) {
     const lintelMat = wallMat;
-    if (g.side === 'N' || g.side === 'S') {
-      const z = g.side === 'N' ? -d / 2 : d / 2;
-      solid(room, g.at - g.w / 2, z - 0.3, g.at + g.w / 2, z + 0.3);
+    if (g.side === 'N') {
+      const z = -d / 2;
+      solid(room, g.at - g.w / 2, z - 0.5, g.at + g.w / 2, z);
       box(THREE, room.group, g.w + 0.4, h - 2.3, th, lintelMat, g.at, 2.3 + (h - 2.3) / 2, z);
-    } else {
-      const x = g.side === 'W' ? -w / 2 : w / 2;
-      solid(room, x - 0.3, g.at - g.w / 2, x + 0.3, g.at + g.w / 2);
+    } else if (g.side === 'S') {
+      const z = d / 2;
+      solid(room, g.at - g.w / 2, z, g.at + g.w / 2, z + 0.5);
+      box(THREE, room.group, g.w + 0.4, h - 2.3, th, lintelMat, g.at, 2.3 + (h - 2.3) / 2, z);
+    } else if (g.side === 'W') {
+      const x = -w / 2;
+      solid(room, x - 0.5, g.at - g.w / 2, x, g.at + g.w / 2);
+      box(THREE, room.group, th, h - 2.3, g.w + 0.4, lintelMat, x, 2.3 + (h - 2.3) / 2, g.at);
+    } else if (g.side === 'E') {
+      const x = w / 2;
+      solid(room, x, g.at - g.w / 2, x + 0.5, g.at + g.w / 2);
       box(THREE, room.group, th, h - 2.3, g.w + 0.4, lintelMat, x, 2.3 + (h - 2.3) / 2, g.at);
     }
   }
@@ -286,7 +294,8 @@ function addInteract(room, x, z, r, prompt, act, when = null) {
   room.interacts.push({ x, z, r, prompt, act, when });
 }
 function addDoor(room, x, z, r, label, target, sx, sz, sa, opts = {}) {
-  room.doors.push({ x, z, r, label, target, sx, sz, sa, ...opts });
+  const rot = Number.isFinite(sa) ? sa : (opts.srot !== undefined ? opts.srot : 0);
+  room.doors.push({ x, z, r, label, target, sx, sz, sa: rot, srot: rot, ...opts });
 }
 function addSpawn(room, type, x, z) {
   room.spawns.push({ idx: room.spawns.length, type, x, z });
@@ -360,10 +369,10 @@ function buildQuarto(THREE, TEX) {
   // luz geral fraca
   pointLight(THREE, R, 0x8a7a5a, 4, 12, 0, 2.6, 0.5);
 
-  addCam(R, [-5, -4, 1.2, 4], [-4.4, 2.5, 3.1], [-1, 0.8, -1.2], 62);
-  addCam(R, [1.2, -4, 5, 4], [4.5, 2.4, 2.4], [1.5, 0.8, -1.6], 62);
+  addCam(R, [-5, -4, 0.8, 4], [-4.2, 2.5, 3.2], [-1, 1.2, -1.0], 62);
+  addCam(R, [0.8, -4, 5, 4], [4.2, 2.5, -3.2], [2.5, 1.2, 1.8], 62);
 
-  addDoor(R, 2.5, 3.3, 1.25, 'Abrir a porta', 'saguao', -5.5, 4.6, Math.PI);
+  addDoor(R, 2.5, 3.3, 1.25, 'Abrir a porta', 'saguao', -5.2, 3.6, Math.PI);
   addInteract(R, -2.8, -1.1, 1.5, 'Examinar a cama', 'bed');
   addInteract(R, 2.8, -2.7, 1.3, 'Abrir a gaveta', 'drawer');
   addInteract(R, -3.6, 1.9, 1.2, 'Pegar o urso', 'teddy');
@@ -471,19 +480,20 @@ function buildSaguao(THREE, TEX) {
   pointLight(THREE, R, 0x4a5a88, 5, 14, 1.5, 2.8, -4.5);
   bloodDecal(THREE, R, TEX, 4.5, 2.5, 1.8, 0.5);
 
-  addCam(R, [-8, -6, -1, 6], [-7, 3.5, 4.8], [-2, 0.8, -1.5], 58);
-  addCam(R, [-1, -6, 4, 6], [1.5, 3.7, 5.2], [0, 0.8, -2.5], 60);
-  addCam(R, [4, -6, 8, 6], [7, 3.3, 4.4], [4, 0.8, -1], 58);
+  addCam(R, [-8, 0, -1, 6], [-2.0, 3.5, 1.2], [-5.2, 1.2, 3.6], 60);
+  addCam(R, [-8, -6, -1, 0], [-2.5, 3.5, 0.5], [-5.4, 1.2, -2.0], 60);
+  addCam(R, [-1, -6, 3, 6], [1.0, 3.7, -1.2], [0.0, 1.2, 2.0], 60);
+  addCam(R, [3, -6, 8, 6], [3.5, 3.5, -0.5], [6.0, 1.2, 0.0], 58);
 
-  addDoor(R, -5.5, 5.0, 1.3, 'Abrir a porta', 'quarto', 2.5, 2.8, Math.PI);
-  addDoor(R, 7.1, 1, 1.3, 'Ir para a enfermaria', 'enfermaria', -8.2, 1, Math.PI / 2);
-  addDoor(R, -7.1, -2, 1.3, 'Descer ao porão', 'porao', 7.2, -2, -Math.PI / 2,
+  addDoor(R, -5.5, 5.0, 1.3, 'Abrir a porta', 'quarto', 2.5, 1.8, Math.PI);
+  addDoor(R, 7.1, 1, 1.3, 'Ir para a enfermaria', 'enfermaria', -6.4, 1.0, Math.PI / 2);
+  addDoor(R, -7.1, -2, 1.3, 'Descer ao porão', 'porao', 5.4, -2.0, -Math.PI / 2,
     { need: { item: 'basekey' }, consume: true, setFlag: 'poraoOpen', msg: 'Trancada. A placa diz "PORÃO — PROIBIDO". Precisa da CHAVE DO PORÃO.' });
-  addDoor(R, 3, -5.0, 1.5, 'Chamar o elevador', 'terraco', 3, 3.2, Math.PI,
+  addDoor(R, 3, -5.0, 1.5, 'Chamar o elevador', 'terraco', 3.0, 1.8, Math.PI,
     { need: { flag: 'fuseOn' }, elevator: true, msg: 'elevador_off' });
   addDoor(R, 0, 5.0, 1.4, 'Portão para os Jardins da Floresta', 'floresta', 0, -14.0, 0,
     { need: { item: 'forest_key' }, setFlag: 'forestUnlocked', msg: 'Portão de ferro fundido trancado. Precisa da CHAVE DO PORTÃO DE FERRO.' });
-  addDoor(R, 7.1, -3.5, 1.3, 'Entrar na Capela', 'capela', 0, 8.5, Math.PI);
+  addDoor(R, 7.1, -3.5, 1.3, 'Entrar na Capela', 'capela', 0, 8.0, Math.PI);
 
   addInteract(R, 0, -2.1, 1.5, 'Examinar a estátua', 'statue');
   addInteract(R, -6.5, 1.9, 1.4, 'Escrever no diário', 'save');
@@ -585,12 +595,12 @@ function buildEnfermaria(THREE, TEX) {
   R.flickLight = pointLight(THREE, R, 0xbfe0ff, 12, 12, 0, 2.6, 0, { amp: 8, speed: 23, hard: true });
   pointLight(THREE, R, 0x9fd0c8, 12, 12, 6, 2.6, 0);
 
-  addCam(R, [-9, -4, -3, 4], [-8.2, 2.4, 3.1], [-4, 0.8, -0.5], 60);
-  addCam(R, [-3, -4, 3, 4], [0, 2.5, 3.5], [0, 0.8, -1.5], 62);
-  addCam(R, [3, -4, 9, 4], [8.2, 2.4, 2.8], [4, 0.8, -0.5], 60);
+  addCam(R, [-9, -4, -3, 4], [-4.5, 2.6, 1.8], [-6.4, 1.2, 1.0], 60);
+  addCam(R, [-3, -4, 3, 4], [0.0, 2.6, 1.8], [0, 1.2, -1.0], 62);
+  addCam(R, [3, -4, 9, 4], [5.5, 2.6, 1.8], [4.0, 1.2, -1.5], 60);
 
-  addDoor(R, -8.2, 1, 1.3, 'Voltar ao saguão', 'saguao', 7.2, 1, -Math.PI / 2);
-  addDoor(R, 4, -3.2, 1.3, 'Abrir o consultório', 'consultorio', -1, 2.8, Math.PI,
+  addDoor(R, -8.2, 1, 1.3, 'Voltar ao saguão', 'saguao', 5.4, 1.0, -Math.PI / 2);
+  addDoor(R, 4, -3.2, 1.3, 'Abrir o consultório', 'consultorio', -1.0, 1.5, Math.PI,
     { need: { item: 'rustkey' }, consume: true, setFlag: 'consultOpen', msg: 'Trancada. A fechadura está enferrujada. Precisa da CHAVE ENFERRUJADA.' });
 
   addInteract(R, -4, -3.0, 1.4, 'Examinar o quadro de força', 'fusebox');
@@ -670,10 +680,10 @@ function buildConsultorio(THREE, TEX) {
   plane(THREE, R.group, 2.6, 1.8, tm(THREE, TEX.rug, 1, 1), 0, 0.012, 0.5, -Math.PI / 2);
   pointLight(THREE, R, 0x8a7a5a, 4, 12, 0, 2.6, 0.5);
 
-  addCam(R, [-5, -4, 0.5, 4], [-4.2, 2.5, 3.2], [-1, 0.8, -1.5], 62);
-  addCam(R, [0.5, -4, 5, 4], [4.2, 2.5, 3.0], [1, 0.8, -1.5], 62);
+  addCam(R, [-5, -4, 0.5, 4], [-3.5, 2.5, -2.8], [-1.0, 1.2, 1.5], 62);
+  addCam(R, [0.5, -4, 5, 4], [3.5, 2.5, -2.8], [2.0, 1.2, 0.0], 62);
 
-  addDoor(R, -1, 3.2, 1.3, 'Voltar à enfermaria', 'enfermaria', 4, -2.8, 0);
+  addDoor(R, -1, 3.2, 1.3, 'Voltar à enfermaria', 'enfermaria', 4.0, -1.5, 0);
 
   addInteract(R, 2, -1.7, 1.4, 'Ler os papéis', 'desk');
   addInteract(R, -3, -3.0, 1.3, 'Abrir o cofre', 'safe');
@@ -758,16 +768,40 @@ function buildPorao(THREE, TEX) {
   pointLight(THREE, R, 0xff8a3a, 6, 9, 3, 2.4, 2, { amp: 2, speed: 6 });
   pointLight(THREE, R, 0x3a5a7a, 5, 12, -5, 2.4, 0);
 
-  addCam(R, [0, -6, 8, 6], [7, 2.5, 4.6], [3, 0.7, -1.5], 60);
-  addCam(R, [-4, -6, 0, 6], [-2, 2.5, 5.2], [-2, 0.7, -2], 62);
-  addCam(R, [-8, -6, -4, 6], [-7, 2.5, 4.6], [-5, 0.7, -1], 60);
+  // Alçapão para a Floresta (lado seco leste) com escada de ferro
+  plane(THREE, R.group, 1.4, 1.4, new THREE.MeshLambertMaterial({ map: TEX.doorMetal }), 3.5, 0.02, 4.2, -Math.PI / 2);
+  for (let ry = 0.4; ry <= 2.8; ry += 0.5) {
+    box(THREE, R.group, 0.8, 0.05, 0.08, flat(THREE, 0x4a4a4e), 3.5, ry, 5.85);
+  }
 
-  addDoor(R, 7.2, -2, 1.3, 'Voltar ao saguão', 'saguao', -7.2, -2, Math.PI / 2);
-  addDoor(R, -6.5, 3.5, 1.4, 'Subir pelo Alçapão para a Floresta', 'floresta', -8.5, 0.5, 0);
+  // Portal de luz pós-chefe (conclusão da campanha de Clara)
+  const portal = new THREE.Group(); portal.position.set(0, 1.6, 0); portal.visible = false;
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(1.0, 0.12, 8, 20),
+    new THREE.MeshBasicMaterial({ color: 0xbfefff }));
+  portal.add(ring);
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(0.95, 20),
+    new THREE.MeshBasicMaterial({ color: 0xeafcff, transparent: true, opacity: 0.9 }));
+  portal.add(disc);
+  const pglow = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: TEX.glowWarm, color: 0xfff2cc, transparent: true, opacity: 0.8,
+    blending: THREE.AdditiveBlending, depthWrite: false,
+  }));
+  pglow.scale.set(4, 4, 1); portal.add(pglow);
+  R.group.add(portal);
+  R.portal = portal;
+  R.portalLight = pointLight(THREE, R, 0xfff2cc, 0, 14, 0, 1.6, 0);
+
+  addCam(R, [0, -6, 8, 6], [5.5, 2.5, 4.0], [5.0, 1.2, -2.0], 60);
+  addCam(R, [-4, -6, 0, 6], [-1.5, 2.5, 4.5], [0.0, 1.2, 0.0], 62);
+  addCam(R, [-8, -6, -4, 6], [-5.5, 2.5, 4.0], [-5.0, 1.2, -1.0], 60);
+
+  addDoor(R, 7.2, -2, 1.3, 'Voltar ao saguão', 'saguao', -5.4, -2.0, Math.PI / 2);
+  addDoor(R, 3.5, 4.2, 1.4, 'Subir pelo Alçapão para a Floresta', 'floresta', -8.5, -0.5, 0);
 
   addInteract(R, 1.5, -0.3, 1.5, 'Girar a válvula', 'valve');
   addInteract(R, 5, -3.7, 1.6, 'Examinar a caldeira', 'boiler');
   addInteract(R, -6, -3.8, 1.5, 'Vasculhar o engradado', 'crate');
+  addInteract(R, 0, 0, 1.6, 'Atravessar o portal de luz', 'portal', (f) => !!f.bossDead);
 
   addPickup(THREE, R, TEX, 'shotgun', -6, 4.8, 1, null, 1.05);
   addPickup(THREE, R, TEX, 'shell', -5, -2.5, 12);
@@ -787,6 +821,8 @@ function buildPorao(THREE, TEX) {
     const drained = game.flags.valveOpen;
     if (R.waterMesh) R.waterMesh.visible = !drained;
     if (R.valveWheel && drained) R.valveWheel.rotation.z += dt * 0.2;
+    if (R.portal) R.portal.visible = !!game.flags.bossDead;
+    if (R.portalLight) R.portalLight.intensity = game.flags.bossDead ? 16 + Math.sin(t * 6) * 4 : 0;
     for (const L of R.lights) {
       if (L.userData.flicker) {
         const f = L.userData.flicker;
@@ -903,10 +939,10 @@ function buildTerraco(THREE, TEX) {
   // luz fria da lua
   pointLight(THREE, R, 0x5a7ac8, 10, 30, 0, 8, 0);
 
-  addCam(R, [-7, -1, 7, 6], [5.5, 3.4, 5.2], [0, 1, -2.5], 60);
-  addCam(R, [-7, -6, 7, -1], [-5, 3.6, 1.5], [0, 1, -4], 60);
+  addCam(R, [-7, -1, 7, 6], [4.5, 3.4, 3.6], [0, 1.2, 0], 60);
+  addCam(R, [-7, -6, 7, -1], [-4.5, 3.5, 0.5], [0, 1.2, -3.5], 60);
 
-  addDoor(R, 3, 3.7, 1.4, 'Descer de elevador', 'saguao', 3, -4.8, 0, { elevator: true });
+  addDoor(R, 3, 3.7, 1.4, 'Descer de elevador', 'saguao', 3.0, -3.2, 0, { elevator: true });
 
   addInteract(R, 0, -2.4, 1.9, 'Examinar o memorial', 'memorial');
   addInteract(R, 0, -1.0, 1.4, 'Atravessar a luz', 'portal', (f) => !!f.bossDead);
@@ -1038,15 +1074,15 @@ function buildFloresta(THREE, TEX) {
   lampPost(-2.5, 4);
 
   // Câmeras PS1
-  addCam(R, [-13, 8, 13, 18], [0, 3.8, 16.5], [0, 1.2, 8], 62);
-  addCam(R, [-13, -2, 13, 8], [6.5, 3.6, 5], [0, 1.0, 0], 60);
-  addCam(R, [-2, -18, 13, -2], [8.0, 3.5, -12], [0, 1.2, -16], 62);
-  addCam(R, [-13, -18, -2, -2], [-3.0, 3.5, -13], [-7, 0.8, -7], 60);
+  addCam(R, [-13, 8, 13, 18], [3.5, 3.8, 14.0], [0, 1.2, 8], 62);
+  addCam(R, [-13, -2, 13, 8], [5.5, 3.6, 4.5], [0, 1.0, 0], 60);
+  addCam(R, [-2, -18, 13, -2], [6.5, 3.5, -10], [0, 1.2, -15], 62);
+  addCam(R, [-13, -18, -2, -2], [-3.0, 3.5, -11], [-7, 0.8, -7], 60);
 
   // Portas
-  addDoor(R, 0, -17.0, 1.6, 'Entrar no Sanatório (Saguão)', 'saguao', 0, 4.0, Math.PI);
-  addDoor(R, 12.0, -4.0, 1.5, 'Entrar na Capela', 'capela', 5.5, 0, -Math.PI / 2);
-  addDoor(R, -8.5, 1.5, 1.5, 'Descer pelo Alçapão ao Porão', 'porao', -6.0, 3.0, 0);
+  addDoor(R, 0, -17.0, 1.6, 'Entrar no Sanatório (Saguão)', 'saguao', 0.0, 3.2, Math.PI);
+  addDoor(R, 12.0, -4.0, 1.5, 'Entrar na Capela', 'capela', 4.0, 0, -Math.PI / 2);
+  addDoor(R, -8.5, 1.5, 1.5, 'Descer pelo Alçapão ao Porão', 'porao', 3.5, 2.5, 0);
 
   // Interações
   addInteract(R, 0, 11.8, 1.6, 'Examinar o carro da Dra. Clara', 'carro_clara');
@@ -1102,12 +1138,14 @@ function buildCapela(THREE, TEX) {
   plane(THREE, R.group, 4.0, 4.5, vitralM, 0, 4.0, -10.9, 0, 0);
   pointLight(THREE, R, 0xbbaaff, 18, 20, 0, 3.5, -7.5);
 
-  // Bancos de madeira (fileiras à esquerda e à direita do corredor central)
+  // Bancos de madeira (fileiras à esquerda e à direita do corredor central; vão livre na porta leste z = 0)
   for (let z = -5; z <= 5; z += 2.5) {
     box(THREE, R.group, 3.2, 0.7, 0.6, pewM, -3.5, 0.35, z);
     solid(R, -5.2, z - 0.4, -1.8, z + 0.4);
-    box(THREE, R.group, 3.2, 0.7, 0.6, pewM, 3.5, 0.35, z);
-    solid(R, 1.8, z - 0.4, 5.2, z + 0.4);
+    if (z !== 0) {
+      box(THREE, R.group, 3.2, 0.7, 0.6, pewM, 3.5, 0.35, z);
+      solid(R, 1.8, z - 0.4, 5.2, z + 0.4);
+    }
   }
 
   // Estátua de pedra de anjo no centro (z = -2)
@@ -1126,13 +1164,13 @@ function buildCapela(THREE, TEX) {
   pointLight(THREE, R, 0xffd088, 12, 16, 0, 3.2, 7.0);
 
   // Câmeras
-  addCam(R, [-7, 2, 7, 11], [0, 3.6, 9.8], [0, 1.2, 2], 58);
-  addCam(R, [-7, -4, 7, 2], [-4.5, 3.4, 0], [0, 1.0, -3], 60);
+  addCam(R, [-7, 2, 7, 11], [0, 3.6, 8.5], [0, 1.2, 2], 58);
+  addCam(R, [-7, -4, 7, 2], [-4.5, 3.4, 1.6], [0, 1.0, -3], 60);
   addCam(R, [-7, -11, 7, -4], [0, 3.2, -4], [0, 1.2, -8.5], 62);
 
   // Portas
-  addDoor(R, 0, 10.0, 1.5, 'Voltar ao Saguão Principal', 'saguao', 6.0, -3.5, -Math.PI / 2);
-  addDoor(R, 6.0, 0, 1.5, 'Saída para os Jardins da Floresta', 'floresta', 10.5, -4.0, Math.PI / 2);
+  addDoor(R, 0, 10.0, 1.5, 'Voltar ao Saguão Principal', 'saguao', 5.3, -3.5, -Math.PI / 2);
+  addDoor(R, 6.0, 0, 1.5, 'Saída para os Jardins da Floresta', 'floresta', 9.8, -4.0, -Math.PI / 2);
 
   // Interações
   addInteract(R, 0, -7.0, 1.6, 'Examinar o Altar', 'altar_capela');

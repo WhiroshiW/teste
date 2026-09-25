@@ -118,12 +118,55 @@ for (const id of ROOM_IDS) {
   }
   console.log(`   ${id}: cams=${R.cams.length} portas=${R.doors.length} itens=${R.pickups.length} inter=${R.interacts.length} inimigos=${R.spawns.length} sólidos=${R.solids.length}`);
 }
-// destinos das portas: spawn fora de sólido na sala alvo
+// destinos das portas: spawn fora de sólido na sala alvo considerando raio do player e dentro do frustum da câmera
 for (const id of ROOM_IDS) {
   for (const d of rooms[id].doors) {
     const T = rooms[d.target];
     const solidsFinal = T.solids.filter((s) => s.tag !== 'water');
     ok(!pointInSolids(d.sx, d.sz, solidsFinal), `${id} -> ${d.target}: spawn (${d.sx},${d.sz}) dentro de sólido!`);
+    const pt = { x: d.sx, z: d.sz };
+    const r = 0.35;
+    let hit = false;
+    for (const s of solidsFinal) {
+      const cx = Math.max(s.x0, Math.min(pt.x, s.x1));
+      const cz = Math.max(s.z0, Math.min(pt.z, s.z1));
+      const dx = pt.x - cx, dz = pt.z - cz;
+      if (dx * dx + dz * dz < r * r) { hit = true; break; }
+    }
+    ok(!hit, `${id} -> ${d.target}: spawn (${d.sx},${d.sz}) encostando no raio do sólido!`);
+    ok(Number.isFinite(d.sa) && Number.isFinite(d.srot), `${id} -> ${d.target}: ângulo de rotação da porta indefinido ou inválido!`);
+
+    // Teste de visão de câmera no spawn
+    let cam = T.cams[0];
+    for (const c of T.cams) {
+      if (d.sx >= c.rect[0] && d.sx <= c.rect[2] && d.sz >= c.rect[1] && d.sz <= c.rect[3]) {
+        cam = c; break;
+      }
+    }
+    const testCam = new THREE.PerspectiveCamera(cam.fov || 60, 4 / 3, 0.1, 100);
+    testCam.position.set(cam.pos[0], cam.pos[1], cam.pos[2]);
+    testCam.lookAt(d.sx, 1.25, d.sz);
+    testCam.updateMatrixWorld();
+    testCam.updateProjectionMatrix();
+    const proj = new THREE.Vector3(d.sx, 1.25, d.sz).project(testCam);
+    ok(proj.z > 0 && Math.abs(proj.x) < 0.95 && Math.abs(proj.y) < 0.95, `${id} -> ${d.target}: spawn (${d.sx},${d.sz}) fora da visão da câmera!`);
+
+    // Câmera fixa não colide com sólidos
+    for (const s of solidsFinal) {
+      const insideSolid = cam.pos[0] >= s.x0 && cam.pos[0] <= s.x1 && cam.pos[2] >= s.z0 && cam.pos[2] <= s.z1;
+      ok(!insideSolid, `${id} -> ${d.target}: câmera fixa pos=(${cam.pos}) dentro de sólido!`);
+    }
+
+    // Chase Cam nunca nasce fora dos limites da sala
+    const hw = T.w / 2;
+    const hd = T.d / 2;
+    const chw = Math.max(2, hw - 0.7);
+    const chd = Math.max(2, hd - 0.7);
+    let chaseX = d.sx - Math.sin(d.sa) * 2.8;
+    let chaseZ = d.sz - Math.cos(d.sa) * 2.8;
+    chaseX = Math.max(-chw, Math.min(chw, chaseX));
+    chaseZ = Math.max(-chd, Math.min(chd, chaseZ));
+    ok(Math.abs(chaseX) < hw && Math.abs(chaseZ) < hd, `${id} -> ${d.target}: chase cam fora da sala!`);
   }
 }
 // cobertura das câmeras: cantos da sala cobertos por alguma câmera

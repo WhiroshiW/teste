@@ -321,10 +321,26 @@ export class Player {
 
   addTo(scene) { scene.add(this.group); }
   removeFrom(scene) { scene.remove(this.group); }
-  place(x, z, angle) {
-    this.group.position.set(x, 0, z);
-    this.angle = angle;
-    this.group.rotation.y = angle;
+  place(x, z, angle = 0) {
+    const validX = Number.isFinite(x) ? x : 0;
+    const validZ = Number.isFinite(z) ? z : 0;
+    const validAngle = Number.isFinite(angle) ? angle : 0;
+    this.group.position.set(validX, 0, validZ);
+    this.group.visible = true;
+    this.dead = false;
+    this.angle = validAngle;
+    this.group.rotation.set(0, validAngle, 0);
+    if (this.legL) this.legL.rotation.set(0, 0, 0);
+    if (this.legR) this.legR.rotation.set(0, 0, 0);
+    if (this.armL) this.armL.rotation.set(0, 0, 0);
+    if (this.armR) this.armR.rotation.set(0, 0, 0);
+    if (this.torso) this.torso.rotation.set(0, 0, 0);
+    if (this.head) this.head.position.set(0, 1.62, 0);
+    for (const m of this.mats) {
+      if (m.emissive) m.emissive.setRGB(0, 0, 0);
+      m.opacity = 1.0;
+      m.transparent = false;
+    }
   }
   get x() { return this.group.position.x; }
   get z() { return this.group.position.z; }
@@ -350,11 +366,16 @@ export class Player {
   update(dt, input, room) {
     const ev = { step: false, run: false };
     if (this.dead) return ev;
+    if (!Number.isFinite(this.angle)) this.angle = 0;
+    if (!Number.isFinite(this.group.position.x)) this.group.position.x = 0;
+    if (!Number.isFinite(this.group.position.z)) this.group.position.z = 0;
     this.fireCd = Math.max(0, this.fireCd - dt);
     this.iframes = Math.max(0, this.iframes - dt);
     if (this.flash > 0) {
       this.flash = Math.max(0, this.flash - dt * 4);
       for (const m of this.mats) m.emissive.setRGB(this.flash * 0.7, this.flash * 0.1, this.flash * 0.1);
+    } else {
+      for (const m of this.mats) m.emissive.setRGB(0, 0, 0);
     }
     const TURN = 2.6;
     const WALK = 2.3 * this.speedMult;

@@ -9,7 +9,7 @@ export const INTRO = [
   { who: 'n', text: 'A chuva não parava naquela noite. Como não parava dentro de mim.' },
   { who: 'n', text: 'Dizem que a depressão é um quarto escuro onde a gente se tranca por dentro.' },
   { who: 'n', text: 'O meu quarto tinha o nome do lugar onde tudo começou: o Sanatório Santa Lúcia.' },
-  { who: 'daniel', text: 'Eu... eu acordei aqui. De novo. Este lugar não existe mais. Foi demolido há dez anos.', voiceClip: 'voice_daniel_intro' },
+  { who: 'daniel', text: 'Eu... eu acordei aqui. De novo. Este lugar não existe mais. Foi demolido há dez anos.' },
   { who: 'q', text: 'Daniel... me encontra... antes que a luz apague de vez...' },
   { who: 'daniel', text: 'Lúcia?! ...Não. É só a minha cabeça. É sempre só a minha cabeça.' },
   { who: 'n', text: 'Encontre os 4 FRAGMENTOS DE MEMÓRIA. Acenda o memorial. E, por favor... não desista.' },
@@ -17,7 +17,7 @@ export const INTRO = [
 
 export const INTRO_CLARA = [
   { who: 'n', text: '23:40. Estrada da Serra da Mantiqueira. Tempestade torrencial.' },
-  { who: 'clara', text: 'Droga... as árvores caíram na pista. O carro derrapou nas pedras do portão.', voiceClip: 'voice_clara_intro' },
+  { who: 'clara', text: 'Droga... as árvores caíram na pista. O carro derrapou nas pedras do portão.' },
   { who: 'clara', text: 'O Sanatório Santa Lúcia deveria estar em ruínas há anos... mas há luzes acesas no topo.' },
   { who: 'clara', text: 'Dr. Alencastro... eu sei o que você fazia com os pacientes naquelas caldeiras.' },
   { who: 'radio', text: '...chiado... Dra. Mendes... se estiver me ouvindo... não entre pelo saguão principal... o portão da floresta...' },
@@ -74,22 +74,22 @@ export const D = {
   encontro_daniel: [
     { who: 'n', text: 'Uma silhueta se move na penumbra da Capela... armando o cão de um revólver.' },
     { who: 'clara', text: 'Fique onde está! Dê mais um passo e eu atiro!' },
-    { who: 'daniel', text: 'Espere! Eu sou humano! Não sou uma daquelas coisas!', voiceClip: 'voice_daniel_meet' },
+    { who: 'daniel', text: 'Espere! Eu sou humano! Não sou uma daquelas coisas!' },
     { who: 'clara', text: '...Você fala. E respira. Quem é você? Como entrou aqui?' },
     { who: 'daniel', text: 'Meu nome é Daniel. Eu... eu estou procurando minha irmã, Lúcia.' },
     { who: 'clara', text: 'Lúcia?! ...Meu Deus. A paciente do quarto 3. O Alencastro falava que a família tinha desistido dela.' },
     { who: 'daniel', text: 'Eu nunca desisti! Eles me proibiram de visitá-la!' },
     { who: 'clara', text: 'Eu sou a Dra. Clara Mendes. Tentei parar os experimentos dele, mas era tarde demais.' },
-    { who: 'clara', text: 'Tome esta CHAVE DO PORTÃO DE FERRO. Dá acesso aos jardins e ao cemitério onde ele escondia os corpos. Vá, Daniel. Eu vou descer às caldeiras para dar um fim no monstro que ele se tornou.', voiceClip: 'voice_clara_meet' },
+    { who: 'clara', text: 'Tome esta CHAVE DO PORTÃO DE FERRO. Dá acesso aos jardins e ao cemitério onde ele escondia os corpos. Vá, Daniel. Eu vou descer às caldeiras para dar um fim no monstro que ele se tornou.' },
     { who: 'daniel', text: 'Obrigado, Dra. Clara. Tome cuidado lá embaixo.' },
   ],
   encontro_clara: [
     { who: 'n', text: 'Passos apressados ecoam pelo piso da Capela.' },
     { who: 'clara', text: 'Parado! Identifique-se!' },
-    { who: 'daniel', text: 'Espere! Eu sou humano! Não sou uma daquelas coisas!', voiceClip: 'voice_daniel_meet' },
+    { who: 'daniel', text: 'Espere! Eu sou humano! Não sou uma daquelas coisas!' },
     { who: 'clara', text: 'Um rapaz... segurando uma arma trêmula. Você... é o irmão da paciente Lúcia Silva.' },
     { who: 'daniel', text: 'Você conheceu a minha irmã?! Onde ela está?!' },
-    { who: 'clara', text: 'Tome esta chave do portão de ferro. Dá acesso aos jardins e ao cemitério onde ele escondia os corpos. Vá, Daniel. Eu vou descer às caldeiras para dar um fim no monstro que ele se tornou.', voiceClip: 'voice_clara_meet' },
+    { who: 'clara', text: 'Tome esta chave do portão de ferro. Dá acesso aos jardins e ao cemitério onde ele escondia os corpos. Vá, Daniel. Eu vou descer às caldeiras para dar um fim no monstro que ele se tornou.' },
     { who: 'clara', text: 'Se você encontrar o Bento... diga a ele que eu cumpri minha promessa.' },
   ],
 
@@ -147,6 +147,66 @@ export const D = {
   vaso_after: [
     { who: 'daniel', text: 'Só poeira agora.' },
   ],
+  diario_texto: (idx) => {
+    const paginas = [
+      // Página 0 (Quarto 3)
+      [
+        { who: 'n', text: 'PÁGINA DO DIÁRIO (1/8) — 12 DE JANEIRO' },
+        { who: 'lucia', text: 'O quarto é pequeno, mas a janela dá para os pinheiros da serra.' },
+        { who: 'lucia', text: 'O Daniel me prometeu que quando a primavera chegar, nós vamos voltar para casa.' },
+        { who: 'lucia', text: 'Eu finjo que acredito para ele não chorar no ônibus de volta.' },
+        { who: 'daniel', text: 'Lúcia... eu devia ter te tirado daqui no primeiro dia...' },
+      ],
+      // Página 1 (Saguão)
+      [
+        { who: 'n', text: 'PÁGINA DO DIÁRIO (2/8) — 28 DE MARÇO' },
+        { who: 'lucia', text: 'O saguão fica cheio de parentes nos domingos. Eu fico no canto, olhando a estátua de Santa Lúcia.' },
+        { who: 'lucia', text: 'O padre disse que ela entregou os próprios olhos por amor. Às vezes acho que eu perdi os meus por medo da vida.' },
+        { who: 'daniel', text: 'Você nunca esteve errada em sentir medo, Lúcia. O mundo lá fora foi cruel demais com você.' },
+      ],
+      // Página 2 (Enfermaria - Ala Oeste)
+      [
+        { who: 'n', text: 'PÁGINA DO DIÁRIO (3/8) — 14 DE MAIO' },
+        { who: 'lucia', text: 'As noites na enfermaria são longas demais. Ouço passos arrastados e gritos sufocados no corredor do porão.' },
+        { who: 'lucia', text: 'O Daniel me trouxe o ursinho de pano escondido no casaco de chuva. Ele tem tanto medo de me perder... e eu tenho tanto medo de ficar.' },
+      ],
+      // Página 3 (Enfermaria - Leito 3)
+      [
+        { who: 'n', text: 'PÁGINA DO DIÁRIO (4/8) — 02 DE JULHO' },
+        { who: 'lucia', text: 'Dr. Matias me chamou para a sala fechada. Ele anota tudo numa prancheta de metal e não olha nos meus olhos.' },
+        { who: 'lucia', text: 'Perguntou se eu ainda queria viver. Eu não soube o que responder. Viver dói tanto... mas ver o Daniel sofrer por minha causa dói o dobro.' },
+      ],
+      // Página 4 (Consultório)
+      [
+        { who: 'n', text: 'PÁGINA DO DIÁRIO (5/8) — 19 DE AGOSTO' },
+        { who: 'lucia', text: 'Ouvi o Dr. Alencastro conversando sobre o porão e a máquina de terapia eletroconvulsiva.' },
+        { who: 'lucia', text: 'Eles acham que apagar memórias cura a dor. Mas se apagarem tudo o que eu lembro do meu irmão, o que sobra de mim? Quem vai se lembrar de quem eu fui?' },
+      ],
+      // Página 5 (Porão - Caldeiras)
+      [
+        { who: 'n', text: 'PÁGINA DO DIÁRIO (6/8) — 07 DE SETEMBRO' },
+        { who: 'lucia', text: 'O porão é gelado e cheira a ferrugem e água estagnada. O Dr. Alencastro trancou os prontuários dos pacientes transferidos lá no fundo.' },
+        { who: 'lucia', text: 'Eu vi os nomes de quem nunca mais subiu. Daniel... se você estiver lendo isso... não confie nos médicos.' },
+      ],
+      // Página 6 (Porão - Tubulações)
+      [
+        { who: 'n', text: 'PÁGINA DO DIÁRIO (7/8) — 23 DE SETEMBRO' },
+        { who: 'lucia', text: 'As caldeiras rugem a noite toda como uma fera faminta. Não sinto mais o calor das minhas mãos.' },
+        { who: 'lucia', text: 'Mas encontrei forças para esconder a manivela e a chave. A verdade sobre o Santa Lúcia não pode morrer soterrada nesta montanha.' },
+      ],
+      // Página 7 (Terraço)
+      [
+        { who: 'n', text: 'PÁGINA DO DIÁRIO (8/8) — 14 DE OUTUBRO' },
+        { who: 'lucia', text: 'Última folha. O terraço é o único lugar onde ainda sinto o vento da serra no rosto. A névoa parece um abraço que não julga.' },
+        { who: 'lucia', text: 'Se eu não estiver mais aqui quando você voltar, Daniel... saiba que eu te perdoo. Por favor, aprenda a se perdoar também. Viva por nós dois.' },
+        { who: 'daniel', text: 'Eu vou viver, Lúcia. Eu prometo. Eu finalmente entendi.' },
+      ],
+    ];
+    return paginas[idx] || [
+      { who: 'n', text: `PÁGINA DO DIÁRIO (${(idx || 0) + 1}/8)` },
+      { who: 'lucia', text: 'A caligrafia está desbotada pelo mofo e pela umidade do sanatório...' },
+    ];
+  },
   diario_noribbon: [
     { who: 'n', text: 'Um diário gasto sobre a mesa. Sem uma FITA DE TINTA, não dá para registrar nada.' },
   ],
@@ -272,7 +332,16 @@ export const TIPS = [
 ];
 
 // ------------------------------ OBJETIVOS ------------------------------
-export function objectiveFor(f) {
+export function objectiveFor(f, campaign = 'daniel') {
+  if (campaign === 'clara') {
+    if (f.bossDead) return 'O Dr. Alencastro foi derrotado! Atravesse o portal de luz e escape com os dossiês.';
+    if (f.chapelEncounterMet) return 'Desça às caldeiras do porão e enfrente o Dr. Alencastro!';
+    return 'Explore os jardins da floresta e encontre Daniel na Capela Esquecida.';
+  }
+  if (campaign === 'bento') {
+    if (f.bossDead) return 'O turno terminou. As caldeiras foram salvas.';
+    return 'Elimine as criaturas nas caldeiras e proteja as passagens do sanatório!';
+  }
   const frags = (f.frags || []).filter(Boolean).length;
   if (f.bossDead) return 'Atravesse a luz no terraço.';
   if (f.memorialOpen) return 'Derrote o VULTO!';
