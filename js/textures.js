@@ -652,6 +652,7 @@ export function buildTextures(THREE) {
   glow('eye', 'rgba(255,255,255,1)', 'rgba(255,240,200,0.5)');
   glow('glowCyan', 'rgba(180,255,255,1)', 'rgba(60,200,220,0.4)');
   glow('glowWarm', 'rgba(255,230,180,1)', 'rgba(255,150,60,0.35)');
+  glow('glowGreen', 'rgba(180,255,180,1)', 'rgba(50,220,80,0.4)');
   glow('blob', 'rgba(255,255,255,1)', 'rgba(255,255,255,0.25)');
   {
     const [c, x] = cv(32, 32);
@@ -1048,6 +1049,49 @@ export function buildTextures(THREE) {
     cracks(x, 32, 64, 2);
     grain(x, 32, 64, 200, 0.25); poster15(x, 32, 64);
     reg('tombstone', c);
+  }
+
+  // ---------- NEGATOSCÓPIO / RAIO-X ILUMINADO ----------
+  {
+    const [c, x] = cv(64, 64);
+    x.fillStyle = '#22252a'; x.fillRect(0, 0, 64, 64);
+    x.fillStyle = '#e8f0f8'; x.fillRect(4, 4, 56, 56);
+    x.fillStyle = '#10141a'; x.fillRect(6, 6, 52, 52);
+    // Tórax e costelas em Raio-X
+    x.fillStyle = 'rgba(200, 225, 255, 0.7)';
+    x.fillRect(30, 10, 4, 44); // coluna
+    for (let r = 0; r < 7; r++) {
+      const cy = 18 + r * 5;
+      x.fillRect(20 - r * 1.2, cy, 10 + r * 1.2, 2);
+      x.fillRect(34, cy, 10 + r * 1.2, 2);
+    }
+    grain(x, 64, 64, 250, 0.15); poster15(x, 64, 64);
+    reg('negatoscope', c);
+  }
+
+  // ---------- BEBEDOURO COM GALÃO DE ÁGUA ----------
+  {
+    const [c, x] = cv(64, 64);
+    x.fillStyle = '#dce2e8'; x.fillRect(0, 0, 64, 64);
+    x.fillStyle = '#4a90e2'; x.fillRect(8, 4, 48, 28); // galão azul
+    x.fillStyle = '#ffffff'; x.fillRect(16, 8, 8, 20);  // brilho plástico
+    x.fillStyle = '#bcc4cc'; x.fillRect(12, 34, 40, 26); // nicho do copo
+    x.fillStyle = '#e02020'; x.fillRect(20, 36, 4, 6);  // torneira quente
+    x.fillStyle = '#2060e0'; x.fillRect(40, 36, 4, 6);  // torneira fria
+    grain(x, 64, 64, 200, 0.1); poster15(x, 64, 64);
+    reg('waterDispenser', c);
+  }
+
+  // ---------- PLACAS DE SINALIZAÇÃO HOSPITALAR ----------
+  {
+    const [c, x] = cv(64, 32);
+    x.fillStyle = '#2b3038'; x.fillRect(0, 0, 64, 32);
+    x.strokeStyle = '#c8a028'; x.lineWidth = 2; x.strokeRect(2, 2, 60, 28);
+    x.fillStyle = '#f0f0f0'; x.font = 'bold 9px monospace';
+    x.fillText('SANATÓRIO', 5, 14);
+    x.fillStyle = '#a0a8b0'; x.font = '7px monospace';
+    x.fillText('ACESSO RESTRITO', 5, 24);
+    reg('hospitalSign', c);
   }
 
   return T;
