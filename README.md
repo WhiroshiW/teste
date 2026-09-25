@@ -46,6 +46,54 @@ Um **survival horror 3D cinematográfico no autêntico estilo PlayStation 1** co
 
 ---
 
+## 🏛️ Nova Planta Remasterizada do Sanatório (4 Andares & Setores)
+
+A arquitetura do Sanatório Santa Lúcia foi totalmente recriada a partir da planta do caderno do projeto:
+
+### 1. Folha P1 — Térreo & Áreas Externas
+- **Ala Oeste (Dormitórios):**
+  - **Quarto 1 (`quarto`):** Onde Daniel acorda (Cama, Cômoda com chave, Janela, Tapete).
+  - **Corredor dos Quartos (`corredor_quartos`):** Conecta Q1, Q2 e o Hall Principal sob iluminação azulada e tapete rubro.
+  - **Quarto 2 (`quarto2`):** Quarto trancado contendo Cama hospitalar, Estante de prontuários e o **Cofre de Ferro** no canto inferior.
+- **Centro (Hall Principal - `saguao`):**
+  - Grandioso saguão com **Balcão de Recepção em 'U'**, Bebedouro de água mineral, vasos ornamentais, máquina de escrever clássica no balcão e grande escadaria ao sul/leste para o Mezanino.
+- **Sul (Estufa Botânica - `estufa`):**
+  - Canteiros horizontais compridos com terra e folhagens, janelas envidraçadas e o Composto Herbicida.
+- **Norte (Cemitério das Lápides - `cemiterio`):**
+  - Pátio fúnebre com fileiras de lápides cinzentas, cruzes e o mausoléu dos fundadores.
+- **Leste (Pátio Externo & Canil - `jardim`):**
+  - Estacionamento de ambulâncias, Jardim com árvores retorcidas e névoa, Canil com jaulas de grades de ferro e a **Casa do Zelador Bento** (`casa_zelador`).
+
+### 2. Folha P2 — Segundo Andar & Caldeiras
+- **Mezanino Superior (`mezanino`):**
+  - Guarda-corpo de ferro com vista para o térreo, escadarias para o P1 e P3, e porta do Elevador com painel de controle.
+- **Ala Médica (`enfermaria`):**
+  - Leitos com cortinas divisórias translúcidas e o grande **Painel Elétrico Geral** que reativa a energia do elevador.
+- **Escritório do Dr. Alencastro (`consultorio`):**
+  - Mesa executiva de mogno, estantes de registros médicos e a pista do cofre confidencial (1402).
+- **Ala das Caldeiras (`porao`):**
+  - Fornos industriais a vapor, alagamento de água escura, válvula de drenagem e escada para o subsolo.
+
+### 3. Folha P3 — Terceiro Andar & Terraço do Heliponto
+- **Corredor Superior (`corredor_p3`):**
+  - Corredor longitudinal com mesas de mogno, janelas de tempestade, acesso ao elevador e escadas.
+- **Sala Confidencial do Dr. Alencastro (`sala_dr_p3`):**
+  - Estantes de pesquisas avançadas, mesa de dissecação química e o **Cartão de Acesso do Heliponto**.
+- **Terraço & Heliponto (`terraco`):**
+  - Cobertura aberta na chuva com o grande **Heliponto circular ('H')**, memorial místico e arena de combate final contra o Chefe!
+
+### 4. Folha Extras — Subsolo Secreto & Santuário do Culto
+- **Casa do Zelador (`casa_zelador`):**
+  - Cabana de serviço com cama rústica, armário de ferramentas metálicas, bancada com rádio transmissor e o **Pé de Cabra**.
+- **Corredor do Subsolo (`subsolo_corredor`):**
+  - Túneis subterrâneos de pedra bruta úmida e tubulações de vapor.
+- **Santuário do Culto (`culto`):**
+  - Fileiras de cadeiras cerimoniais voltadas para o imponente **Altar Monolítico** de sacrifício com o Talismã arcano.
+- **Sala de Experimentos Secretos (`experimentos`):**
+  - Maca cirúrgica de dissecação com amarras de couro, pia de aço inox, frascos de formol com cobaias e o Dossiê das mutações.
+
+---
+
 ## 🎭 Cutscenes e Dublagem em Tempo Real
 
 - **Dublagem Exclusiva das Legendas:** em conformidade com o direcionamento do projeto, foram eliminados todos os áudios pré-programados de arquivos MP3 externos. Toda a narrativa e diálogos são dublados dinamicamente via síntese de voz (Web Speech Synthesis API em `pt-BR`) em perfeita sincronia com as legendas.
@@ -146,5 +194,8 @@ node test/test_shop_and_extras.mjs
 
 # 4. Teste de partículas limpas, novos inimigos e HUD clássico de Resident Evil
 node test/test_particles_and_re_hud.mjs
+
+# 5. Teste da Planta Remasterizada Completa (4 Folhas: P1, P2, P3 e Extras)
+node test/test_remastered_plant.mjs
 ```
 

@@ -58,6 +58,14 @@ export const ITEMS = {
   chapel_key: { name: 'Chave da Capela', type: 'key', icon: '🗝️', desc: 'Chave com entalhes de uma cruz gótica.' },
   lucia_locket: { name: 'Medalhão de Lúcia', type: 'key', icon: '📿', desc: 'Um pequeno medalhão com a foto de infância dos irmãos Daniel e Lúcia.' },
   alencastro_dossier: { name: 'Dossiê Alencastro', type: 'key', icon: '📁', desc: 'Documentos provando os experimentos ilegais com a escuridão da mente.' },
+
+  // Itens da nova planta remasterizada (Estufa, Heliponto, Culto, Canil)
+  greenhouse_key: { name: 'Chave da Estufa', type: 'key', icon: '🗝️', desc: 'Chave de latão com relevos botânicos que abre a estufa ao sul.' },
+  herbicide: { name: 'Composto Herbicida', type: 'key', icon: '🧪', desc: 'Solução química que dissolve as videiras carnívoras da estufa.' },
+  mezanino_emblem: { name: 'Emblema do Mezanino', type: 'key', icon: '🛡️', desc: 'Brasão de bronze do sanatório que destranca a escadaria do 2º Andar.' },
+  terrace_key: { name: 'Cartão do Heliponto', type: 'key', icon: '💳', desc: 'Cartão de acesso de segurança para a cobertura e heliponto.' },
+  cult_symbol: { name: 'Talismã do Culto', type: 'key', icon: '🔮', desc: 'Símbolo em pedra negra recuperado do Altar de sacrifícios.' },
+  crowbar: { name: 'Pé de Cabra', type: 'weapon', icon: '🦯', desc: 'Pé de cabra de ferro de Bento. Excelente alavanca e arma de impacto.' },
 };
 
 // ------------------------------- ARMAS -------------------------------
@@ -65,6 +73,7 @@ export const WEAPONS = {
   knife:    { name: 'Faca Enferrujada', dmg: 14, rate: 0.40, range: 1.8, auto: false, kick: 0.05, sfx: 'knife' },
   scalpel:  { name: 'Bisturi Cirúrgico', dmg: 18, rate: 0.32, range: 1.7, auto: false, kick: 0.04, sfx: 'knife', critChance: 0.25 },
   wrench:   { name: 'Chave Inglesa', dmg: 28, rate: 0.55, range: 2.0, auto: false, kick: 0.12, sfx: 'knife', staggerBonus: 0.4 },
+  crowbar:  { name: 'Pé de Cabra', dmg: 34, rate: 0.50, range: 2.1, auto: false, kick: 0.15, sfx: 'knife', staggerBonus: 0.5 },
   pistol:   { name: 'Pistola M9', dmg: 28, rate: 0.35, range: 14, auto: false, kick: 0.20, sfx: 'pistol' },
   revolver: { name: 'Revólver .38', dmg: 48, rate: 0.45, range: 16, auto: false, kick: 0.30, sfx: 'revolver' },
   shotgun:  { name: 'Espingarda', dmg: 95, rate: 0.95, range: 9.5, auto: false, kick: 0.55, sfx: 'shotgun', falloff: true },

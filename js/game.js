@@ -991,11 +991,23 @@ export class Game {
 
     const ROOM_SUBS = {
       quarto: 'ALA DE INTERNAÇÃO · PISO 1',
-      saguao: 'ALA CENTRAL · PISO 1',
-      enfermaria: 'ALA CLÍNICA GERAL · PISO 1',
-      consultorio: 'SALA MÉDICA DO DR. ALENCASTRO',
+      corredor_quartos: 'ALA OESTE · CORREDOR DOS DORMITÓRIOS',
+      quarto2: 'ALA PRIVADA · SALA DO COFRE',
+      saguao: 'HALL PRINCIPAL · RECEPÇÃO',
+      estufa: 'SETOR SUL · ESTUFA BOTÂNICA',
+      cemiterio: 'PÁTIO NORTE · LÁPIDES DOS FUNDADORES',
+      jardim: 'SETOR LESTE · PÁTIO, ESTACIONAMENTO & CANIL',
+      casa_zelador: 'CABANA DE SERVIÇO DE BENTO',
+      mezanino: 'MEZANINO SUPERIOR · PISO 2',
+      enfermaria: 'ALA MÉDICA CLÍNICA · PISO 2',
+      consultorio: 'ESCRITÓRIO MÉDICO DO DR. ALENCASTRO',
       porao: 'SUBTERRÂNEO · ÁREA DAS CALDEIRAS',
-      terraco: 'COBERTURA · O MEMORIAL',
+      corredor_p3: 'ALA SUPERIOR · CORREDOR P3',
+      sala_dr_p3: 'LABORATÓRIO CONFIDENCIAL DO DIRETOR',
+      terraco: 'COBERTURA · HELIPONTO DE RESGATE',
+      subsolo_corredor: 'CATACUMBAS SUBTERRÂNEAS · TÚNEIS',
+      culto: 'SANTUÁRIO OCULTO · ALTAR PROFANO',
+      experimentos: 'LABORATÓRIO DE EXPERIMENTOS HUMANOS',
       floresta: 'JARDINS EXTERNOS & CEMITÉRIO',
       capela: 'SANTUÁRIO ESQUECIDO',
     };
@@ -1656,6 +1668,22 @@ export class Game {
         });
         break;
       case 'anjo_capela': say(D.anjo_capela); break;
+
+      // Novas Salas da Planta Remasterizada
+      case 'greenhouse_bench': say(D.greenhouse_bench); break;
+      case 'greenhouse_plants': say(D.greenhouse_plants); break;
+      case 'mausoleum': say(D.mausoleum); break;
+      case 'kennel': say(D.kennel); break;
+      case 'bento_locker': say(D.bento_locker); break;
+      case 'bento_radio': say(D.bento_radio); break;
+      case 'elevator_p2': say(D.elevator_p2); break;
+      case 'alencastro_desk_p3': say(D.alencastro_desk_p3); break;
+      case 'alencastro_books_p3': say(D.alencastro_books_p3); break;
+      case 'cult_altar': say(D.cult_altar); break;
+      case 'exam_table': say(D.exam_table); break;
+      case 'exam_sink': say(D.exam_sink); break;
+      case 'bed2': say(D.bed2); break;
+      case 'shelf2': say(D.shelf2); break;
 
       // Terraço & Finais
       case 'memorial': {

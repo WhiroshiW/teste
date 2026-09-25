@@ -53,6 +53,61 @@ export const D = {
   gaveta_after: [
     { who: 'daniel', text: 'A gaveta está vazia agora.' },
   ],
+
+  // Novas salas da planta remasterizada (Estufa, Cemitério, Canil, Mezanino, P3, Culto, Experimentos)
+  greenhouse_bench: [
+    { who: 'n', text: 'Bancada de botânica médica. Notas sobre solventes e compostos neutralizadores de trepadeiras.' },
+    { who: 'daniel', text: 'O Dr. Alencastro usava essências de plantas para sintetizar compostos pesados para os internos.' },
+  ],
+  greenhouse_plants: [
+    { who: 'daniel', text: 'Plantas com espinhos escuros e folhas espessas... parecem pulsar levemente sob a névoa.' },
+  ],
+  mausoleum: [
+    { who: 'n', text: 'Mausoléu da família Alencastro. Inscrição em latão antigo:' },
+    { who: 'n', text: '"A dor é a fraqueza da carne; na escuridão eterna, a mente transcende."' },
+    { who: 'daniel', text: 'Ele acreditava piamente que o sofrimento humano podia ser extirpado cirurgicamente.' },
+  ],
+  kennel: [
+    { who: 'daniel', text: 'As barras de ferro das jaulas foram entortadas com força descomunal... de dentro para fora.' },
+    { who: 'n', text: 'Restos de coleiras de couro e marcas de garras profundas no concreto.' },
+  ],
+  bento_locker: [
+    { who: 'n', text: 'O armário de ferramentas do zelador Bento. Cheiro de óleo de máquina e graxa.' },
+    { who: 'bento', text: 'Minhas ferramentas... tudo no seu devido lugar. O velho Bento nunca perde uma chave inglesa.' },
+  ],
+  bento_radio: [
+    { who: 'n', text: 'Um transmissor de rádio amador sintonizado na frequência das equipes de resgate.' },
+    { who: 'radio', text: '...chiado... Alerta metereológico: temporal severo na serra... evacuação recomendada... heliponto liberado no topo...' },
+  ],
+  elevator_p2: [
+    { who: 'n', text: 'Painel do elevador no 2º andar. Conecta o Térreo, Mezanino (P2), Ala Superior (P3) e Subsolo.' },
+    { who: 'daniel', text: 'Se o quadro de força estiver energizado e as caldeiras com vapor, ele sobe até o Heliponto.' },
+  ],
+  alencastro_desk_p3: [
+    { who: 'n', text: 'Mesa executiva do Dr. Alencastro no 3º andar. Documentos confidenciais e o cartão magnético de resgate.' },
+    { who: 'daniel', text: 'O cartão do Heliponto! Com isso posso abrir a comporta blindada da cobertura!' },
+  ],
+  alencastro_books_p3: [
+    { who: 'daniel', text: 'Tratados sobre a mente que não sente dor, mutações celulares e rituais do culto antigo.' },
+  ],
+  cult_altar: [
+    { who: 'n', text: 'Altar monolítico esculpido em pedra negra ancestral. Símbolos arcanos gravados em sangue.' },
+    { who: 'daniel', text: 'Este lugar... era aqui que ele trazia os pacientes que não respondiam aos remédios comuns...' },
+  ],
+  exam_table: [
+    { who: 'n', text: 'Maca de aço com correias reforçadas de contenção e drenos cirúrgicos.' },
+    { who: 'daniel', text: 'Manchas secas de sangue... quantas pessoas sofreram amarradas aqui?' },
+  ],
+  exam_sink: [
+    { who: 'n', text: 'Frascos de vidro com formol preservando tecidos celulares anômalos.' },
+    { who: 'clara', text: 'As amostras mostram necroses atípicas induzidas por substâncias desconhecidas.' },
+  ],
+  bed2: [
+    { who: 'daniel', text: 'A cama do Quarto 2. Lençóis rasgados amarrados em nós de fuga.' },
+  ],
+  shelf2: [
+    { who: 'n', text: 'Fichas médicas amareladas. Uma anotação em vermelho diz: "CÓDIGO DO COFRE: DATA DO INCIDENTE DA NEVE (14/02)".' },
+  ],
   urso_frag: [
     { who: 'daniel', text: 'O urso da Lúcia... Ela o levava para todo lugar. Como ele veio parar aqui?' },
     { who: 'n', text: 'Algo brilha dentro da costura rasgada do urso: um FRAGMENTO DE MEMÓRIA.' },

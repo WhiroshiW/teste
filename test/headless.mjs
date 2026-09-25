@@ -15,7 +15,7 @@ function make2d() {
     createLinearGradient() { return gradStub; },
     createRadialGradient() { return gradStub; },
     getImageData(x, y, w, h) { return { data: new Uint8ClampedArray(w * h * 4), width: w, height: h }; },
-    putImageData() {}, drawImage() {},
+    putImageData() {}, drawImage() {}, closePath() {},
   };
 }
 function makeCanvas(w = 64, h = 64) {

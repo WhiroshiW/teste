@@ -899,6 +899,139 @@ export function buildTextures(THREE) {
     reg('emberBody', c);
   }
 
+  // ---------- HELIPONTO DO TERRAÇO (P3) ----------
+  {
+    const [c, x] = cv(128, 128);
+    x.fillStyle = '#22252a'; x.fillRect(0, 0, 128, 128);
+    // círculo de demarcação
+    x.strokeStyle = '#d6ad2a'; x.lineWidth = 6;
+    x.beginPath(); x.arc(64, 64, 52, 0, Math.PI * 2); x.stroke();
+    // 'H' central
+    x.fillStyle = '#d6ad2a';
+    x.fillRect(40, 36, 10, 56);
+    x.fillRect(78, 36, 10, 56);
+    x.fillRect(40, 60, 48, 10);
+    // desgaste e rachaduras do tempo
+    cracks(x, 128, 128, 4);
+    stains(x, 128, 128, 6, 'rgba(10,12,14,0.5)', 6, 20);
+    grain(x, 128, 128, 400, 0.25); poster15(x, 128, 128);
+    reg('heliPad', c);
+  }
+
+  // ---------- ESTUFA: VIDRO E CAIXILHOS ----------
+  {
+    const [c, x] = cv(64, 64);
+    x.fillStyle = '#1c2826'; x.fillRect(0, 0, 64, 64);
+    x.fillStyle = 'rgba(70,120,105,0.4)'; x.fillRect(4, 4, 26, 26);
+    x.fillRect(34, 4, 26, 26); x.fillRect(4, 34, 26, 26); x.fillRect(34, 34, 26, 26);
+    x.strokeStyle = '#101614'; x.lineWidth = 4;
+    x.strokeRect(2, 2, 60, 60);
+    x.beginPath(); x.moveTo(32, 2); x.lineTo(32, 62); x.moveTo(2, 32); x.lineTo(62, 32); x.stroke();
+    stains(x, 64, 64, 5, 'rgba(30,50,20,0.5)', 4, 12);
+    grain(x, 64, 64, 200, 0.2); poster15(x, 64, 64);
+    reg('greenhouseGlass', c);
+  }
+
+  // ---------- ESTUFA: CANTEIRO DE TERRA E FOLHAGEM ----------
+  {
+    const [c, x] = cv(64, 64);
+    x.fillStyle = '#1e140d'; x.fillRect(0, 0, 64, 64);
+    for (let i = 0; i < 40; i++) {
+      x.fillStyle = Math.random() < 0.5 ? '#120b06' : '#2d1e13';
+      x.fillRect(rnd(0, 60), rnd(0, 60), rnd(3, 8), rnd(2, 6));
+    }
+    // brotos e folhas caídas
+    for (let i = 0; i < 15; i++) {
+      x.fillStyle = Math.random() < 0.6 ? '#2f4b23' : '#4d6934';
+      x.fillRect(rnd(2, 60), rnd(2, 60), rnd(2, 5), rnd(2, 4));
+    }
+    grain(x, 64, 64, 300, 0.3); poster15(x, 64, 64);
+    reg('greenhouseSoil', c);
+  }
+
+  // ---------- CANIL: GRADES DE FERRO E TIJOLOS ----------
+  {
+    const [c, x] = cv(64, 64);
+    x.fillStyle = '#2a2420'; x.fillRect(0, 0, 64, 64);
+    x.fillStyle = '#3a3430';
+    for (let y = 0; y < 64; y += 12) {
+      x.fillRect(0, y, 64, 2);
+    }
+    // barras de ferro verticais
+    x.fillStyle = '#15171a';
+    for (let bx = 6; bx < 64; bx += 10) {
+      x.fillRect(bx, 0, 3, 64);
+      x.fillStyle = '#32363e'; x.fillRect(bx, 0, 1, 64);
+      x.fillStyle = '#15171a';
+    }
+    stains(x, 64, 64, 4, 'rgba(70,20,10,0.4)', 4, 12);
+    grain(x, 64, 64, 250, 0.25); poster15(x, 64, 64);
+    reg('dogKennel', c);
+  }
+
+  // ---------- ALTAR DO CULTO (SUBSOLO) ----------
+  {
+    const [c, x] = cv(64, 64);
+    x.fillStyle = '#121016'; x.fillRect(0, 0, 64, 64);
+    // círculo de runas
+    x.strokeStyle = '#8a1824'; x.lineWidth = 2;
+    x.beginPath(); x.arc(32, 32, 22, 0, Math.PI * 2); x.stroke();
+    // triângulo invertido com olho
+    x.beginPath();
+    x.moveTo(18, 20); x.lineTo(46, 20); x.lineTo(32, 48); x.lineTo(18, 20);
+    x.stroke();
+    // gotas de cera de vela e sangue
+    stains(x, 64, 64, 6, 'rgba(120,10,15,0.7)', 3, 10);
+    grain(x, 64, 64, 300, 0.25); poster15(x, 64, 64);
+    reg('cultAltar', c);
+  }
+
+  // ---------- MACA DE EXPERIMENTOS CIRÚRGICOS ----------
+  {
+    const [c, x] = cv(64, 64);
+    x.fillStyle = '#4a5056'; x.fillRect(0, 0, 64, 64);
+    // correias de contenção
+    x.fillStyle = '#22150f';
+    x.fillRect(10, 0, 6, 64); x.fillRect(48, 0, 6, 64);
+    // fivelas
+    x.fillStyle = '#c0c4cc';
+    x.fillRect(11, 28, 4, 8); x.fillRect(49, 28, 4, 8);
+    stains(x, 64, 64, 5, 'rgba(90,15,20,0.6)', 4, 12);
+    grain(x, 64, 64, 250, 0.25); poster15(x, 64, 64);
+    reg('examTable', c);
+  }
+
+  // ---------- BALCÃO DE RECEPÇÃO EM U ----------
+  {
+    const [c, x] = cv(64, 64);
+    x.fillStyle = '#3a2012'; x.fillRect(0, 0, 64, 64);
+    // frisos e molduras clássicas de madeira nobre
+    x.fillStyle = '#52301c';
+    x.fillRect(4, 4, 56, 12); x.fillRect(4, 24, 56, 36);
+    x.strokeStyle = '#1c0f08'; x.lineWidth = 2;
+    x.strokeRect(6, 26, 52, 32);
+    stains(x, 64, 64, 3, 'rgba(20,10,5,0.4)', 6, 14);
+    grain(x, 64, 64, 200, 0.2); poster15(x, 64, 64);
+    reg('receptionCounter', c);
+  }
+
+  // ---------- LÁPIDE DO CEMITÉRIO ----------
+  {
+    const [c, x] = cv(32, 64);
+    x.fillStyle = '#3c3e42'; x.fillRect(0, 0, 32, 64);
+    // topo arredondado
+    x.fillStyle = '#2a2b2e';
+    x.fillRect(0, 0, 32, 12);
+    // cruz entalhada
+    x.fillStyle = '#1e2022';
+    x.fillRect(14, 16, 4, 20); x.fillRect(8, 22, 16, 4);
+    // musgo
+    stains(x, 32, 64, 4, 'rgba(35,55,25,0.6)', 3, 8);
+    cracks(x, 32, 64, 2);
+    grain(x, 32, 64, 200, 0.25); poster15(x, 32, 64);
+    reg('tombstone', c);
+  }
+
   return T;
 }
 

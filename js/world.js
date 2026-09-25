@@ -442,6 +442,23 @@ function buildSaguao(THREE, TEX) {
   box(THREE, R.group, 0.05, 0.09, 0.05, new THREE.MeshBasicMaterial({ color: 0xffb03a }), -6.1, 1.1, 2.6);
   solid(R, -7.35, 2.0, -5.65, 3.0);
   pointLight(THREE, R, 0xff9a4a, 6, 9, -6.1, 1.5, 2.6, { amp: 1.8, speed: 8 });
+
+  // Balcão de Recepção em 'U' (Folha P1)
+  const cntM = tm(THREE, TEX.receptionCounter, 1, 1);
+  box(THREE, R.group, 3.2, 1.0, 0.6, cntM, 2.0, 0.5, 0.0);
+  box(THREE, R.group, 0.6, 1.0, 1.8, cntM, 3.3, 0.5, 0.9);
+  box(THREE, R.group, 0.6, 1.0, 1.8, cntM, 0.7, 0.5, 0.9);
+  solid(R, 0.4, -0.3, 3.6, 1.8);
+
+  // Bebedouro com galão de água (Folha P1)
+  box(THREE, R.group, 0.4, 1.3, 0.4, flat(THREE, 0xd0d8e0), -3.5, 0.65, 4.6);
+  solid(R, -3.8, 4.3, -3.2, 4.9);
+
+  // Planta ornamental em vaso (Folha P1)
+  const plantVase = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.35, 0.7, 8), tm(THREE, TEX.vase, 1, 1));
+  plantVase.position.set(-3.5, 0.35, -4.5); R.group.add(plantVase);
+  solid(R, -3.8, -4.8, -3.2, -4.2);
+
   // vaso
   const vase = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.3, 0.7, 8), tm(THREE, TEX.vase, 1, 1));
   vase.position.set(6.5, 0.35, -4.5); R.group.add(vase);
@@ -486,6 +503,7 @@ function buildSaguao(THREE, TEX) {
   addCam(R, [3, -6, 8, 6], [3.5, 3.5, -0.5], [6.0, 1.2, 0.0], 58);
 
   addDoor(R, -5.5, 5.0, 1.3, 'Abrir a porta', 'quarto', 2.5, 1.8, Math.PI);
+  addDoor(R, -7.1, 3.5, 1.3, 'Corredor dos Quartos (Ala Oeste)', 'corredor_quartos', 5.5, 0.0, -Math.PI / 2);
   addDoor(R, 7.1, 1, 1.3, 'Ir para a enfermaria', 'enfermaria', -6.4, 1.0, Math.PI / 2);
   addDoor(R, -7.1, -2, 1.3, 'Descer ao porão', 'porao', 5.4, -2.0, -Math.PI / 2,
     { need: { item: 'basekey' }, consume: true, setFlag: 'poraoOpen', msg: 'Trancada. A placa diz "PORÃO — PROIBIDO". Precisa da CHAVE DO PORÃO.' });
@@ -494,6 +512,10 @@ function buildSaguao(THREE, TEX) {
   addDoor(R, 0, 5.0, 1.4, 'Portão para os Jardins da Floresta', 'floresta', 0, -14.0, 0,
     { need: { item: 'forest_key' }, setFlag: 'forestUnlocked', msg: 'Portão de ferro fundido trancado. Precisa da CHAVE DO PORTÃO DE FERRO.' });
   addDoor(R, 7.1, -3.5, 1.3, 'Entrar na Capela', 'capela', 0, 8.0, Math.PI);
+  addDoor(R, -2.5, 5.0, 1.3, 'Ir à Estufa Botânica (Ala Sul)', 'estufa', 0, -4.0, 0);
+  addDoor(R, -2.0, -5.0, 1.3, 'Ir ao Cemitério das Lápides (Ala Norte)', 'cemiterio', 0, 4.5, Math.PI);
+  addDoor(R, 7.1, -1.0, 1.3, 'Pátio Externo & Canil (Ala Leste)', 'jardim', -7.5, -1.0, Math.PI / 2);
+  addDoor(R, -6.4, -4.0, 1.4, 'Subir ao Mezanino (2º Andar)', 'mezanino', 5.5, 3.0, 0);
 
   addInteract(R, 0, -2.1, 1.5, 'Examinar a estátua', 'statue');
   addInteract(R, -6.5, 1.9, 1.4, 'Escrever no diário', 'save');
@@ -504,7 +526,7 @@ function buildSaguao(THREE, TEX) {
   addPickup(THREE, R, TEX, 'page', -6.0, 3.4, 1, 1, 0.06);
   addPickup(THREE, R, TEX, 'ammo9', 6.8, 4.8, 12);
 
-  addSpawn(R, 'sombra', 2.5, 1.5);
+  addSpawn(R, 'sombra', -2.5, 2.5);
   addSpawn(R, 'infectado', -2.0, 1.0);
   addSpawn(R, 'rastejador', -4.5, -2.5);
   addSpawn(R, 'infectado', 5.0, -1.5);
@@ -880,6 +902,10 @@ function buildTerraco(THREE, TEX) {
   box(THREE, R.group, 2.6, 0.3, 2.6, altM, 0, 0.15, -4);
   box(THREE, R.group, 1.6, 0.9, 1.6, altM, 0, 0.75, -4);
   box(THREE, R.group, 0.7, 2.2, 0.7, altM, 0, 2.2, -4);
+
+  // Heliponto demarcado no chão de concreto (Folha P3)
+  plane(THREE, R.group, 7.5, 7.5, new THREE.MeshLambertMaterial({ map: TEX.heliPad }), 2.0, 0.015, 0.5, -Math.PI / 2);
+
   // brasas/velas do memorial
   for (const [cx, cz] of [[-1.0, -3.2], [1.0, -3.2], [-1.0, -4.8], [1.0, -4.8]]) {
     box(THREE, R.group, 0.12, 0.3, 0.12, flat(THREE, 0xd8ccb0), cx, 0.45, cz);
@@ -1355,13 +1381,582 @@ function buildTitleDiorama(THREE, TEX) {
   return R;
 }
 
+// ---------------- CORREDOR DOS QUARTOS (P1 - FOLHA P1) ----------------
+function buildCorredorQuartos(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'corredor_quartos', 'ALA DE INTERNAÇÃO · CORREDOR OESTE', 14, 8, 3.2);
+  R.fog = { c: 0x05050c, n: 6, f: 22 };
+  R.ambient = 'quarto';
+  const floorM = tm(THREE, TEX.floorWood, 4, 2);
+  const wallM = tm(THREE, TEX.wallpaper, 5, 1.4);
+  const ceilM = tm(THREE, TEX.ceiling, 5, 3);
+  plane(THREE, R.group, 14, 8, floorM, 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 14, 8, ceilM, 0, 3.2, 0, Math.PI / 2);
+  perimeter(THREE, R, 14, 8, 3.2, wallM, [
+    { side: 'N', at: -4.0, w: 1.8 },
+    { side: 'S', at: -4.0, w: 1.8 },
+    { side: 'E', at: 0.0, w: 1.8 },
+  ]);
+  doorVisual(THREE, R, 'N', -4.0, 8, 14, TEX.doorWood);
+  doorVisual(THREE, R, 'S', -4.0, 8, 14, TEX.doorWood);
+  doorVisual(THREE, R, 'E', 0.0, 8, 14, TEX.doorWood);
+
+  // Carpete longo central
+  plane(THREE, R.group, 11, 2.0, tm(THREE, TEX.carpet, 4, 1), 0.5, 0.012, 0, -Math.PI / 2);
+
+  // Aparador com remédios
+  box(THREE, R.group, 1.4, 0.8, 0.5, flat(THREE, 0x2e2014), 2.0, 0.4, -3.6);
+  solid(R, 1.2, -3.9, 2.8, -3.3);
+
+  // Janelas na parede norte com luz fria
+  plane(THREE, R.group, 1.6, 2.0, tm(THREE, TEX.window, 1, 1), 2.0, 1.8, -3.96);
+  pointLight(THREE, R, 0x4a6a9a, 3, 7, 2.0, 2.0, -2.8);
+  pointLight(THREE, R, 0x9a8060, 4, 8, -4.0, 2.2, 0);
+
+  addCam(R, [-7, -4, 0, 4], [-4.5, 2.5, 3.0], [-1.0, 1.2, 0.0], 65);
+  addCam(R, [0, -4, 7, 4], [4.5, 2.5, 3.0], [0.5, 1.2, 0.0], 65);
+
+  addDoor(R, -4.0, -3.5, 1.3, 'Entrar no Quarto 1', 'quarto', 2.5, 2.5, 0);
+  addDoor(R, -4.0, 3.5, 1.3, 'Entrar no Quarto 2 (Ala Trancada)', 'quarto2', 0, -2.8, Math.PI);
+  addDoor(R, 6.5, 0.0, 1.4, 'Ir ao Hall Principal', 'saguao', -5.5, 4.0, -Math.PI / 2);
+
+  addPickup(THREE, R, TEX, 'ammo9', 2.0, -3.2, 15);
+  addSpawn(R, 'infectado', 0.0, 0.0);
+  return R;
+}
+
+// ---------------- QUARTO 2 / COFRE (P1 - FOLHA P1) ----------------
+function buildQuarto2(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'quarto2', 'QUARTO 2 · COFRE CONFIDENCIAL', 10, 8, 3.0);
+  R.fog = { c: 0x06050b, n: 5, f: 20 };
+  R.ambient = 'quarto';
+  const floorM = tm(THREE, TEX.floorWood, 3, 3);
+  const wallM = tm(THREE, TEX.wallpaper, 4, 1.4);
+  const ceilM = tm(THREE, TEX.ceiling, 4, 3);
+  plane(THREE, R.group, 10, 8, floorM, 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 10, 8, ceilM, 0, 3.0, 0, Math.PI / 2);
+  perimeter(THREE, R, 10, 8, 3.0, wallM, [{ side: 'N', at: 0.0, w: 1.8 }]);
+  doorVisual(THREE, R, 'N', 0.0, 8, 10, TEX.doorWood);
+
+  const woodM = tm(THREE, TEX.wood, 1, 1);
+  const woodD = flat(THREE, 0x2e2014);
+
+  // Cama no canto superior direito
+  box(THREE, R.group, 2.2, 0.35, 1.6, woodM, 3.0, 0.3, -2.5);
+  box(THREE, R.group, 2.2, 0.9, 0.12, woodM, 3.0, 0.7, -3.3);
+  box(THREE, R.group, 2.0, 0.22, 1.44, tm(THREE, TEX.mattress, 1, 1), 3.0, 0.58, -2.5);
+  solid(R, 1.8, -3.4, 4.2, -1.6);
+
+  // Estante de livros na parede oeste
+  box(THREE, R.group, 0.5, 2.2, 2.4, woodD, -4.6, 1.1, -1.5);
+  solid(R, -4.9, -2.8, -4.2, -0.2);
+
+  // Tapete central
+  plane(THREE, R.group, 2.4, 3.0, tm(THREE, TEX.rug, 1, 1), 0, 0.012, 0.5, -Math.PI / 2);
+
+  // O GRANDE COFRE DE FERRO no canto inferior esquerdo (Folha P1)
+  box(THREE, R.group, 1.0, 1.2, 0.8, flat(THREE, 0x25282e), -3.5, 0.6, 2.8);
+  plane(THREE, R.group, 0.9, 1.1, new THREE.MeshLambertMaterial({ map: TEX.safe }), -3.5, 0.6, 2.39, 0, Math.PI);
+  solid(R, -4.1, 2.3, -2.9, 3.3);
+
+  pointLight(THREE, R, 0x9a8060, 4, 9, 0, 2.4, 0);
+  pointLight(THREE, R, 0x3a5a7a, 2, 6, -3.5, 1.8, 2.0);
+
+  addCam(R, [-5, -4, 0, 4], [-3.2, 2.4, -2.5], [-0.5, 1.1, 1.0], 62);
+  addCam(R, [0, -4, 5, 4], [3.2, 2.4, 2.5], [0.0, 1.1, 0.0], 62);
+
+  addDoor(R, 0.0, -3.5, 1.3, 'Sair para o corredor dos quartos', 'corredor_quartos', -4.0, 2.5, 0);
+
+  addInteract(R, -3.5, 2.0, 1.4, 'Abrir o cofre confidencial', 'safe');
+  addInteract(R, 3.0, -1.5, 1.3, 'Examinar a cama antiga', 'bed2');
+  addInteract(R, -4.0, -1.5, 1.3, 'Vasculhar a estante de prontuários', 'shelf2');
+
+  addPickup(THREE, R, TEX, 'pills', 3.0, -1.8, 1, null, 0.7);
+  addSpawn(R, 'lamento', 2.0, 1.5);
+  return R;
+}
+
+// ---------------- ESTUFA BOTÂNICA (P1 - FOLHA P1) ----------------
+function buildEstufa(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'estufa', 'ESTUFA BOTÂNICA', 16, 10, 3.8);
+  R.fog = { c: 0x050e0a, n: 6, f: 24 };
+  R.ambient = 'enfermaria';
+  const floorM = tm(THREE, TEX.floorTile, 5, 3);
+  const wallM = tm(THREE, TEX.greenhouseGlass, 6, 2);
+  const glassM = tm(THREE, TEX.greenhouseGlass, 5, 3);
+  plane(THREE, R.group, 16, 10, floorM, 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 16, 10, glassM, 0, 3.8, 0, Math.PI / 2);
+  perimeter(THREE, R, 16, 10, 3.8, wallM, [{ side: 'N', at: 0.0, w: 1.8 }]);
+  doorVisual(THREE, R, 'N', 0.0, 10, 16, TEX.doorWood);
+
+  // Dois canteiros longitudinais centrais de terra fofa (Folha P1)
+  const soilM = tm(THREE, TEX.greenhouseSoil, 4, 1);
+  const curbM = flat(THREE, 0x3a3630);
+  box(THREE, R.group, 10.0, 0.35, 1.6, soilM, 0, 0.18, -1.6);
+  box(THREE, R.group, 10.4, 0.45, 0.15, curbM, 0, 0.22, -2.45);
+  box(THREE, R.group, 10.4, 0.45, 0.15, curbM, 0, 0.22, -0.75);
+  solid(R, -5.2, -2.5, 5.2, -0.7);
+
+  box(THREE, R.group, 10.0, 0.35, 1.6, soilM, 0, 0.18, 1.6);
+  box(THREE, R.group, 10.4, 0.45, 0.15, curbM, 0, 0.22, 0.75);
+  box(THREE, R.group, 10.4, 0.45, 0.15, curbM, 0, 0.22, 2.45);
+  solid(R, -5.2, 0.7, 5.2, 2.5);
+
+  // Bancada de químicos / pulverizador na parede oeste
+  box(THREE, R.group, 0.7, 0.85, 2.2, flat(THREE, 0x2e3532), -7.2, 0.42, 0);
+  solid(R, -7.6, -1.2, -6.7, 1.2);
+
+  pointLight(THREE, R, 0x306644, 4, 10, 0, 2.6, 0);
+  pointLight(THREE, R, 0x669988, 3, 8, -6.5, 2.2, 0);
+
+  addCam(R, [-8, -5, 0, 5], [-5.5, 2.6, 3.5], [-2.0, 1.2, 0.0], 65);
+  addCam(R, [0, -5, 8, 5], [5.5, 2.6, 3.5], [2.0, 1.2, 0.0], 65);
+
+  addDoor(R, 0.0, -4.5, 1.3, 'Voltar ao Hall Principal', 'saguao', -2.5, 4.5, Math.PI);
+
+  addInteract(R, -6.5, 0.0, 1.4, 'Bancada de compostos da estufa', 'greenhouse_bench');
+  addInteract(R, 0.0, 3.0, 1.4, 'Examinar as plantas medicinais', 'greenhouse_plants');
+
+  addPickup(THREE, R, TEX, 'herbicide', -6.5, 0.0, 1, null, 0.9);
+  addPickup(THREE, R, TEX, 'pills', 4.5, 1.6, 1, null, 0.5);
+  addSpawn(R, 'rastejador', 3.0, 0.0);
+  return R;
+}
+
+// ---------------- JARDIM FÚNEBRE / CEMITÉRIO (P1 - FOLHA P1) ----------------
+function buildCemiterio(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'cemiterio', 'JARDIM FÚNEBRE · LÁPIDES', 18, 12, 0);
+  R.fog = { c: 0x040608, n: 6, f: 28 };
+  R.ambient = 'floresta';
+  R.openSky = true;
+  const groundM = tm(THREE, TEX.forestGround, 5, 4);
+  plane(THREE, R.group, 18, 12, groundM, 0, 0, 0, -Math.PI / 2);
+
+  const stoneM = tm(THREE, TEX.wallStone, 4, 1);
+  const mkWall = (x, z, w, d) => {
+    box(THREE, R.group, w, 2.2, d, stoneM, x, 1.1, z);
+    solid(R, x - w / 2, z - d / 2, x + w / 2, z + d / 2);
+  };
+  mkWall(0, -6.0, 18.5, 0.5);
+  mkWall(-9.0, 0, 0.5, 12.5);
+  mkWall(9.0, 0, 0.5, 12.5);
+  mkWall(-5.0, 6.0, 8.5, 0.5);
+  mkWall(5.0, 6.0, 8.5, 0.5);
+
+  doorVisual(THREE, R, 'S', 0.0, 12, 18, TEX.doorMetal, 0x1a1a1a);
+
+  // Fileiras de lápides fúnebres (Folha P1)
+  const tombM = tm(THREE, TEX.tombstone, 1, 1);
+  const places = [
+    [-5, -3], [-2.5, -3], [2.5, -3], [5, -3],
+    [-5, 0],  [-2.5, 0],  [2.5, 0],  [5, 0],
+    [-5, 3],  [-2.5, 3],  [2.5, 3],  [5, 3],
+  ];
+  for (const [tx, tz] of places) {
+    box(THREE, R.group, 0.6, 0.9, 0.25, tombM, tx, 0.45, tz);
+    solid(R, tx - 0.4, tz - 0.3, tx + 0.4, tz + 0.3);
+  }
+
+  // Mausoléu antigo ao norte
+  box(THREE, R.group, 3.2, 2.4, 2.4, tm(THREE, TEX.wallStone, 2, 2), 0, 1.2, -4.5);
+  solid(R, -1.8, -5.8, 1.8, -3.2);
+
+  pointLight(THREE, R, 0x4a6a8a, 4, 14, 0, 3.0, 0);
+
+  addCam(R, [-9, -6, 0, 6], [-6.5, 3.0, 4.5], [-2.0, 1.2, 0.0], 65);
+  addCam(R, [0, -6, 9, 6], [6.5, 3.0, 4.5], [2.0, 1.2, 0.0], 65);
+
+  addDoor(R, 0.0, 5.5, 1.4, 'Voltar ao Hall Principal', 'saguao', -2.0, -4.5, 0);
+
+  addInteract(R, 0.0, -2.8, 1.4, 'Examinar o mausoléu dos fundadores', 'mausoleum');
+  addPickup(THREE, R, TEX, 'ribbon', 0.0, -2.5, 1, null, 0.5);
+  addSpawn(R, 'lamento', -4.0, 1.5);
+  addSpawn(R, 'lamento', 4.0, -1.5);
+  return R;
+}
+
+// ---------------- JARDIM TRASEIRO, ESTACIONAMENTO & CANIL (P1 - FOLHA P1) ----------------
+function buildJardim(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'jardim', 'PÁTIO EXTERNO & CANIL', 18, 16, 0);
+  R.fog = { c: 0x05080c, n: 8, f: 32 };
+  R.ambient = 'floresta';
+  R.openSky = true;
+  const groundM = tm(THREE, TEX.forestGround, 6, 5);
+  plane(THREE, R.group, 18, 16, groundM, 0, 0, 0, -Math.PI / 2);
+
+  const stoneM = tm(THREE, TEX.wallStone, 4, 1);
+  const mkWall = (x, z, w, d) => {
+    box(THREE, R.group, w, 2.4, d, stoneM, x, 1.2, z);
+    solid(R, x - w / 2, z - d / 2, x + w / 2, z + d / 2);
+  };
+  mkWall(0, -8.0, 18.5, 0.5);
+  mkWall(0, 8.0, 18.5, 0.5);
+  mkWall(9.0, 0, 0.5, 16.5);
+  mkWall(-9.0, 4.0, 0.5, 8.5);
+  mkWall(-9.0, -5.0, 0.5, 6.5);
+
+  doorVisual(THREE, R, 'W', -1.0, 16, 18, TEX.doorMetal, 0x1a1a1a);
+
+  // Canil ao leste: jaulas com grades de ferro (Folha P1)
+  const kennelM = tm(THREE, TEX.dogKennel, 1, 1);
+  for (let kz = -4; kz <= 4; kz += 3.5) {
+    box(THREE, R.group, 3.2, 2.0, 2.8, kennelM, 6.5, 1.0, kz);
+    solid(R, 4.8, kz - 1.5, 8.2, kz + 1.5);
+  }
+
+  // Cabana da Casa do Zelador no canto sudoeste (Folha P1)
+  const woodM = tm(THREE, TEX.wood, 2, 2);
+  box(THREE, R.group, 4.2, 2.6, 4.2, woodM, -5.5, 1.3, 4.5);
+  plane(THREE, R.group, 1.4, 2.1, new THREE.MeshLambertMaterial({ map: TEX.doorWood }), -3.35, 1.05, 4.5, 0, Math.PI / 2);
+  solid(R, -7.8, 2.3, -3.3, 6.7);
+
+  // Árvores retorcidas no jardim
+  const barkM = tm(THREE, TEX.bark, 1, 2);
+  for (const [tx, tz] of [[-1, -3], [1, 2], [-2, 1]]) {
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.45, 4.0, 7), barkM);
+    trunk.position.set(tx, 2.0, tz); R.group.add(trunk);
+    solid(R, tx - 0.5, tz - 0.5, tx + 0.5, tz + 0.5);
+  }
+
+  pointLight(THREE, R, 0x3a5a7a, 5, 16, 0, 3.5, 0);
+  pointLight(THREE, R, 0xffaa44, 3, 7, -3.0, 2.0, 4.5);
+
+  addCam(R, [-9, -8, 0, 8], [-6.0, 3.2, -5.0], [-1.0, 1.2, 0.0], 65);
+  addCam(R, [0, -8, 9, 8], [5.0, 3.2, 5.0], [0.0, 1.2, 0.0], 65);
+
+  addDoor(R, -8.5, -1.0, 1.4, 'Voltar ao Hall Principal', 'saguao', 6.5, -1.0, Math.PI / 2);
+  addDoor(R, -3.0, 4.5, 1.3, 'Entrar na Casa do Zelador', 'casa_zelador', 0.0, 2.5, 0);
+
+  addInteract(R, 4.5, 0.0, 1.4, 'Inspecionar as jaulas do canil', 'kennel');
+  addPickup(THREE, R, TEX, 'greenhouse_key', 4.5, 0.0, 1, null, 0.6);
+  addPickup(THREE, R, TEX, 'shell', 1.0, 2.5, 4, null, 0.4);
+  addSpawn(R, 'rastejador', 2.0, -2.0);
+  addSpawn(R, 'infectado', 4.0, 2.0);
+  return R;
+}
+
+// ---------------- CASA DO ZELADOR BENTO (EXTRAS - FOLHA EXTRAS) ----------------
+function buildCasaZelador(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'casa_zelador', 'CASA DO ZELADOR BENTO', 8, 8, 2.8);
+  R.fog = { c: 0x080604, n: 4, f: 18 };
+  R.ambient = 'quarto';
+  const floorM = tm(THREE, TEX.floorWood, 3, 3);
+  const wallM = tm(THREE, TEX.wood, 3, 2);
+  const ceilM = tm(THREE, TEX.ceiling, 3, 3);
+  plane(THREE, R.group, 8, 8, floorM, 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 8, 8, ceilM, 0, 2.8, 0, Math.PI / 2);
+  perimeter(THREE, R, 8, 8, 2.8, wallM, [{ side: 'S', at: 0.0, w: 1.6 }]);
+  doorVisual(THREE, R, 'S', 0.0, 8, 8, TEX.doorWood);
+
+  // Cama no canto superior direito
+  box(THREE, R.group, 2.0, 0.35, 1.4, tm(THREE, TEX.wood, 1, 1), 2.6, 0.25, -2.8);
+  box(THREE, R.group, 1.8, 0.2, 1.2, tm(THREE, TEX.mattress, 1, 1), 2.6, 0.5, -2.8);
+  solid(R, 1.5, -3.6, 3.7, -2.0);
+
+  // Armário de ferramentas no canto superior esquerdo
+  box(THREE, R.group, 1.6, 1.9, 0.6, flat(THREE, 0x3a4048), -2.8, 0.95, -3.3);
+  solid(R, -3.7, -3.7, -1.9, -2.9);
+
+  // Mesa de trabalho no canto inferior esquerdo
+  box(THREE, R.group, 1.6, 0.8, 0.8, flat(THREE, 0x3e2818), -2.8, 0.4, 2.0);
+  solid(R, -3.7, 1.5, -1.9, 2.5);
+
+  // Tapete central
+  plane(THREE, R.group, 2.0, 2.0, tm(THREE, TEX.rug, 1, 1), 0, 0.012, 0, -Math.PI / 2);
+
+  pointLight(THREE, R, 0xffa044, 4, 8, -2.5, 1.8, 1.8);
+
+  addCam(R, [-4, -4, 0, 4], [-2.5, 2.2, -2.2], [0.5, 1.0, 0.5], 65);
+  addCam(R, [0, -4, 4, 4], [2.5, 2.2, 2.2], [-0.5, 1.0, -0.5], 65);
+
+  addDoor(R, 0.0, 3.5, 1.3, 'Sair para o Jardim', 'jardim', -2.0, 4.5, Math.PI);
+
+  addInteract(R, -2.8, -2.6, 1.3, 'Armário de ferramentas de Bento', 'bento_locker');
+  addInteract(R, -2.8, 1.4, 1.3, 'Bancada com rádio transmissor', 'bento_radio');
+
+  addPickup(THREE, R, TEX, 'crowbar', -2.8, 2.0, 1, null, 0.85);
+  addPickup(THREE, R, TEX, 'bento_key', -2.8, -2.9, 1, null, 0.85);
+  return R;
+}
+
+// ---------------- MEZANINO / 2º ANDAR (P2 - FOLHA P2) ----------------
+function buildMezanino(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'mezanino', 'MEZANINO · 2º ANDAR', 18, 14, 3.8);
+  R.fog = { c: 0x040408, n: 6, f: 26 };
+  R.ambient = 'saguao';
+  R.music = 'save';
+  const floorM = tm(THREE, TEX.floorTile, 6, 4);
+  const wallM = tm(THREE, TEX.wallDirty, 6, 2);
+  const ceilM = tm(THREE, TEX.ceiling, 6, 5);
+  plane(THREE, R.group, 18, 14, floorM, 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 18, 14, ceilM, 0, 3.8, 0, Math.PI / 2);
+
+  perimeter(THREE, R, 18, 14, 3.8, wallM, [
+    { side: 'S', at: 0.0, w: 1.8 },
+    { side: 'N', at: 0.0, w: 1.8 },
+  ]);
+  doorVisual(THREE, R, 'S', 0.0, 14, 18, TEX.doorWood);
+  doorVisual(THREE, R, 'N', 0.0, 14, 18, TEX.doorMetal);
+
+  // Vão central vazado com guarda-corpo de ferro (Folha P2)
+  const railM = tm(THREE, TEX.fence, 3, 1);
+  plane(THREE, R.group, 8.0, 1.1, railM, 0, 0.55, -2.5, 0, 0);
+  plane(THREE, R.group, 8.0, 1.1, railM, 0, 0.55, 2.5, 0, Math.PI);
+  plane(THREE, R.group, 5.0, 1.1, railM, -4.0, 0.55, 0, 0, Math.PI / 2);
+  plane(THREE, R.group, 5.0, 1.1, railM, 4.0, 0.55, 0, 0, -Math.PI / 2);
+  solid(R, -4.2, -2.6, 4.2, 2.6);
+
+  // Escadaria descendo para o Saguão no canto sudeste
+  box(THREE, R.group, 2.5, 1.2, 1.8, flat(THREE, 0x2e2014), 6.5, 0.6, 4.5);
+  solid(R, 5.2, 3.5, 7.8, 5.5);
+
+  // Escadaria subindo para o 3º Andar no canto noroeste
+  box(THREE, R.group, 2.5, 1.2, 1.8, flat(THREE, 0x2e2014), -6.5, 0.6, -4.5);
+  solid(R, -7.8, -5.5, -5.2, -3.5);
+
+  // Elevador na parede leste com painel de controle (Folha P2)
+  box(THREE, R.group, 0.4, 2.8, 2.4, flat(THREE, 0x1c1e22), 8.8, 1.4, 0);
+  plane(THREE, R.group, 2.0, 2.2, new THREE.MeshLambertMaterial({ map: TEX.doorMetal }), 8.58, 1.1, 0, 0, -Math.PI / 2);
+  solid(R, 8.4, -1.3, 9.1, 1.3);
+
+  pointLight(THREE, R, 0x8a7a5a, 4, 11, 0, 2.8, 0);
+  pointLight(THREE, R, 0x3a5a7a, 3, 7, 7.5, 2.2, 0);
+
+  addCam(R, [-9, -7, 0, 7], [-6.5, 3.0, 5.0], [-1.0, 1.2, 0.0], 65);
+  addCam(R, [0, -7, 9, 7], [6.5, 3.0, -5.0], [1.0, 1.2, 0.0], 65);
+
+  addDoor(R, 6.0, 3.5, 1.4, 'Descer para o Hall Principal (P1)', 'saguao', -5.5, -3.5, 0);
+  addDoor(R, -6.0, -3.5, 1.4, 'Subir as escadas para o 3º Andar (P3)', 'corredor_p3', 0.0, 1.5, 0);
+  addDoor(R, 0.0, 6.5, 1.3, 'Entrar na Ala Médica (Enfermaria)', 'enfermaria', 0.0, -2.2, 0);
+  addDoor(R, 0.0, -6.5, 1.3, 'Entrar na Ala das Caldeiras', 'porao', 0.0, 3.5, Math.PI);
+
+  addInteract(R, 7.8, 0.0, 1.4, 'Painel do elevador do 2º Andar', 'elevator_p2');
+  addSpawn(R, 'enfermeira', -4.5, 3.5);
+  return R;
+}
+
+// ---------------- CORREDOR DO 3º ANDAR (P3 - FOLHA P3) ----------------
+function buildCorredorP3(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'corredor_p3', '3º ANDAR · CORREDOR SUPERIOR', 14, 6, 3.2);
+  R.fog = { c: 0x04050a, n: 6, f: 22 };
+  R.ambient = 'quarto';
+  const floorM = tm(THREE, TEX.floorWood, 4, 2);
+  const wallM = tm(THREE, TEX.wallpaper, 5, 1.4);
+  const ceilM = tm(THREE, TEX.ceiling, 5, 2);
+  plane(THREE, R.group, 14, 6, floorM, 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 14, 6, ceilM, 0, 3.2, 0, Math.PI / 2);
+
+  perimeter(THREE, R, 14, 6, 3.2, wallM, [
+    { side: 'W', at: 0.0, w: 1.8 },
+    { side: 'N', at: 4.0, w: 1.8 },
+    { side: 'S', at: 0.0, w: 1.8 },
+  ]);
+  doorVisual(THREE, R, 'W', 0.0, 6, 14, TEX.doorWood);
+  doorVisual(THREE, R, 'N', 4.0, 6, 14, TEX.doorMetal);
+  doorVisual(THREE, R, 'S', 0.0, 6, 14, TEX.doorWood);
+
+  // Mesas de apoio nas pontas (Folha P3)
+  box(THREE, R.group, 0.6, 0.8, 1.6, flat(THREE, 0x2e2014), 6.2, 0.4, 0);
+  solid(R, 5.8, -0.9, 6.7, 0.9);
+
+  box(THREE, R.group, 0.6, 0.8, 1.6, flat(THREE, 0x2e2014), -6.2, 0.4, 1.8);
+  solid(R, -6.7, 0.9, -5.8, 2.7);
+
+  pointLight(THREE, R, 0x3a5a8a, 4, 8, 0, 2.2, 0);
+
+  addCam(R, [-7, -3, 0, 3], [-4.5, 2.4, 2.0], [0.0, 1.1, 0.0], 65);
+  addCam(R, [0, -3, 7, 3], [4.5, 2.4, 2.0], [0.0, 1.1, 0.0], 65);
+
+  addDoor(R, 0.0, 2.5, 1.3, 'Descer para o 2º Andar', 'mezanino', -6.0, -2.0, 0);
+  addDoor(R, -6.5, 0.0, 1.3, 'Entrar na Sala do Dr. Alencastro', 'sala_dr_p3', 3.5, 0.0, Math.PI);
+  addDoor(R, 4.0, -2.5, 1.4, 'Porta blindada de acesso ao Terraço', 'terraco', 3.0, 3.5, 0);
+
+  addPickup(THREE, R, TEX, 'ammo9', 6.0, 0.0, 15, null, 0.85);
+  addSpawn(R, 'infectado', -2.0, 0.0);
+  return R;
+}
+
+// ---------------- SALA DO DR. ALENCASTRO (P3 - FOLHA P3) ----------------
+function buildSalaDrP3(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'sala_dr_p3', 'SALA CONFIDENCIAL DO DR. ALENCASTRO', 10, 8, 3.2);
+  R.fog = { c: 0x05040a, n: 5, f: 20 };
+  R.ambient = 'consultorio';
+  const floorM = tm(THREE, TEX.floorWood, 3, 3);
+  const wallM = tm(THREE, TEX.wallpaper, 4, 1.4);
+  const ceilM = tm(THREE, TEX.ceiling, 4, 3);
+  plane(THREE, R.group, 10, 8, floorM, 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 10, 8, ceilM, 0, 3.2, 0, Math.PI / 2);
+  perimeter(THREE, R, 10, 8, 3.2, wallM, [{ side: 'E', at: 0.0, w: 1.8 }]);
+  doorVisual(THREE, R, 'E', 0.0, 8, 10, TEX.doorWood);
+
+  const woodD = flat(THREE, 0x241810);
+  // Estantes com pesquisas avançadas (Folha P3)
+  box(THREE, R.group, 2.4, 2.4, 0.5, woodD, -2.5, 1.2, -3.6);
+  plane(THREE, R.group, 2.3, 2.3, tm(THREE, TEX.bookcase, 1, 1), -2.5, 1.2, -3.34, 0, 0);
+  solid(R, -3.8, -3.9, -1.2, -3.3);
+
+  box(THREE, R.group, 2.4, 2.4, 0.5, woodD, 2.5, 1.2, -3.6);
+  plane(THREE, R.group, 2.3, 2.3, tm(THREE, TEX.bookcase, 1, 1), 2.5, 1.2, -3.34, 0, 0);
+  solid(R, 1.2, -3.9, 3.8, -3.3);
+
+  // Mesa executiva central com papéis e microscópio (Folha P3)
+  box(THREE, R.group, 2.2, 0.8, 1.2, woodD, 0.0, 0.4, 0.0);
+  solid(R, -1.2, -0.7, 1.2, 0.7);
+
+  // Tapete elegante
+  plane(THREE, R.group, 3.2, 2.4, tm(THREE, TEX.rug, 1, 1), 0.0, 0.012, 0.0, -Math.PI / 2);
+
+  pointLight(THREE, R, 0x8a7050, 4, 9, 0, 2.4, 0);
+
+  addCam(R, [-5, -4, 0, 4], [-3.2, 2.4, 2.5], [0.0, 1.1, 0.0], 62);
+  addCam(R, [0, -4, 5, 4], [3.2, 2.4, 2.5], [0.0, 1.1, 0.0], 62);
+
+  addDoor(R, 4.5, 0.0, 1.3, 'Voltar ao Corredor P3', 'corredor_p3', -6.5, 0.0, -Math.PI / 2);
+
+  addInteract(R, 0.0, 0.9, 1.4, 'Examinar a mesa do Dr. Alencastro', 'alencastro_desk_p3');
+  addInteract(R, -2.5, -2.5, 1.3, 'Examinar as estantes de fórmulas', 'alencastro_books_p3');
+
+  addPickup(THREE, R, TEX, 'terrace_key', 0.0, 0.0, 1, null, 0.85);
+  addPickup(THREE, R, TEX, 'pills', 2.5, -3.0, 1, null, 0.5);
+  return R;
+}
+
+// ---------------- SUBSOLO / CORREDOR (EXTRAS - FOLHA EXTRAS) ----------------
+function buildSubsoloCorredor(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'subsolo_corredor', 'SUBSOLO · TÚNEIS DAS CATACUMBAS', 14, 6, 3.0);
+  R.fog = { c: 0x060204, n: 5, f: 18 };
+  R.ambient = 'porao';
+  const floorM = tm(THREE, TEX.stoneFloor, 4, 2);
+  const wallM = tm(THREE, TEX.wallStone, 5, 1.4);
+  const ceilM = tm(THREE, TEX.stoneFloor, 5, 2);
+  plane(THREE, R.group, 14, 6, floorM, 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 14, 6, ceilM, 0, 3.0, 0, Math.PI / 2);
+
+  perimeter(THREE, R, 14, 6, 3.0, wallM, [
+    { side: 'W', at: 0.0, w: 1.8 },
+    { side: 'E', at: 0.0, w: 1.8 },
+    { side: 'N', at: 0.0, w: 1.8 },
+  ]);
+  doorVisual(THREE, R, 'W', 0.0, 6, 14, TEX.doorMetal);
+  doorVisual(THREE, R, 'E', 0.0, 6, 14, TEX.doorWood);
+  doorVisual(THREE, R, 'N', 0.0, 6, 14, TEX.doorMetal);
+
+  // Tubos de vapor no teto
+  box(THREE, R.group, 13.0, 0.2, 0.2, flat(THREE, 0x4a4a4e), 0, 2.7, 1.8);
+  box(THREE, R.group, 13.0, 0.2, 0.2, flat(THREE, 0x3a3a3e), 0, 2.5, 1.9);
+
+  pointLight(THREE, R, 0x882020, 4, 8, 0, 2.2, 0);
+
+  addCam(R, [-7, -3, 0, 3], [-4.0, 2.2, 2.0], [0.0, 1.0, 0.0], 65);
+  addCam(R, [0, -3, 7, 3], [4.0, 2.2, 2.0], [0.0, 1.0, 0.0], 65);
+
+  addDoor(R, 0.0, -2.5, 1.3, 'Subir para a Ala das Caldeiras', 'porao', 3.5, 3.5, 0);
+  addDoor(R, -6.5, 0.0, 1.3, 'Entrar no Santuário do Culto', 'culto', 4.5, 0.0, -Math.PI / 2);
+  addDoor(R, 6.5, 0.0, 1.3, 'Entrar na Sala de Experimentos', 'experimentos', -3.5, 0.0, Math.PI / 2);
+
+  addSpawn(R, 'aberracao', 0.0, 0.0);
+  return R;
+}
+
+// ---------------- SANTUÁRIO DO CULTO (EXTRAS - FOLHA EXTRAS) ----------------
+function buildCulto(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'culto', 'SANTUÁRIO OCULTO · SALA DO CULTO', 14, 10, 4.0);
+  R.fog = { c: 0x080204, n: 6, f: 22 };
+  R.ambient = 'porao';
+  const floorM = tm(THREE, TEX.stoneFloor, 4, 3);
+  const wallM = tm(THREE, TEX.wallStone, 4, 2);
+  const ceilM = tm(THREE, TEX.stoneFloor, 4, 3);
+  plane(THREE, R.group, 14, 10, floorM, 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 14, 10, ceilM, 0, 4.0, 0, Math.PI / 2);
+
+  perimeter(THREE, R, 14, 10, 4.0, wallM, [{ side: 'E', at: 0.0, w: 1.8 }]);
+  doorVisual(THREE, R, 'E', 0.0, 10, 14, TEX.doorMetal);
+
+  // Fileiras de cadeiras cerimoniais (Folha Extras)
+  const woodD = flat(THREE, 0x241810);
+  for (let z = -2.5; z <= 2.5; z += 2.5) {
+    for (let x = 0; x <= 3; x += 1.5) {
+      box(THREE, R.group, 0.6, 0.8, 0.6, woodD, x, 0.4, z);
+      solid(R, x - 0.35, z - 0.35, x + 0.35, z + 0.35);
+    }
+  }
+
+  // O GRANDE ALTAR DO CULTO na parede oeste (Folha Extras)
+  const altM = tm(THREE, TEX.cultAltar, 1, 1);
+  box(THREE, R.group, 1.8, 1.1, 3.2, altM, -4.8, 0.55, 0.0);
+  solid(R, -5.8, -1.8, -3.8, 1.8);
+
+  // Candelabros com fogo místico
+  pointLight(THREE, R, 0xd02020, 6, 12, -4.5, 2.0, 0, { amp: 2, speed: 7 });
+
+  addCam(R, [-7, -5, 0, 5], [-3.5, 2.6, 3.5], [-1.0, 1.2, 0.0], 65);
+  addCam(R, [0, -5, 7, 5], [4.5, 2.6, 3.5], [0.0, 1.2, 0.0], 65);
+
+  addDoor(R, 6.5, 0.0, 1.3, 'Voltar ao Corredor do Subsolo', 'subsolo_corredor', -6.5, 0.0, Math.PI / 2);
+
+  addInteract(R, -3.6, 0.0, 1.5, 'Examinar o Altar Profanado', 'cult_altar');
+  addPickup(THREE, R, TEX, 'cult_symbol', -4.5, 0.0, 1, null, 1.15);
+  addSpawn(R, 'lamento', -1.5, 0.0);
+  return R;
+}
+
+// ---------------- SALA DE EXPERIMENTOS SECRETOS (EXTRAS - FOLHA EXTRAS) ----------------
+function buildExperimentos(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'experimentos', 'LABORATÓRIO DE EXPERIMENTOS SECRETOS', 10, 8, 3.2);
+  R.fog = { c: 0x040608, n: 5, f: 20 };
+  R.ambient = 'consultorio';
+  const floorM = tm(THREE, TEX.floorTile, 3, 3);
+  const wallM = tm(THREE, TEX.wallDirty, 4, 1.4);
+  const ceilM = tm(THREE, TEX.ceiling, 4, 3);
+  plane(THREE, R.group, 10, 8, floorM, 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 10, 8, ceilM, 0, 3.2, 0, Math.PI / 2);
+
+  perimeter(THREE, R, 10, 8, 3.2, wallM, [{ side: 'W', at: 0.0, w: 1.8 }]);
+  doorVisual(THREE, R, 'W', 0.0, 8, 10, TEX.doorWood);
+
+  // MACA CIRÚRGICA CENTRAL DE DISSECAÇÃO com amarras (Folha Extras)
+  const examM = tm(THREE, TEX.examTable, 1, 1);
+  box(THREE, R.group, 2.2, 0.85, 1.1, examM, 0.0, 0.42, 0.0);
+  solid(R, -1.2, -0.65, 1.2, 0.65);
+
+  // Pia de aço cirúrgico no canto (Folha Extras)
+  box(THREE, R.group, 1.2, 0.85, 0.7, flat(THREE, 0x6a7078), 3.8, 0.42, -2.8);
+  solid(R, 3.1, -3.3, 4.5, -2.3);
+
+  pointLight(THREE, R, 0x4a8090, 4, 9, 0, 2.4, 0);
+
+  addCam(R, [-5, -4, 0, 4], [-3.0, 2.4, 2.5], [0.0, 1.0, 0.0], 62);
+  addCam(R, [0, -4, 5, 4], [3.0, 2.4, 2.5], [0.0, 1.0, 0.0], 62);
+
+  addDoor(R, -4.5, 0.0, 1.3, 'Voltar ao Corredor do Subsolo', 'subsolo_corredor', 6.5, 0.0, -Math.PI / 2);
+
+  addInteract(R, 0.0, 1.0, 1.4, 'Examinar a maca de contenção de cobaias', 'exam_table');
+  addInteract(R, 3.8, -1.8, 1.3, 'Inspecionar a pia e os frascos de órgãos', 'exam_sink');
+
+  addPickup(THREE, R, TEX, 'alencastro_dossier', 0.0, 0.0, 1, null, 0.9);
+  addPickup(THREE, R, TEX, 'antidote', 3.8, -2.8, 1, null, 0.9);
+  addSpawn(R, 'enfermeira', 2.0, 1.5);
+  return R;
+}
+
 const BUILDERS = {
   quarto: buildQuarto,
+  corredor_quartos: buildCorredorQuartos,
+  quarto2: buildQuarto2,
   saguao: buildSaguao,
+  estufa: buildEstufa,
+  cemiterio: buildCemiterio,
+  jardim: buildJardim,
+  casa_zelador: buildCasaZelador,
+  mezanino: buildMezanino,
   enfermaria: buildEnfermaria,
   consultorio: buildConsultorio,
   porao: buildPorao,
+  corredor_p3: buildCorredorP3,
+  sala_dr_p3: buildSalaDrP3,
   terraco: buildTerraco,
+  subsolo_corredor: buildSubsoloCorredor,
+  culto: buildCulto,
+  experimentos: buildExperimentos,
   floresta: buildFloresta,
   capela: buildCapela,
   title_diorama: buildTitleDiorama,
