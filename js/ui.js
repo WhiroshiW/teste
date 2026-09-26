@@ -119,17 +119,404 @@ export class UI {
     if (c2) drawPortrait(c2, 'clara');
   }
 
-  // ==================== TÍTULO (LAYOUT 4 OPÇÕES DO CADERNO) ====================
+  // ==================== TÍTULO (LAYOUT IDÊNTICO À IMAGEM DE REFERÊNCIA) ====================
   showTitle(hasSave) {
     this.show(this.el.title);
     this.titleItems = ['play', 'load', 'options', 'extras'];
     this.menuIdx.title = 0;
-    if (this.el.titlePointsVal) {
-      this.el.titlePointsVal.textContent = (this.game.points || 0).toLocaleString();
-    }
     this.renderTitleMenu(hasSave);
+    this.startTitleRain();
+    this.startTitle3DParallax();
   }
-  hideTitle() { this.hide(this.el.title); }
+  hideTitle() {
+    this.hide(this.el.title);
+    this.stopTitleRain();
+    this.stopTitle3DParallax();
+  }
+
+  // ==================== DIORAMA 3D PARALLAX COM DEPTH MAP ====================
+  startTitle3DParallax() {
+    const cvs = this.$('title3DCanvas');
+    if (!cvs || typeof cvs.getContext !== 'function') return;
+
+    let gl = null;
+    try {
+      gl = cvs.getContext('webgl', { antialias: true, alpha: true }) || cvs.getContext('experimental-webgl');
+    } catch (e) {
+      gl = null;
+    }
+    if (!gl || typeof gl.createShader !== 'function' || typeof gl.viewport !== 'function') return; // Fallback gracioso automático para o background CSS 2D
+
+    const resize = () => {
+      cvs.width = (typeof window !== 'undefined' && window.innerWidth) || 1280;
+      cvs.height = (typeof window !== 'undefined' && window.innerHeight) || 720;
+      gl.viewport(0, 0, cvs.width, cvs.height);
+    };
+    resize();
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('resize', resize);
+      this._title3DResize = resize;
+    }
+
+    const vsSource = `
+      attribute vec2 aPos;
+      varying vec2 vUv;
+      void main() {
+        vUv = aPos * 0.5 + 0.5;
+        vUv.y = 1.0 - vUv.y;
+        gl_Position = vec4(aPos, 0.0, 1.0);
+      }
+    `;
+
+    const fsSource = `
+      precision highp float;
+      uniform sampler2D uTexture;
+      uniform sampler2D uDepth;
+      uniform vec2 uOffset;
+      uniform float uTime;
+      uniform float uLightning;
+      varying vec2 vUv;
+
+      void main() {
+        float rawDepth = texture2D(uDepth, vUv).r;
+        vec2 disp = uOffset * (rawDepth - 0.45);
+        vec2 uv = clamp(vUv - disp, 0.001, 0.999);
+
+        vec4 baseColor = texture2D(uTexture, uv);
+        float depth = texture2D(uDepth, uv).r;
+
+        // 1. Cintilação e pulsação quente das janelas e lanternas
+        float isWarm = step(0.44, baseColor.r) * step(0.28, baseColor.g) * step(baseColor.b, baseColor.g * 0.9);
+        float isBuilding = smoothstep(0.25, 0.35, depth);
+        float windowMask = isWarm * isBuilding;
+        float flicker = (sin(uTime * 3.7) * 0.45 + sin(uTime * 8.3) * 0.35 + sin(uTime * 14.1) * 0.2) * 0.35;
+        baseColor.rgb += vec3(0.42, 0.28, 0.08) * windowMask * flicker;
+
+        // 2. Reflexo molhado nos paralelepípedos durante o relâmpago
+        float isGround = smoothstep(0.48, 0.95, depth) * smoothstep(0.55, 0.98, uv.y);
+        float wetReflection = isGround * uLightning * 0.55;
+        baseColor.rgb += vec3(0.60, 0.70, 0.90) * wetReflection;
+
+        // 3. Efeito 3D de clarão do relâmpago iluminando as superfícies
+        baseColor.rgb += baseColor.rgb * (uLightning * 0.65);
+
+        // 4. Névoa volumétrica 3D rastejando no ar entre o primeiro plano e a mansão
+        float fogX = uv.x * 2.0 + uTime * 0.02;
+        float fogVal = sin(fogX * 6.28) * 0.5 + 0.5;
+        float fogZone = smoothstep(0.45, 0.78, uv.y) * (1.0 - smoothstep(0.85, 1.0, uv.y));
+        float fogPlane = smoothstep(0.25, 0.55, depth) * (1.0 - smoothstep(0.75, 0.95, depth));
+        baseColor.rgb += vec3(0.08, 0.12, 0.18) * (fogVal * fogZone * fogPlane * 0.25);
+
+        gl_FragColor = baseColor;
+      }
+    `;
+
+    function compileShader(type, src) {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      return s;
+    }
+
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compileShader(gl.VERTEX_SHADER, vsSource));
+    gl.attachShader(prog, compileShader(gl.FRAGMENT_SHADER, fsSource));
+    gl.linkProgram(prog);
+    gl.useProgram(prog);
+
+    const posBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+      -1, -1,
+       1, -1,
+      -1,  1,
+      -1,  1,
+       1, -1,
+       1,  1,
+    ]), gl.STATIC_DRAW);
+
+    const aPos = gl.getAttribLocation(prog, 'aPos');
+    gl.enableVertexAttribArray(aPos);
+    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+    const uTexLoc = gl.getUniformLocation(prog, 'uTexture');
+    const uDepthLoc = gl.getUniformLocation(prog, 'uDepth');
+    const uOffsetLoc = gl.getUniformLocation(prog, 'uOffset');
+    const uTimeLoc = gl.getUniformLocation(prog, 'uTime');
+    const uLightLoc = gl.getUniformLocation(prog, 'uLightning');
+
+    function createTex(img) {
+      const t = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+      return t;
+    }
+
+    let isReady = false;
+    let loaded = 0;
+    const bgImg = new Image();
+    const depthImg = new Image();
+    const onImgLoad = () => {
+      loaded++;
+      if (loaded === 2) {
+        gl.useProgram(prog);
+        const t0 = createTex(bgImg);
+        const t1 = createTex(depthImg);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, t0);
+        gl.uniform1i(uTexLoc, 0);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, t1);
+        gl.uniform1i(uDepthLoc, 1);
+        isReady = true;
+        cvs.style.opacity = '1';
+      }
+    };
+    bgImg.onload = onImgLoad;
+    depthImg.onload = onImgLoad;
+    const ts = Date.now();
+    bgImg.src = './assets/title_bg.jpg?t=' + ts;
+    depthImg.src = './assets/title_depth.jpg?t=' + ts;
+
+    let mouseX = 0, mouseY = 0;
+    let targetX = 0, targetY = 0;
+
+    const onMouseMove = (e) => {
+      const cx = (window.innerWidth || 1280) * 0.5;
+      const cy = (window.innerHeight || 720) * 0.5;
+      targetX = ((e.clientX - cx) / cx) * 0.024;
+      targetY = ((e.clientY - cy) / cy) * 0.018;
+    };
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('mousemove', onMouseMove);
+      this._title3DMouseMove = onMouseMove;
+    }
+
+    let startTime = Date.now();
+    const renderLoop = () => {
+      if (!this.el.title || (this.el.title.classList && this.el.title.classList.contains('hidden'))) return;
+      const t = (Date.now() - startTime) * 0.001;
+
+      if (isReady) {
+        mouseX += (targetX - mouseX) * 0.05;
+        mouseY += (targetY - mouseY) * 0.05;
+
+        // Respiração cinematográfica autônoma da câmera (dolly lento)
+        const breatheX = Math.sin(t * 0.38) * 0.012;
+        const breatheY = Math.cos(t * 0.28) * 0.007;
+
+        this._titleLightningVal = Math.max(0, (this._titleLightningVal || 0) * 0.88);
+
+        gl.useProgram(prog);
+        gl.uniform2f(uOffsetLoc, mouseX + breatheX, mouseY + breatheY);
+        gl.uniform1f(uTimeLoc, t);
+        gl.uniform1f(uLightLoc, this._titleLightningVal);
+
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+      }
+
+      if (typeof requestAnimationFrame === 'function') {
+        this._title3DRaf = requestAnimationFrame(renderLoop);
+      }
+    };
+
+    if (typeof requestAnimationFrame === 'function') {
+      if (this._title3DRaf) cancelAnimationFrame(this._title3DRaf);
+      this._title3DRaf = requestAnimationFrame(renderLoop);
+    }
+  }
+
+  stopTitle3DParallax() {
+    if (this._title3DRaf && typeof cancelAnimationFrame === 'function') {
+      cancelAnimationFrame(this._title3DRaf);
+      this._title3DRaf = null;
+    }
+    if (this._title3DMouseMove && typeof window !== 'undefined' && window.removeEventListener) {
+      window.removeEventListener('mousemove', this._title3DMouseMove);
+      this._title3DMouseMove = null;
+    }
+    if (this._title3DResize && typeof window !== 'undefined' && window.removeEventListener) {
+      window.removeEventListener('resize', this._title3DResize);
+      this._title3DResize = null;
+    }
+    const cvs = this.$('title3DCanvas');
+    if (cvs) cvs.style.opacity = '0';
+  }
+
+  startTitleRain() {
+    const cvs = this.$('titleRainCanvas');
+    if (!cvs || !cvs.getContext) return;
+    const ctx = cvs.getContext('2d');
+    if (!ctx) return;
+
+    const resize = () => {
+      cvs.width = (typeof window !== 'undefined' && window.innerWidth) || 800;
+      cvs.height = (typeof window !== 'undefined' && window.innerHeight) || 600;
+    };
+    resize();
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('resize', resize);
+      this._titleResize = resize;
+    }
+
+    // Camadas de chuva de profundidade cinematográfica
+    const layers = [
+      { count: 160, spdMin: 12, spdMax: 17, lenMin: 10, lenMax: 18, alpha: 0.16, width: 0.75, windFactor: 0.5 },
+      { count: 110, spdMin: 19, spdMax: 26, lenMin: 20, lenMax: 32, alpha: 0.28, width: 1.0,  windFactor: 0.8 },
+      { count: 32,  spdMin: 30, spdMax: 42, lenMin: 38, lenMax: 56, alpha: 0.45, width: 1.4,  windFactor: 1.1 },
+    ];
+
+    const drops = [];
+    layers.forEach((layer, layerIdx) => {
+      for (let i = 0; i < layer.count; i++) {
+        drops.push({
+          layer: layerIdx,
+          x: Math.random() * (cvs.width + 300) - 150,
+          y: Math.random() * cvs.height,
+          len: layer.lenMin + Math.random() * (layer.lenMax - layer.lenMin),
+          spd: layer.spdMin + Math.random() * (layer.spdMax - layer.spdMin),
+          alpha: layer.alpha * (0.8 + Math.random() * 0.4),
+          width: layer.width,
+          windFactor: layer.windFactor,
+        });
+      }
+    });
+
+    // Ondulações / micro-respingos no chão (splashes)
+    const splashes = [];
+    const maxSplashes = 28;
+
+    let lightningActive = false;
+    let lastLightning = Date.now();
+    let nextLightningDelay = 5000 + Math.random() * 6000;
+    let animTime = 0;
+
+    const loop = () => {
+      if (!this.el.title || (this.el.title.classList && this.el.title.classList.contains('hidden'))) return;
+      animTime += 0.016;
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+      // Leve brisa orgânica para a direita (alinhada com a tempestade de fundo)
+      const baseWind = 1.2 + Math.sin(animTime * 0.4) * 0.4;
+
+      // 1. Renderiza as gotas de chuva por camada de profundidade
+      for (let lIdx = 0; lIdx < 3; lIdx++) {
+        const layerDrops = drops.filter(d => d.layer === lIdx);
+        if (!layerDrops.length) continue;
+
+        ctx.beginPath();
+        for (const d of layerDrops) {
+          const wind = baseWind * d.windFactor;
+          const endX = d.x + wind * (d.len * 0.07);
+          const endY = d.y + d.len;
+
+          ctx.moveTo(d.x, d.y);
+          ctx.lineTo(endX, endY);
+
+          d.x += wind * 0.25;
+          d.y += d.spd;
+
+          // Ao atingir o chão molhado e calçamento
+          if (d.y > cvs.height) {
+            if (d.layer >= 1 && splashes.length < maxSplashes && Math.random() < 0.28) {
+              splashes.push({
+                x: d.x,
+                y: cvs.height - 4 - Math.random() * (cvs.height * 0.28),
+                radius: 1.5 + Math.random() * 3.5,
+                maxRadius: 4.0 + Math.random() * 5.0,
+                alpha: (d.layer === 2 ? 0.35 : 0.2),
+                life: 1.0,
+              });
+            }
+            d.y = -d.len - Math.random() * 20;
+            d.x = Math.random() * (cvs.width + 300) - 150;
+          }
+        }
+
+        const baseColor = lightningActive ? '230, 240, 255' : '195, 210, 230';
+        const layerAlpha = (layers[lIdx].alpha * (lightningActive ? 1.8 : 1.0)).toFixed(2);
+        ctx.strokeStyle = `rgba(${baseColor}, ${layerAlpha})`;
+        ctx.lineWidth = layers[lIdx].width;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+      }
+
+      // 2. Micro-impactos / ondulações no chão molhado
+      if (splashes.length > 0) {
+        for (let i = splashes.length - 1; i >= 0; i--) {
+          const s = splashes[i];
+          s.radius += (s.maxRadius - s.radius) * 0.16;
+          s.life -= 0.06;
+          if (s.life <= 0) {
+            splashes.splice(i, 1);
+            continue;
+          }
+          ctx.beginPath();
+          if (ctx.ellipse) {
+            ctx.ellipse(s.x, s.y, s.radius * 1.8, s.radius * 0.6, 0, 0, Math.PI * 2);
+          } else {
+            ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+          }
+          ctx.strokeStyle = `rgba(215, 230, 248, ${(s.alpha * s.life).toFixed(2)})`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+
+      // 3. Névoa sutil de umidade no rodapé
+      const mistGrad = ctx.createLinearGradient(0, cvs.height - 180, 0, cvs.height);
+      mistGrad.addColorStop(0, 'rgba(8, 12, 18, 0)');
+      mistGrad.addColorStop(1, 'rgba(12, 18, 28, 0.16)');
+      ctx.fillStyle = mistGrad;
+      ctx.fillRect(0, cvs.height - 180, cvs.width, 180);
+
+      // 4. Relâmpagos ocasionais integrados
+      const now = Date.now();
+      if (now - lastLightning > nextLightningDelay) {
+        lastLightning = now;
+        nextLightningDelay = 5500 + Math.random() * 8000;
+        const flash = this.$('titleLightningFlash');
+        lightningActive = true;
+        this._titleLightningVal = 1.0;
+        if (flash) {
+          flash.style.opacity = '0.35';
+          setTimeout(() => { if (flash) flash.style.opacity = '0.08'; this._titleLightningVal = 0.2; }, 60);
+          setTimeout(() => { if (flash) flash.style.opacity = '0.42'; this._titleLightningVal = 1.0; }, 120);
+          setTimeout(() => {
+            if (flash) flash.style.opacity = '0';
+            lightningActive = false;
+          }, 240);
+        } else {
+          setTimeout(() => { lightningActive = false; }, 240);
+        }
+        if (this.audio) this.audio.sfx('thunder');
+      }
+
+      if (typeof requestAnimationFrame === 'function') {
+        this._titleRainRaf = requestAnimationFrame(loop);
+      }
+    };
+
+    if (typeof requestAnimationFrame === 'function') {
+      if (this._titleRainRaf) cancelAnimationFrame(this._titleRainRaf);
+      this._titleRainRaf = requestAnimationFrame(loop);
+    }
+  }
+
+  stopTitleRain() {
+    if (this._titleRainRaf && typeof cancelAnimationFrame === 'function') {
+      cancelAnimationFrame(this._titleRainRaf);
+      this._titleRainRaf = null;
+    }
+    if (this._titleResize && typeof window !== 'undefined' && window.removeEventListener) {
+      window.removeEventListener('resize', this._titleResize);
+      this._titleResize = null;
+    }
+  }
 
   renderTitleMenu(hasSave) {
     const labels = {
@@ -146,16 +533,24 @@ export class UI {
     };
     this.el.titleMenu.innerHTML = '';
     this.titleItems.forEach((act, i) => {
+      const isSel = (i === this.menuIdx.title);
       const d = document.createElement('div');
-      d.className = 'menuItem' + (i === this.menuIdx.title ? ' sel' : '');
-      d.textContent = (i === this.menuIdx.title ? '▶ ' : '　') + (labels[act] || act.toUpperCase());
+      d.className = 'menuItem' + (isSel ? ' sel' : '');
+      d.innerHTML = `<span class="selCheck">✔</span><span class="menuText">${labels[act] || act.toUpperCase()}</span>`;
       d.onclick = () => { this.menuIdx.title = i; this.audio.sfx('uiSelect'); this.game.titleAction(act); };
       d.onmouseenter = () => {
-        if (this.menuIdx.title !== i) { this.menuIdx.title = i; this.audio.sfx('uiMove'); this.renderTitleMenu(hasSave); }
+        if (this.menuIdx.title !== i) {
+          this.menuIdx.title = i;
+          this.audio.sfx('uiMove');
+          this.renderTitleMenu(hasSave);
+        }
       };
       this.el.titleMenu.appendChild(d);
     });
-    this.$('titleSaveInfo').textContent = hasSave ? '▲ PRONTUÁRIO ENCONTRADO NO DIÁRIO' : '• NENHUM SALVAMENTO REGISTRADO';
+    const info = this.$('titleSaveInfo');
+    if (info) {
+      info.textContent = hasSave ? '• SALVAMENTO DISPONÍVEL NA MÁQUINA DE ESCREVER' : '';
+    }
   }
 
   titleNav(dir) {
@@ -419,8 +814,219 @@ export class UI {
   }
   showHelp() { this.show(this.el.help); }
   hideHelp() { this.hide(this.el.help); }
-  showOptions() { this.show(this.el.options); }
+  showOptions() {
+    this.show(this.el.options);
+    this.syncOptionsUI();
+  }
   hideOptions() { this.hide(this.el.options); }
+
+  // ==================== PAINEL DE CONFIGURAÇÕES INDUSTRIAL ====================
+  initOptionsPanel() {
+    if (typeof document === 'undefined' || typeof document.querySelectorAll !== 'function') return;
+
+    // 1. Alternância de abas com ícones
+    const tabs = document.querySelectorAll('.optTabItem');
+    tabs.forEach((tab) => {
+      tab.onclick = () => {
+        const targetTab = tab.getAttribute('data-tab');
+        tabs.forEach((t) => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        document.querySelectorAll('.optTabContent').forEach((c) => c.classList.add('hidden'));
+        const activeContent = this.$(`tabContent_${targetTab}`);
+        if (activeContent) activeContent.classList.remove('hidden');
+        if (this.audio) this.audio.sfx('uiMove');
+      };
+    });
+
+    // Alternância de abas de controle (Gamepad vs Teclado)
+    const ctrlTabs = document.querySelectorAll('.optCtrlTabBtn');
+    ctrlTabs.forEach((btn) => {
+      btn.onclick = () => {
+        const mode = btn.getAttribute('data-ctrl');
+        ctrlTabs.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.ctrlSchemeView').forEach((v) => v.classList.add('hidden'));
+        const targetView = this.$(`ctrlScheme_${mode}`);
+        if (targetView) targetView.classList.remove('hidden');
+        if (this.audio) this.audio.sfx('uiMove');
+      };
+    });
+
+    // 2. Opções interativas com setas ❮ e ❯
+    const optionDefs = {
+      difficulty: {
+        items: ['Fácil', 'Normal', 'Difícil (Pesadelo)'],
+        get: () => this.game.opts.difficulty || 'Normal',
+        set: (v) => { this.game.opts.difficulty = v; this.game.saveOpts(); },
+      },
+      cam: {
+        items: ['Fixa PS1', '3ª Pessoa Livre'],
+        get: () => (this.game.camMode === 'chase' ? '3ª Pessoa Livre' : 'Fixa PS1'),
+        set: (v) => { this.game.setCamMode(v === '3ª Pessoa Livre' ? 'chase' : 'fixed'); },
+      },
+      vibration: {
+        items: ['Ativado', 'Desativado'],
+        get: () => (this.game.opts.vibration === false ? 'Desativado' : 'Ativado'),
+        set: (v) => { this.game.opts.vibration = (v === 'Ativado'); this.game.saveOpts(); },
+      },
+      hints: {
+        items: ['Ativado', 'Desativado'],
+        get: () => (this.game.opts.hints === false ? 'Desativado' : 'Ativado'),
+        set: (v) => { this.game.opts.hints = (v === 'Ativado'); this.game.saveOpts(); },
+      },
+      infAmmo: {
+        items: ['Desativado', 'Ativado'],
+        get: () => (this.game.infiniteAmmo ? 'Ativado' : 'Desativado'),
+        set: (v) => {
+          if (v === 'Ativado' && !this.game.unlocks.infinite_ammo) {
+            this.toast('Disponível na Loja de Recompensas!', 2.5);
+            return;
+          }
+          this.game.setInfiniteAmmo(v === 'Ativado');
+        },
+      },
+      voice: {
+        items: ['Ativado', 'Desativado'],
+        get: () => (this.game.opts.voice === false ? 'Desativado' : 'Ativado'),
+        set: (v) => { this.game.opts.voice = (v === 'Ativado'); this.game.saveOpts(); },
+      },
+      crt: {
+        items: ['Ativado', 'Desativado'],
+        get: () => (this.game.opts.crt === false ? 'Desativado' : 'Ativado'),
+        set: (v) => { this.game.setCrt(v === 'Ativado'); },
+      },
+      filter: {
+        items: ['Padrão PS1', 'Fita VHS', 'Sépia Retrô'],
+        get: () => (this.game.opts.filter === 'vhs' ? 'Fita VHS' : this.game.opts.filter === 'sepia' ? 'Sépia Retrô' : 'Padrão PS1'),
+        set: (v) => {
+          const map = { 'Padrão PS1': 'none', 'Fita VHS': 'vhs', 'Sépia Retrô': 'sepia' };
+          this.game.setFilter(map[v] || 'none');
+        },
+      },
+      res: {
+        items: ['PS1 Autêntico', 'Alta Definição'],
+        get: () => (this.game.opts.high ? 'Alta Definição' : 'PS1 Autêntico'),
+        set: (v) => { this.game.setQuality(v === 'Alta Definição'); },
+      },
+      lang: {
+        items: ['Português (BR)', 'English (US)', 'Español'],
+        get: () => (this.game.opts.lang || 'Português (BR)'),
+        set: (v) => { this.game.opts.lang = v; this.game.saveOpts(); },
+      },
+      lang2: {
+        items: ['Português (BR)', 'English (US)', 'Español'],
+        get: () => (this.game.opts.lang || 'Português (BR)'),
+        set: (v) => { this.game.opts.lang = v; this.game.saveOpts(); },
+      },
+      subtitles: {
+        items: ['Ativado', 'Desativado'],
+        get: () => (this.game.opts.subtitles === false ? 'Desativado' : 'Ativado'),
+        set: (v) => { this.game.opts.subtitles = (v === 'Ativado'); this.game.saveOpts(); },
+      },
+    };
+
+    this._optDefs = optionDefs;
+
+    document.querySelectorAll('.optSettingControl').forEach((ctrl) => {
+      const key = ctrl.getAttribute('data-opt');
+      const def = optionDefs[key];
+      if (!def) return;
+
+      const valEl = ctrl.querySelector('.optSettingVal');
+      const prevBtn = ctrl.querySelector('.optArrowBtn.prev');
+      const nextBtn = ctrl.querySelector('.optArrowBtn.next');
+
+      const update = (dir) => {
+        const cur = def.get();
+        const idx = def.items.indexOf(cur);
+        const nextIdx = (idx + dir + def.items.length) % def.items.length;
+        const nextVal = def.items[nextIdx];
+        def.set(nextVal);
+        if (valEl) valEl.textContent = def.get();
+        if (this.audio) this.audio.sfx('uiSelect');
+      };
+
+      if (prevBtn) prevBtn.onclick = (e) => { e.preventDefault(); update(-1); };
+      if (nextBtn) nextBtn.onclick = (e) => { e.preventDefault(); update(1); };
+    });
+
+    // 3. Sliders de Metal
+    const wireSlider = (id, pctId, onVal) => {
+      const el = this.$(id);
+      const pct = this.$(pctId);
+      if (!el) return;
+      el.oninput = () => {
+        const v = parseFloat(el.value);
+        if (pct) pct.textContent = Math.round((v / parseFloat(el.max)) * 100) + '%';
+        onVal(v);
+      };
+    };
+
+    wireSlider('val_master', 'pct_master', (v) => this.game.setVolume('master', v / 10));
+    wireSlider('val_music', 'pct_music', (v) => this.game.setVolume('music', v / 10));
+    wireSlider('val_sfx', 'pct_sfx', (v) => this.game.setVolume('sfx', v / 10));
+
+    const brightEl = this.$('val_brightness');
+    const brightPct = this.$('pct_brightness');
+    if (brightEl) {
+      brightEl.oninput = () => {
+        const map = { 1: ['normal', '50%'], 2: ['high', '70%'], 3: ['max', '100%'] };
+        const [lvl, label] = map[brightEl.value] || ['high', '70%'];
+        if (brightPct) brightPct.textContent = label;
+        this.game.setBrightness(lvl);
+      };
+    }
+
+    // 4. Restaurar Padrões
+    const restoreBtn = this.$('optRestoreBtn');
+    if (restoreBtn) {
+      restoreBtn.onclick = () => {
+        this.game.opts = {
+          master: 0.9, music: 0.8, sfx: 0.9, crt: true, high: false,
+          brightness: 'high', filter: 'none', cam: 'fixed', infAmmo: false,
+          difficulty: 'Normal', vibration: true, hints: true, voice: true,
+          lang: 'Português (BR)', subtitles: true,
+        };
+        this.game.camMode = 'fixed';
+        this.game.infiniteAmmo = false;
+        this.game.applyOpts();
+        this.game.saveOpts();
+        this.syncOptionsUI();
+        if (this.audio) this.audio.sfx('uiSelect');
+        this.toast('✓ Configurações restauradas para o padrão industrial.', 3);
+      };
+    }
+  }
+
+  syncOptionsUI() {
+    if (!this._optDefs) return;
+    Object.keys(this._optDefs).forEach((k) => {
+      const def = this._optDefs[k];
+      const el = this.$(`val_${k}`);
+      if (el) el.textContent = def.get();
+    });
+
+    const setSlider = (id, pctId, val, max = 10) => {
+      const el = this.$(id);
+      const pct = this.$(pctId);
+      if (el) el.value = val;
+      if (pct) pct.textContent = Math.round((val / max) * 100) + '%';
+    };
+
+    setSlider('val_master', 'pct_master', (this.game.opts.master || 0.9) * 10);
+    setSlider('val_music', 'pct_music', (this.game.opts.music || 0.8) * 10);
+    setSlider('val_sfx', 'pct_sfx', (this.game.opts.sfx || 0.9) * 10);
+
+    const brightEl = this.$('val_brightness');
+    const brightPct = this.$('pct_brightness');
+    if (brightEl) {
+      const bMap = { normal: [1, '50%'], high: [2, '70%'], max: [3, '100%'] };
+      const [v, lbl] = bMap[this.game.opts.brightness] || [2, '70%'];
+      brightEl.value = v;
+      if (brightPct) brightPct.textContent = lbl;
+    }
+  }
 
   showIntroCutscene() {
     this.show(this.el.introCutscene);
@@ -571,6 +1177,8 @@ export class UI {
     click('goRetry', () => this.game.gameoverAction('retry'));
     click('goTitle', () => this.game.gameoverAction('title'));
     click('endBtn', () => this.game.endingDone());
+
+    this.initOptionsPanel();
   }
 
   // ==================== HUD ====================

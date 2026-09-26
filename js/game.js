@@ -15,6 +15,7 @@ import { Player, Enemy, NPC, TimeTotem, Particles, collideCircle, pointInSolids 
 import { AudioSys } from './audio.js';
 import { createPSX } from './psx.js';
 import { UI } from './ui.js';
+import { GamepadManager } from './gamepad.js';
 import {
   INTRO, INTRO_CLARA, INTRO_BENTO, D, OBJECTIVES,
   END_GOOD, END_NORMAL, END_CLARA_GOOD, END_CLARA_NORMAL, END_BENTO
@@ -117,6 +118,7 @@ export class Game {
     this.keys = new Set();
     this.touch = { f: false, b: false, l: false, r: false, run: false, aim: false };
     this.firePressed = false;
+    this.gamepad = new GamepadManager(this);
     this.wireInput();
 
     // Efeitos visuais
@@ -305,16 +307,27 @@ export class Game {
 
   moveInput() {
     const k = this.keys, t = this.touch;
+    const gp = this.gamepad ? this.gamepad.getMoveInput() : { f: false, b: false, l: false, r: false, run: false };
     return {
-      f: k.has('KeyW') || k.has('ArrowUp') || t.f,
-      b: k.has('KeyS') || k.has('ArrowDown') || t.b,
-      l: k.has('KeyA') || k.has('ArrowLeft') || t.l,
-      r: k.has('KeyD') || k.has('ArrowRight') || t.r,
-      run: k.has('ShiftLeft') || k.has('ShiftRight') || t.run,
+      f: k.has('KeyW') || k.has('ArrowUp') || t.f || gp.f,
+      b: k.has('KeyS') || k.has('ArrowDown') || t.b || gp.b,
+      l: k.has('KeyA') || k.has('ArrowLeft') || t.l || gp.l,
+      r: k.has('KeyD') || k.has('ArrowRight') || t.r || gp.r,
+      run: k.has('ShiftLeft') || k.has('ShiftRight') || t.run || gp.run,
     };
   }
 
-  aimHeld() { return this.keys.has('Space') || this.touch.aim; }
+  aimHeld() {
+    if (this.keys.has('Space') || this.touch.aim) return true;
+    if (this.gamepad) {
+      const pad = this.gamepad.getPad();
+      if (pad) {
+        const btns = pad.buttons;
+        return (btns[6] && btns[6].pressed) || (btns[4] && btns[4].pressed) || (btns[6] && btns[6].value > 0.25);
+      }
+    }
+    return false;
+  }
 
   onKey(code) {
     const st = this.state;
@@ -1906,6 +1919,7 @@ export class Game {
     this.audio.sfx(w.sfx || 'pistol');
     this.flashVal = 0.35;
     this.camShake = Math.min(1.2, this.camShake + w.kick);
+    if (this.gamepad) this.gamepad.vibrate(0.4, 0.85, 180);
 
     // Efeito de boca de fogo
     const muz = p.muzzleWorld();
@@ -1994,6 +2008,7 @@ export class Game {
 
     this.dmgVal = 0.9;
     this.camShake = 0.6;
+    if (this.gamepad) this.gamepad.vibrate(0.7, 1.0, 320);
     this.audio.sfx('playerHurt');
 
     const cp = p.muzzleWorld(new this.THREE.Vector3());
@@ -2055,6 +2070,7 @@ export class Game {
   // ==================== LAÇO PRINCIPAL (FRAME) ====================
   frame() {
     const dt = Math.min(0.1, this.clock.getDelta());
+    if (this.gamepad) this.gamepad.update(dt);
     const st = this.state;
 
     if (st === 'play') {
