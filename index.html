@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0, post-check=0, pre-check=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>SANTA LÚCIA — survival horror estilo PS1</title>
+<link rel="icon" href="data:,">
+<script>
+  // REGRA: Limpeza agressiva contínua de caches locais do navegador
+  try {
+    if ('caches' in window) {
+      caches.keys().then(names => names.forEach(name => caches.delete(name)));
+    }
+    if (window.navigator && navigator.serviceWorker) {
+      navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+    }
+  } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script>
+  // Injeção de CSS com cache-buster em tempo real
+  const _tsCss = Date.now();
+  document.write('<link rel="stylesheet" href="./css/style.css?t=' + _tsCss + '">');
+</script>
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.min.js" } }
+</script>
+</head>
+<body>
+<div id="screen"></div>
+<div id="scan"></div>
+
+<!-- ============ TÍTULO (REMASTER IDÊNTICO À IMAGEM DE REFERÊNCIA) ============ -->
+<div id="title" class="overlay hidden">
+  <div id="titleBgImg" class="titleBgImg"></div>
+  <canvas id="title3DCanvas" class="title3DCanvas"></canvas>
+  <canvas id="titleRainCanvas" class="titleRainCanvas"></canvas>
+  <div id="titleLightningFlash" class="titleLightningFlash"></div>
+
+  <div class="titleRightBlock">
+    <div class="titleTop">EQUIPE NAKAMURA APRESENTA</div>
+    <h1 class="logo">SANTA LÚCIA</h1>
+    <div class="titleOrnament">
+      <svg viewBox="0 0 300 24" class="ornamentSvg">
+        <path d="M 0 12 L 125 12 M 175 12 L 300 12" stroke="#685d4f" stroke-width="1.5" />
+        <circle cx="125" cy="12" r="2" fill="#8a7c6a" />
+        <circle cx="175" cy="12" r="2" fill="#8a7c6a" />
+        <path d="M 150 2 C 146 7, 142 9, 137 12 C 142 15, 146 17, 150 22 C 154 17, 158 15, 163 12 C 158 9, 154 7, 150 2 Z" fill="none" stroke="#8a7c6a" stroke-width="1.5" />
+        <circle cx="150" cy="12" r="2.5" fill="#c8a028" />
+        <circle cx="143" cy="12" r="1.5" fill="#8a7c6a" />
+        <circle cx="157" cy="12" r="1.5" fill="#8a7c6a" />
+      </svg>
+    </div>
+    <div id="titleMenu" class="menu"></div>
+    <div id="titleSaveInfo" class="saveInfo"></div>
+  </div>
+</div>
+
+<!-- ============ INTRO CINEMATOGRÁFICA DO SANATÓRIO ============ -->
+<div id="introCutscene" class="overlay hidden">
+  <div class="introCinematic">
+    <div class="cinematicLetterbox top"></div>
+    <div class="cinematicCenter">
+      <div id="introYearTag" class="introYearTag">SERRA DA MANTIQUEIRA · OUTUBRO DE 1997</div>
+      <div id="introQuoteText" class="introQuoteText"></div>
+    </div>
+    <div class="cinematicLetterbox bottom">
+      <div id="introSkipBtn" class="cinematicSkipPrompt">▶ [ ENTER / ESPAÇO / TOQUE ] PULAR INTRO</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SELEÇÃO DE CAMPANHA (RE2 STYLE) ============ -->
+<div id="campaignSelect" class="overlay hidden">
+  <div class="panel large">
+    <h2>ESCOLHA O PROTAGONISTA</h2>
+    <p class="tip">Duas histórias que se cruzam e revelam a verdade completa do Sanatório Santa Lúcia.</p>
+    <div class="campGrid">
+      <!-- Campanha A: Daniel -->
+      <div class="campCard" id="campDaniel">
+        <canvas id="campPortDaniel" width="96" height="96" class="campPort"></canvas>
+        <div class="campInfo">
+          <h3>CAMPANHA A</h3>
+          <h4>DANIEL SILVA</h4>
+          <div class="campSub">O Irmão em Luto</div>
+          <p>Acorda no sanatório onde foi internado há 10 anos. Busca a irmã Lúcia seguindo ecos do passado.</p>
+          <div class="campGear"><b>Início:</b> Faca, Pistola M9, Comprimidos</div>
+          <button class="btn campBtn" id="btnSelectDaniel">JOGAR COM DANIEL</button>
+        </div>
+      </div>
+
+      <!-- Campanha B: Clara -->
+      <div class="campCard" id="campClara">
+        <canvas id="campPortClara" width="96" height="96" class="campPort"></canvas>
+        <div class="campInfo">
+          <h3>CAMPANHA B</h3>
+          <h4>DRA. CLARA MENDES</h4>
+          <div class="campSub">A Médica Investigadora</div>
+          <p>Chega através da floresta sob chuva para expor os experimentos cruéis do Dr. Alencastro e salvar sobreviventes.</p>
+          <div class="campGear"><b>Início:</b> Bisturi, Revólver .38, Cartão Médico</div>
+          <button class="btn campBtn" id="btnSelectClara">JOGAR COM CLARA</button>
+        </div>
+      </div>
+    </div>
+    <div class="rowBtns">
+      <button id="campBack" class="btn">◀ VOLTAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ EXTRAS: LOJA DE PONTOS & MODELOS 3D (FOLHA DO MEIO) ============ -->
+<div id="pointsShop" class="overlay hidden">
+  <div class="extraContainer">
+    <!-- Estante de Prateleiras com Colecionáveis (Lado Esquerdo) -->
+    <div class="extraShelfCol">
+      <div class="shelfTitle">ESTANTE DE COLECIONÁVEIS</div>
+      <div class="shelfFrame">
+        <div id="shopList" class="shopList"></div>
+      </div>
+    </div>
+
+    <!-- Mesa de Investigação com Vela e Expositor 3D (Lado Direito) -->
+    <div class="extraRightCol">
+      <div class="extraHeader">
+        <div class="extraMainTitle">LOJA DE PONTOS · MODELOS 3D</div>
+        <div class="extraPointsTag">⭐ SEUS PONTOS: <span class="shopPointsVal" id="shopPointsVal">0</span></div>
+      </div>
+
+      <div class="extraTable">
+        <!-- Vela acesa no canto esquerdo da mesa -->
+        <div class="extraCandle">
+          <div class="candleStick"></div>
+          <div class="candleFlame"></div>
+          <div class="candleWax"></div>
+        </div>
+
+        <!-- Pedestal Giratório 3D no centro da mesa -->
+        <div class="extraPedestal">
+          <canvas id="galleryCanvas" width="300" height="220"></canvas>
+          <div class="galleryHint">Arraste para girar em 360°</div>
+        </div>
+      </div>
+
+      <!-- Detalhes do item/modo selecionado embaixo da mesa -->
+      <div class="extraDetailsPanel">
+        <h3 id="galleryName">DANIEL SILVA</h3>
+        <div id="gallerySub" class="campSub">O Irmão em Luto</div>
+        <p id="galleryBio" class="galleryBio"></p>
+        <div id="extraActionRow" class="extraActionRow">
+          <!-- Botão dinâmico (Comprar, Jogar Modo, ou Ver 3D) -->
+        </div>
+      </div>
+
+      <div class="rowBtns">
+        <button id="shopBack" class="btn">◀ VOLTAR AO MENU</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODOS EXTRAS (COMPATIBILIDADE) ============ -->
+<div id="extraModes" class="overlay hidden">
+  <div class="panel large">
+    <h2>MODOS EXTRAS DESBLOQUEÁVEIS</h2>
+    <p class="tip">Desbloqueie modos extras na Loja de Pontos Secretos acumulando pontos em suas jornadas.</p>
+    <div class="extraGrid">
+      <div class="extraCard">
+        <h3>⏱️ MODO MERCENÁRIOS</h3>
+        <div class="extraStatus locked" id="statusMercenaries">🔒 BLOQUEADO (1.000 PTS)</div>
+        <p>Enfrente hordas de aberrações contra o relógio! Quebre cristais de tempo, faça combos e conquiste Ranks S e SS para ganhar pontos.</p>
+        <div class="extraScore" id="scoreMercenaries">RECORDE: 0 PTS</div>
+        <button id="btnPlayMercenaries" class="btn" data-play-text="JOGAR MERCENÁRIOS">JOGAR MERCENÁRIOS</button>
+      </div>
+
+      <div class="extraCard">
+        <h3>🛡️ MODO SOBREVIVENTE</h3>
+        <div class="extraStatus locked" id="statusSurvivor">🔒 BLOQUEADO (1.000 PTS)</div>
+        <p>Resistência claustrofóbica com recursos extremamente limitados. Quantas ondas você consegue suportar antes da escuridão engolir tudo?</p>
+        <div class="extraScore" id="scoreSurvivor">RECORDE: ONDA 0</div>
+        <button id="btnPlaySurvivor" class="btn" data-play-text="JOGAR SOBREVIVENTE">JOGAR SOBREVIVENTE</button>
+      </div>
+
+      <div class="extraCard">
+        <h3>🗝️ O TURNO DA NOITE</h3>
+        <div class="extraStatus locked" id="statusBento">🔒 BLOQUEADO (1.200 PTS)</div>
+        <p>Campanha curta jogando como o <b>Zelador Bento</b> na noite em que o laboratório ruiu. Tranque os portões e sobreviva ao porão!</p>
+        <div class="extraScore">HISTÓRIA DE BENTO</div>
+        <button id="btnPlayBento" class="btn" data-play-text="JOGAR TURNO DO BENTO">JOGAR TURNO DO BENTO</button>
+      </div>
+    </div>
+    <div class="rowBtns">
+      <button id="extraToShop" class="btn">⭐ IR PARA A LOJA DE PONTOS</button>
+      <button id="extraBack" class="btn">◀ VOLTAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ GALERIA 3D (COMPATIBILIDADE) ============ -->
+<div id="modelViewer" class="overlay hidden">
+  <div class="panel large">
+    <h2>GALERIA 3D DE PERSONAGENS & MONSTROS</h2>
+    <div class="galleryBody">
+      <div class="gallery3d">
+        <div class="galleryHint">Arraste para girar em 360°</div>
+      </div>
+      <div class="gallerySide">
+        <select id="gallerySelect" class="gallerySelect"></select>
+      </div>
+    </div>
+    <div class="rowBtns">
+      <button id="galleryBack" class="btn">◀ VOLTAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ AJUDA ============ -->
+<div id="help" class="overlay hidden">
+  <div class="panel">
+    <h2>COMO JOGAR</h2>
+    <div id="helpRows"></div>
+    <p class="tip"><b>Alternar Câmera:</b> Aperte <b>V</b> ou <b>C</b> para alternar entre Câmera Fixa PS1 e 3ª Pessoa (estilo GTA)!<br>Munição é escassa: às vezes, correr é a resposta.<br>Examine tudo. Registre no DIÁRIO (precisa de Fita de Tinta).</p>
+    <button id="helpBack" class="btn">◀ VOLTAR</button>
+  </div>
+</div>
+
+<!-- ============ OPÇÕES: PAINEL ELÉTRICO INDUSTRIAL (LAYOUT IDÊNTICO À REFERÊNCIA) ============ -->
+<div id="options" class="overlay hidden">
+  <div class="optCabinetContainer">
+    <!-- Cabeçalho com Título Cinzelado e Ornamentos em Cruz -->
+    <div class="optHeaderTitleBlock">
+      <div class="optTitleDeco top">
+        <svg viewBox="0 0 180 20" class="optDecoSvg" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="20" y1="10" x2="72" y2="10" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="62,7 72,10 62,13" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="50,8 58,10 50,12" stroke="#5d6878" stroke-width="0.8" stroke-linecap="round"/>
+          <line x1="108" y1="10" x2="160" y2="10" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="118,7 108,10 118,13" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="130,8 122,10 130,12" stroke="#5d6878" stroke-width="0.8" stroke-linecap="round"/>
+          <polygon points="90,1 98,10 90,19 82,10" stroke="#b6c2d0" stroke-width="1.4" fill="#0d1218"/>
+          <polygon points="90,4 95,10 90,16 85,10" stroke="#717e90" stroke-width="0.8" fill="none"/>
+          <circle cx="90" cy="10" r="1.6" fill="#e2e8f0"/>
+          <line x1="90" y1="1" x2="90" y2="0" stroke="#b6c2d0" stroke-width="1.2"/>
+          <line x1="90" y1="19" x2="90" y2="20" stroke="#b6c2d0" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <h1 class="optMainTitle">CONFIGURAÇÕES</h1>
+      <div class="optTitleDeco btm">
+        <svg viewBox="0 0 180 20" class="optDecoSvg" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="20" y1="10" x2="72" y2="10" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="62,7 72,10 62,13" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="50,8 58,10 50,12" stroke="#5d6878" stroke-width="0.8" stroke-linecap="round"/>
+          <line x1="108" y1="10" x2="160" y2="10" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="118,7 108,10 118,13" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="130,8 122,10 130,12" stroke="#5d6878" stroke-width="0.8" stroke-linecap="round"/>
+          <polygon points="90,1 98,10 90,19 82,10" stroke="#b6c2d0" stroke-width="1.4" fill="#0d1218"/>
+          <polygon points="90,4 95,10 90,16 85,10" stroke="#717e90" stroke-width="0.8" fill="none"/>
+          <circle cx="90" cy="10" r="1.6" fill="#e2e8f0"/>
+          <line x1="90" y1="1" x2="90" y2="0" stroke="#b6c2d0" stroke-width="1.2"/>
+          <line x1="90" y1="19" x2="90" y2="20" stroke="#b6c2d0" stroke-width="1.2"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Gabinete Central Dividido em Duas Colunas (Abas à Esquerda, Conteúdo à Direita) -->
+    <div class="optCabinet">
+      <!-- Coluna da Esquerda: Abas de Categoria com Ícones -->
+      <div class="optTabsCol">
+        <div class="optTabItem active" data-tab="gameplay">
+          <span class="optTabIcon">⚙</span>
+          <span class="optTabText">JOGABILIDADE</span>
+        </div>
+        <div class="optTabItem" data-tab="audio">
+          <span class="optTabIcon">🔊</span>
+          <span class="optTabText">ÁUDIO</span>
+        </div>
+        <div class="optTabItem" data-tab="video">
+          <span class="optTabIcon">🖥</span>
+          <span class="optTabText">VÍDEO</span>
+        </div>
+        <div class="optTabItem" data-tab="language">
+          <span class="optTabIcon">🌐</span>
+          <span class="optTabText">IDIOMA</span>
+        </div>
+        <div class="optTabItem" data-tab="controls">
+          <span class="optTabIcon">🎮</span>
+          <span class="optTabText">CONTROLES</span>
+        </div>
+
+        <button id="optRestoreBtn" class="optRestoreBtn">
+          <span class="optRestoreIcon">🔄</span> RESTAURAR PADRÕES
+        </button>
+      </div>
+
+      <!-- Coluna da Direita: Área de Opções da Categoria Selecionada -->
+      <div class="optContentCol">
+        <!-- 1. ABA JOGABILIDADE (IDÊNTICA À REFERÊNCIA) -->
+        <div class="optTabContent" id="tabContent_gameplay">
+          <div class="optSectionHeader">JOGABILIDADE</div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Dificuldade</span>
+            <div class="optSettingControl" data-opt="difficulty">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_difficulty">Normal</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Vibração</span>
+            <div class="optSettingControl" data-opt="vibration">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_vibration">Ativado</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Mostrar Dicas</span>
+            <div class="optSettingControl" data-opt="hints">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_hints">Ativado</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Brilho</span>
+            <div class="optSettingSliderWrap">
+              <input type="range" min="1" max="3" value="2" class="optMetalSlider" id="val_brightness">
+              <span class="optSliderPct" id="pct_brightness">70%</span>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Idioma do Jogo</span>
+            <div class="optSettingControl" data-opt="lang">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_lang">Português (BR)</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Munição Infinita</span>
+            <div class="optSettingControl" data-opt="infAmmo">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_infAmmo">Desativado</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. ABA ÁUDIO -->
+        <div class="optTabContent hidden" id="tabContent_audio">
+          <div class="optSectionHeader">ÁUDIO</div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Volume Geral</span>
+            <div class="optSettingSliderWrap">
+              <input type="range" min="0" max="10" value="9" class="optMetalSlider" id="val_master">
+              <span class="optSliderPct" id="pct_master">90%</span>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Volume Música</span>
+            <div class="optSettingSliderWrap">
+              <input type="range" min="0" max="10" value="8" class="optMetalSlider" id="val_music">
+              <span class="optSliderPct" id="pct_music">80%</span>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Efeitos Sonoros</span>
+            <div class="optSettingSliderWrap">
+              <input type="range" min="0" max="10" value="9" class="optMetalSlider" id="val_sfx">
+              <span class="optSliderPct" id="pct_sfx">90%</span>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Voz Sintetizada</span>
+            <div class="optSettingControl" data-opt="voice">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_voice">Ativado</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. ABA VÍDEO -->
+        <div class="optTabContent hidden" id="tabContent_video">
+          <div class="optSectionHeader">VÍDEO</div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Modo de Câmera</span>
+            <div class="optSettingControl" data-opt="cam">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_cam">Fixa PS1</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Varredura CRT (Scanlines)</span>
+            <div class="optSettingControl" data-opt="crt">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_crt">Ativado</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Filtros Visuais</span>
+            <div class="optSettingControl" data-opt="filter">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_filter">Padrão PS1</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Renderização 3D</span>
+            <div class="optSettingControl" data-opt="res">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_res">PS1 Autêntico</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. ABA IDIOMA -->
+        <div class="optTabContent hidden" id="tabContent_language">
+          <div class="optSectionHeader">IDIOMA</div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Idioma do Jogo</span>
+            <div class="optSettingControl" data-opt="lang2">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_lang2">Português (BR)</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Legendas</span>
+            <div class="optSettingControl" data-opt="subtitles">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_subtitles">Ativado</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. ABA CONTROLES COM SUPORTE PS4 & XBOX -->
+        <div class="optTabContent hidden" id="tabContent_controls">
+          <div class="optSectionHeader">ESQUEMA DE CONTROLES</div>
+          <div class="optCtrlTabs">
+            <button class="optCtrlTabBtn active" data-ctrl="gamepad">🎮 PS4 & XBOX</button>
+            <button class="optCtrlTabBtn" data-ctrl="keyboard">⌨ TECLADO & MOUSE</button>
+          </div>
+
+          <div id="ctrlScheme_gamepad" class="ctrlSchemeView">
+            <div class="ctrlStatusPill" id="ctrlStatusPill">
+              <span class="ctrlLed"></span> <span id="ctrlStatusText">PLUG & PLAY DETECTADO AUTOMATICAMENTE</span>
+            </div>
+            <div class="optCtrlRow"><span class="optCtrlKey ps">Analógico Esq. / D-Pad</span><span class="optCtrlAction">Movimentação / Girar</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey ps">L2 / LT (ou L1 / LB)</span><span class="optCtrlAction">Mirar Arma</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey ps">R2 / RT (ou R1 / RB)</span><span class="optCtrlAction">Disparar Arma (com recuo háptico)</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey ps">✕ (PS4) / Ⓐ (Xbox)</span><span class="optCtrlAction">Interagir / Pegar / Confirmar</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey ps">⭘ (PS4) / Ⓑ (Xbox)</span><span class="optCtrlAction">Voltar / Cancelar / Correr</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey ps">△ (PS4) / Ⓨ (Xbox)</span><span class="optCtrlAction">Abrir / Fechar Inventário</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey ps">▢ (PS4) / Ⓧ (Xbox)</span><span class="optCtrlAction">Recarregar / Combinar</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey ps">Share / View</span><span class="optCtrlAction">Alternar Câmera Fixa / 3ª Pessoa</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey ps">Options / Menu</span><span class="optCtrlAction">Pausar / Menu do Jogo</span></div>
+          </div>
+
+          <div id="ctrlScheme_keyboard" class="ctrlSchemeView hidden">
+            <div class="optCtrlRow"><span class="optCtrlKey">W / S</span><span class="optCtrlAction">Andar Frente / Trás</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey">A / D</span><span class="optCtrlAction">Girar / Virar</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey">Shift</span><span class="optCtrlAction">Correr</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey">Espaço / Botão Dir.</span><span class="optCtrlAction">Mirar Arma</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey">F / Botão Esq.</span><span class="optCtrlAction">Disparar Arma</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey">E / Enter</span><span class="optCtrlAction">Interagir / Examinar</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey">I / Tab</span><span class="optCtrlAction">Abrir Inventário</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey">V / C</span><span class="optCtrlAction">Alternar Câmera PS1 / Livre</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rodapé: Botão Voltar Gótico à Esquerda e Dica de Controle ao Centro (IDÊNTICO À REFERÊNCIA) -->
+    <div class="optFooterBar">
+      <button id="optBack" class="optBackGothicBtn">❮ VOLTAR</button>
+      <div class="optFooterCenterHint">
+        <svg viewBox="0 0 60 12" class="optFooterFlourish" fill="none">
+          <line x1="0" y1="6" x2="26" y2="6" stroke="#485362" stroke-width="1"/>
+          <polygon points="30,3 33,6 30,9 27,6" stroke="#768394" stroke-width="1" fill="#0d1218"/>
+          <line x1="34" y1="6" x2="60" y2="6" stroke="#485362" stroke-width="1"/>
+        </svg>
+        <span class="optHintText">SELECIONE</span>
+        <svg class="optDpadIcon" viewBox="0 0 16 16" width="14" height="14" fill="none">
+          <path d="M 5.5 1 L 10.5 1 L 10.5 5.5 L 15 5.5 L 15 10.5 L 10.5 10.5 L 10.5 15 L 5.5 15 L 5.5 10.5 L 1 10.5 L 1 5.5 L 5.5 5.5 Z" stroke="#9ba6b6" stroke-width="1.3" fill="rgba(24,32,42,0.85)"/>
+        </svg>
+        <span class="optHintText">CONFIRME</span>
+        <svg class="optCircleIcon" viewBox="0 0 16 16" width="14" height="14" fill="none">
+          <circle cx="8" cy="8" r="5.5" stroke="#d43b3b" stroke-width="1.8" fill="rgba(60,15,15,0.7)"/>
+          <circle cx="8" cy="8" r="3.2" stroke="#e64c4c" stroke-width="0.8" fill="none"/>
+        </svg>
+        <svg viewBox="0 0 60 12" class="optFooterFlourish" fill="none">
+          <line x1="0" y1="6" x2="26" y2="6" stroke="#485362" stroke-width="1"/>
+          <polygon points="30,3 33,6 30,9 27,6" stroke="#768394" stroke-width="1" fill="#0d1218"/>
+          <line x1="34" y1="6" x2="60" y2="6" stroke="#485362" stroke-width="1"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ HUD ============ -->
+<div id="hud" class="hidden">
+  <div id="roomName" class="roomNameBanner hidden">
+    <div class="roomStamp">SANATÓRIO SANTA LÚCIA · 1997</div>
+    <div id="roomTitleText" class="roomTitleText">SAGUÃO PRINCIPAL</div>
+    <div id="roomSubText" class="roomSubText">ALA CENTRAL · PISO 1</div>
+  </div>
+  <div id="hpBox" class="hudTacticalBox">
+    <div class="hudTacticalTop">
+      <span class="hudLabel">ECG STATUS</span>
+      <span id="hpStatus" class="hpStatus ok">FINE</span>
+    </div>
+    <div class="hudTacticalMain">
+      <div class="hudPulseBeat"></div>
+      <span id="hpText" class="hudHpVal">100 HP</span>
+    </div>
+  </div>
+  <div id="ammoBox" class="hudTacticalBox ammoTactical hidden">
+    <div class="hudTacticalTop">
+      <span class="hudLabel">EQUIPAMENTO</span>
+      <span id="ammoWeaponName" class="hudWeaponName">PISTOLA M9</span>
+    </div>
+    <div class="hudTacticalMain">
+      <span id="ammoIcon" class="hudAmmoIcon">🔫</span>
+      <span id="ammoText" class="hudAmmoVal">15 / 60</span>
+    </div>
+  </div>
+  <div id="prompt" class="hidden"></div>
+  <div id="cross" class="hidden">＋</div>
+  <div id="target" class="hidden">◇</div>
+  <div id="bossBar" class="hidden"><div id="bossName">VULTO</div><div class="bossTrack"><div id="bossFill"></div></div></div>
+  <div id="toast" class="hidden"></div>
+
+  <!-- HUD Modos Extras -->
+  <div id="extraHud" class="hidden">
+    <div class="extraHudItem">⏱️ <span id="extraTimer">02:00</span></div>
+    <div class="extraHudItem">⭐ <span id="extraScore">0</span></div>
+    <div class="extraHudItem"><span id="extraCombo">COMBO x0</span></div>
+  </div>
+
+  <!-- Botão rápido de câmera -->
+  <button id="hudCamBtn" class="hudCamBtn">📷 CÂMERA</button>
+</div>
+
+<!-- ============ BANNER DE ITEM ============ -->
+<div id="banner" class="hidden">
+  <div id="bannerIcon">🔑</div>
+  <div><div id="bannerName">Item</div><div id="bannerDesc">Descrição</div></div>
+  <div class="bannerHint">[E] continuar</div>
+</div>
+
+<!-- ============ DIÁLOGO ============ -->
+<div id="dialog" class="hidden">
+  <canvas id="dlgPortrait" width="96" height="96"></canvas>
+  <div class="dlgBody">
+    <div id="dlgName">DANIEL</div>
+    <div id="dlgText"></div>
+    <div class="dlgHint">▼ [E / ENTER / clique]</div>
+  </div>
+</div>
+
+<!-- ============ INVENTÁRIO (ESTILO RESIDENT EVIL CLÁSSICO) ============ -->
+<div id="inventory" class="overlay hidden">
+  <div class="panel inv reInv">
+    <div class="invHeader">
+      <div class="invHeaderLeft">
+        <div class="panelStamp">SANATÓRIO SANTA LÚCIA · MALETA DE SOBREVIVÊNCIA</div>
+        <h2>PRONTUÁRIO & EQUIPAMENTO</h2>
+      </div>
+      <!-- ECG Cardíaco animado estilo Resident Evil clássico -->
+      <div class="ecgMonitor">
+        <div class="ecgBezel">
+          <canvas id="ecgCanvas" width="160" height="40"></canvas>
+          <div class="ecgScanlines"></div>
+        </div>
+        <div class="ecgData">
+          <span id="ecgBpm" class="ecgBpm">72 BPM</span>
+          <span id="ecgStatus" class="ecgStatus">FINE</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aviso de Modo de Combinação (RE style) -->
+    <div id="invCombineNotice" class="invCombineNotice hidden">
+      <span>⚙️ SELECIONE O SEGUNDO ITEM PARA COMBINAR (ESC PARA CANCELAR)</span>
+    </div>
+
+    <div class="invMain">
+      <div id="invGrid"></div>
+      <div class="invSide">
+        <div class="invDetail">
+          <div class="invIconWrap">
+            <div id="invIcon">—</div>
+          </div>
+          <div id="invName">Vazio</div>
+          <div id="invDesc">Espaço livre na maleta de sobrevivência.</div>
+          <div id="invCmds"></div>
+        </div>
+        <div class="invMeta">
+          <div id="invHeroName">DANIEL SILVA</div>
+          <div id="invWeapon">ARMA: Nenhuma</div>
+          <div id="invPages">PÁGINAS: 0/8</div>
+          <div id="invTime">TEMPO: 00:00:00</div>
+        </div>
+      </div>
+    </div>
+    <div class="invObj">◎ <span id="invObjective"></span></div>
+    <div class="invFoot">
+      <div class="invHelpTip">💡 [2 Cliques / ENTER] Usar ou Equipar rápido</div>
+      <button id="invCamSwitch" class="btn small">📷 CÂMERA (V)</button>
+      <button id="invClose" class="btn">FECHAR [TAB / ESC]</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ COFRE ============ -->
+<div id="safe" class="overlay hidden">
+  <div class="panel small safePanel">
+    <div class="panelStamp">SEGURANÇA REFORÇADA · SANATÓRIO SANTA LÚCIA</div>
+    <h2>COFRE DE ALTA SEGURANÇA</h2>
+    <p class="tip">Digite o código confidencial de 4 dígitos.<br>← → seleciona dígito • ↑ ↓ altera número • ENTER confirma</p>
+    <div id="safeDigits"></div>
+    <div class="rowBtns">
+      <button id="safeOk" class="btn">🔓 ABRIR COFRE</button>
+      <button id="safeCancel" class="btn">CANCELAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SALVAMENTO (ESTILO RESIDENT EVIL / MÁQUINA DE ESCREVER) ============ -->
+<div id="saveBox" class="overlay hidden">
+  <div class="panel typewriterPanel">
+    <div class="typewriterHeader">
+      <div class="panelStamp">SANATÓRIO SANTA LÚCIA · SALA DE ARQUIVO & REGISTRO CLÍNICO</div>
+      <h2>MÁQUINA DE ESCREVER</h2>
+    </div>
+
+    <div class="typewriterDocket">
+      <div class="docketHeader">
+        <span class="docketBadge">PRONTUÁRIO CLÍNICO & REGISTRO DE MEMÓRIA</span>
+        <span class="docketStampDate">ARQUIVO MORTO · 1997</span>
+      </div>
+      <div class="docketBody">
+        <div class="docketRow">
+          <span class="docketLabel">SOBREVIVENTE / AGENTE:</span>
+          <span id="saveHeroName" class="docketVal highlight">DANIEL SILVA</span>
+        </div>
+        <div class="docketRow">
+          <span class="docketLabel">LOCAL DO REGISTRO:</span>
+          <span id="saveRoomName" class="docketVal">SAGUÃO PRINCIPAL</span>
+        </div>
+        <div class="docketRow">
+          <span class="docketLabel">REGISTROS EFETUADOS:</span>
+          <span id="saveCountVal" class="docketVal">00 VEZES</span>
+        </div>
+        <div class="docketRow">
+          <span class="docketLabel">TEMPO DECORRIDO:</span>
+          <span id="saveTimeVal" class="docketVal">00:15:30</span>
+        </div>
+        <div class="docketRow ribbonRow">
+          <span class="docketLabel">FITA DE TINTA DISPONÍVEL:</span>
+          <span id="saveRibbonVal" class="docketVal ribbonVal">x2 RESTANTES</span>
+        </div>
+      </div>
+      <div id="saveStamp" class="saveStamp hidden">ARQUIVADO</div>
+    </div>
+
+    <div class="typewriterQuestion">
+      <p>Deseja registrar o seu prontuário nesta máquina de escrever?<br>
+      <span class="typewriterTip">Cada salvamento consome 1 Fita de Tinta da sua maleta de sobrevivência.</span></p>
+    </div>
+
+    <div class="typewriterBtns">
+      <button id="saveYes" class="btn typewriterBtn confirm">► SIM (DATILOGRAFAR PRONTUÁRIO)</button>
+      <button id="saveNo" class="btn typewriterBtn cancel">NÃO (RETORNAR)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PAUSE ============ -->
+<div id="pause" class="overlay hidden">
+  <div class="panel small">
+    <h2>PAUSADO</h2>
+    <div id="pauseMenu" class="menu"></div>
+  </div>
+</div>
+
+<!-- ============ GAME OVER ============ -->
+<div id="gameover" class="overlay hidden">
+  <div class="goBox">
+    <h1 class="goTitle">VOCÊ MORREU</h1>
+    <p>A escuridão venceu... desta vez.<br>Mas toda noite termina. Tente de novo.</p>
+    <div class="rowBtns">
+      <button id="goRetry" class="btn">CONTINUAR</button>
+      <button id="goTitle" class="btn">TÍTULO</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FINAL ============ -->
+<div id="ending" class="overlay hidden">
+  <div class="panel">
+    <h2 id="endTitle">FINAL</h2>
+    <div id="endRank" class="rank">S</div>
+    <div id="endStats" class="stats"></div>
+    <div id="endMsg" class="tip"></div>
+    <div class="endPointsEarned">PONTOS GANHOS NESTA JORNADA: +<span id="endPointsVal">0</span></div>
+    <button id="endBtn" class="btn">VOLTAR AO TÍTULO</button>
+  </div>
+</div>
+
+<!-- ============ PORTA ============ -->
+<div id="door" class="hidden"><canvas id="doorCanvas" width="320" height="180"></canvas></div>
+
+<!-- ============ TOUCH ============ -->
+<div id="touch" class="hidden">
+  <div class="tLeft">
+    <div class="tRow"><button id="tF" class="tBtn">▲</button></div>
+    <div class="tRow"><button id="tL" class="tBtn">◀</button><button id="tB" class="tBtn">▼</button><button id="tR" class="tBtn">▶</button></div>
+    <div class="tRow"><button id="tRun" class="tBtn small">CORRER</button><button id="tCam" class="tBtn small">CAM</button></div>
+  </div>
+  <div class="tRight">
+    <button id="tAim" class="tBtn">MIRAR</button>
+    <button id="tFire" class="tBtn">ATIRAR</button>
+    <button id="tAct" class="tBtn">E</button>
+    <button id="tInv" class="tBtn small">INV</button>
+  </div>
+</div>
+
+<div id="err" class="hidden"></div>
+
+<script type="module">
+  // Injeção de script principal com cache-buster em tempo real (Regra 2)
+  const _tsJs = Date.now();
+  import(`./js/main.js?t=${_tsJs}`).catch((err) => {
+    console.error('Falha ao carregar main.js:', err);
+    const errEl = document.getElementById('err');
+    if (errEl) {
+      errEl.classList.remove('hidden');
+      errEl.textContent = 'Erro ao inicializar o motor de jogo: ' + err.message;
+    }
+  });
+</script>
+</body>
+</html>
