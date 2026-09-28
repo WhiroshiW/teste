@@ -2781,3 +2781,34 @@ html, body {
 }
 .ic.lg { width: 1.5em; height: 1.5em; stroke-width: 1.4; }
 .ic.sm { width: 0.8em; height: 0.8em; }
+
+/* ============ RESPONSIVIDADE UNIVERSAL (qualquer tela, sem desfoque) ============ */
+/* Aviso de orientação — celulares em retrato (não bloqueia o jogo) */
+#rotateHint {
+  display: none;
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 999998;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 16px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  background: rgba(6, 8, 11, 0.92);
+  border-top: 1px solid rgba(138, 150, 166, 0.35);
+  color: #a8b4c4;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-align: center;
+  pointer-events: none;
+}
+@media (orientation: portrait) and (pointer: coarse) and (max-width: 932px) {
+  #rotateHint { display: flex; }
+}
+/* Fundos fotográficos: cover + centralizado em qualquer aspect ratio */
+.titleBgImg, .sponsorImage, .optBg, .extrasBg, .shopBg, .saveBg {
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}

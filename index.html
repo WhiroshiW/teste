@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0, post-check=0, pre-check=0">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -17,7 +17,7 @@
     if (window.navigator && navigator.serviceWorker) {
       navigator.serviceWorker.getRegistrations().then(regs => Promise.all(regs.map(r => r.unregister())));
     }
-    const currentBuild = '1924_1997_v5';
+    const currentBuild = '1924_1997_v6';
     const lastBuild = localStorage.getItem('SANTA_LUCIA_VER');
     if (lastBuild !== currentBuild) {
       localStorage.setItem('SANTA_LUCIA_VER', currentBuild);
@@ -27,9 +27,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./css/style.css?v=1924_1997_v5">
+<link rel="stylesheet" href="./css/style.css?v=1924_1997_v6">
 <script type="importmap">
-{ "imports": { "three": "./vendor/three.module.min.js?v=1924_1997_v5" } }
+{ "imports": { "three": "./vendor/three.module.min.js?v=1924_1997_v6" } }
 </script>
 </head>
 <body>
@@ -90,6 +90,11 @@
 <symbol id="i-vhs" viewBox="0 0 24 24"><rect x="2.5" y="6.5" width="19" height="11" rx="1.5"/><circle cx="8" cy="12" r="2.2"/><circle cx="16" cy="12" r="2.2"/><path d="M8 9.8v4.4M16 9.8v4.4"/></symbol>
 <symbol id="i-outfit" viewBox="0 0 24 24"><path d="M8.5 4 12 6.5 15.5 4l5 2.5-1.8 4-1.7-.7V20h-10V9.8l-1.7.7-1.8-4Z"/></symbol>
 </defs></svg>
+<!-- Aviso de orientação para celulares em retrato -->
+<div id="rotateHint" class="rotateHint" aria-hidden="true">
+  <svg class="ic lg"><use href="#i-sync"></use></svg>
+  <span>GIRE O APARELHO PARA A EXPERIÊNCIA COMPLETA</span>
+</div>
 <!-- Cortina cinemática para transição suave de telas (estilo Resident Evil Remake) -->
 <div id="screenCurtain" class="screenCurtain"></div>
 

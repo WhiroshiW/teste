@@ -240,8 +240,9 @@ export class UI {
     if (!gl || typeof gl.createShader !== 'function' || typeof gl.viewport !== 'function') return; // Fallback gracioso automático para o background CSS 2D
 
     const resize = () => {
-      cvs.width = (typeof window !== 'undefined' && window.innerWidth) || 1280;
-      cvs.height = (typeof window !== 'undefined' && window.innerHeight) || 720;
+      const dpr = Math.min((typeof window !== 'undefined' && window.devicePixelRatio) || 1, 2);
+      cvs.width = Math.round(((typeof window !== 'undefined' && window.innerWidth) || 1280) * dpr);
+      cvs.height = Math.round(((typeof window !== 'undefined' && window.innerHeight) || 720) * dpr);
       gl.viewport(0, 0, cvs.width, cvs.height);
     };
     resize();
@@ -446,8 +447,13 @@ export class UI {
     if (!ctx) return;
 
     const resize = () => {
-      cvs.width = (typeof window !== 'undefined' && window.innerWidth) || 800;
-      cvs.height = (typeof window !== 'undefined' && window.innerHeight) || 600;
+      const dpr = Math.min((typeof window !== 'undefined' && window.devicePixelRatio) || 1, 2);
+      cvs._cssW = (typeof window !== 'undefined' && window.innerWidth) || 800;
+      cvs._cssH = (typeof window !== 'undefined' && window.innerHeight) || 600;
+      cvs._dpr = dpr;
+      cvs.width = Math.round(cvs._cssW * dpr);
+      cvs.height = Math.round(cvs._cssH * dpr);
+      if (ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize();
     if (typeof window !== 'undefined' && window.addEventListener) {
@@ -467,8 +473,8 @@ export class UI {
       for (let i = 0; i < layer.count; i++) {
         drops.push({
           layer: layerIdx,
-          x: Math.random() * (cvs.width + 300) - 150,
-          y: Math.random() * cvs.height,
+          x: Math.random() * ((cvs._cssW || cvs.width) + 300) - 150,
+          y: Math.random() * (cvs._cssH || cvs.height),
           len: layer.lenMin + Math.random() * (layer.lenMax - layer.lenMin),
           spd: layer.spdMin + Math.random() * (layer.spdMax - layer.spdMin),
           alpha: layer.alpha * (0.8 + Math.random() * 0.4),
@@ -490,7 +496,7 @@ export class UI {
     const loop = () => {
       if (!this.el.title || (this.el.title.classList && this.el.title.classList.contains('hidden'))) return;
       animTime += 0.016;
-      ctx.clearRect(0, 0, cvs.width, cvs.height);
+      ctx.clearRect(0, 0, (cvs._cssW || cvs.width), (cvs._cssH || cvs.height));
 
       // Leve brisa orgânica para a direita (alinhada com a tempestade de fundo)
       const baseWind = 1.2 + Math.sin(animTime * 0.4) * 0.4;
@@ -513,11 +519,11 @@ export class UI {
           d.y += d.spd;
 
           // Ao atingir o chão molhado e calçamento
-          if (d.y > cvs.height) {
+          if (d.y > (cvs._cssH || cvs.height)) {
             if (d.layer >= 1 && splashes.length < maxSplashes && Math.random() < 0.28) {
               splashes.push({
                 x: d.x,
-                y: cvs.height - 4 - Math.random() * (cvs.height * 0.28),
+                y: (cvs._cssH || cvs.height) - 4 - Math.random() * ((cvs._cssH || cvs.height) * 0.28),
                 radius: 1.5 + Math.random() * 3.5,
                 maxRadius: 4.0 + Math.random() * 5.0,
                 alpha: (d.layer === 2 ? 0.35 : 0.2),
@@ -525,7 +531,7 @@ export class UI {
               });
             }
             d.y = -d.len - Math.random() * 20;
-            d.x = Math.random() * (cvs.width + 300) - 150;
+            d.x = Math.random() * ((cvs._cssW || cvs.width) + 300) - 150;
           }
         }
 
@@ -560,11 +566,11 @@ export class UI {
       }
 
       // 3. Névoa sutil de umidade no rodapé
-      const mistGrad = ctx.createLinearGradient(0, cvs.height - 180, 0, cvs.height);
+      const mistGrad = ctx.createLinearGradient(0, (cvs._cssH || cvs.height) - 180, 0, (cvs._cssH || cvs.height));
       mistGrad.addColorStop(0, 'rgba(8, 12, 18, 0)');
       mistGrad.addColorStop(1, 'rgba(12, 18, 28, 0.16)');
       ctx.fillStyle = mistGrad;
-      ctx.fillRect(0, cvs.height - 180, cvs.width, 180);
+      ctx.fillRect(0, (cvs._cssH || cvs.height) - 180, (cvs._cssW || cvs.width), 180);
 
       // 4. Relâmpagos ocasionais integrados
       const now = Date.now();
@@ -690,8 +696,14 @@ export class UI {
       Object.keys(this._activeScreenEffects).forEach((screenId) => {
         const item = this._activeScreenEffects[screenId];
         if (item && item.canvas) {
-          item.canvas.width = window.innerWidth || 1280;
-          item.canvas.height = window.innerHeight || 720;
+          const cv = item.canvas;
+          cv._dpr = Math.min(window.devicePixelRatio || 1, 2);
+          cv._cssW = window.innerWidth || 1280;
+          cv._cssH = window.innerHeight || 720;
+          cv.width = Math.round(cv._cssW * cv._dpr);
+          cv.height = Math.round(cv._cssH * cv._dpr);
+          const c2 = cv.getContext && cv.getContext('2d');
+          if (c2 && c2.setTransform) c2.setTransform(cv._dpr, 0, 0, cv._dpr, 0, 0);
         }
       });
     });
@@ -707,10 +719,14 @@ export class UI {
     const canvas = this.$(canvasId);
     if (!screenEl || !canvas || typeof canvas.getContext !== 'function') return;
 
-    canvas.width = window.innerWidth || 1280;
-    canvas.height = window.innerHeight || 720;
+    canvas._dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas._cssW = window.innerWidth || 1280;
+    canvas._cssH = window.innerHeight || 720;
+    canvas.width = Math.round(canvas._cssW * canvas._dpr);
+    canvas.height = Math.round(canvas._cssH * canvas._dpr);
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    if (ctx.setTransform && canvas._dpr) ctx.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
 
     const fxData = {
       canvas,
@@ -726,8 +742,8 @@ export class UI {
       // 1. Painel Elétrico: poeira industrial suspensa e faíscas de alta tensão
       for (let i = 0; i < 45; i++) {
         fxData.particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
+          x: Math.random() * (canvas._cssW || canvas.width),
+          y: Math.random() * (canvas._cssH || canvas.height),
           radius: 0.8 + Math.random() * 1.8,
           alpha: 0.15 + Math.random() * 0.45,
           baseAlpha: 0.15 + Math.random() * 0.45,
@@ -742,8 +758,8 @@ export class UI {
       // 2. Escadaria do Sanatório: névoa gótica e chuva oblíqua da janela tempestuosa
       for (let i = 0; i < 65; i++) {
         fxData.particles.push({
-          x: Math.random() * (canvas.width + 200) - 100,
-          y: Math.random() * canvas.height,
+          x: Math.random() * ((canvas._cssW || canvas.width) + 200) - 100,
+          y: Math.random() * (canvas._cssH || canvas.height),
           len: 12 + Math.random() * 22,
           spd: 14 + Math.random() * 18,
           alpha: 0.14 + Math.random() * 0.28,
@@ -754,8 +770,8 @@ export class UI {
       fxData.fogMotes = [];
       for (let i = 0; i < 18; i++) {
         fxData.fogMotes.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
+          x: Math.random() * (canvas._cssW || canvas.width),
+          y: Math.random() * (canvas._cssH || canvas.height),
           radius: 20 + Math.random() * 45,
           alpha: 0.03 + Math.random() * 0.06,
           spd: 0.1 + Math.random() * 0.25,
@@ -765,8 +781,8 @@ export class UI {
       // 3. Mesa de Investigação & Estante de Curiosidades: brasas quentes da vela e halo dourado
       for (let i = 0; i < 40; i++) {
         fxData.particles.push({
-          x: canvas.width * 0.4 + (Math.random() - 0.5) * canvas.width * 0.7,
-          y: canvas.height * 0.3 + Math.random() * canvas.height * 0.7,
+          x: (canvas._cssW || canvas.width) * 0.4 + (Math.random() - 0.5) * (canvas._cssW || canvas.width) * 0.7,
+          y: (canvas._cssH || canvas.height) * 0.3 + Math.random() * (canvas._cssH || canvas.height) * 0.7,
           radius: 1.0 + Math.random() * 2.2,
           alpha: 0.2 + Math.random() * 0.6,
           baseAlpha: 0.2 + Math.random() * 0.6,
@@ -782,8 +798,8 @@ export class UI {
       // 4. Menu Carregar e Salvar: Chuva na janela (esquerda), vela e brasas (direita), poeira ambiente
       for (let i = 0; i < 45; i++) {
         fxData.particles.push({
-          x: Math.random() * (canvas.width * 0.40),
-          y: Math.random() * canvas.height,
+          x: Math.random() * ((canvas._cssW || canvas.width) * 0.40),
+          y: Math.random() * (canvas._cssH || canvas.height),
           len: 12 + Math.random() * 20,
           spd: 12 + Math.random() * 16,
           alpha: 0.15 + Math.random() * 0.3,
@@ -794,8 +810,8 @@ export class UI {
       fxData.candleEmbers = [];
       for (let i = 0; i < 28; i++) {
         fxData.candleEmbers.push({
-          x: canvas.width * 0.81 + (Math.random() - 0.5) * 80,
-          y: canvas.height * 0.60 + Math.random() * (canvas.height * 0.35),
+          x: (canvas._cssW || canvas.width) * 0.81 + (Math.random() - 0.5) * 80,
+          y: (canvas._cssH || canvas.height) * 0.60 + Math.random() * ((canvas._cssH || canvas.height) * 0.35),
           radius: 0.8 + Math.random() * 1.8,
           alpha: 0.2 + Math.random() * 0.6,
           baseAlpha: 0.2 + Math.random() * 0.6,
@@ -808,8 +824,8 @@ export class UI {
       fxData.dustMotes = [];
       for (let i = 0; i < 30; i++) {
         fxData.dustMotes.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
+          x: Math.random() * (canvas._cssW || canvas.width),
+          y: Math.random() * (canvas._cssH || canvas.height),
           radius: 0.7 + Math.random() * 1.3,
           alpha: 0.08 + Math.random() * 0.22,
           baseAlpha: 0.08 + Math.random() * 0.22,
@@ -1064,7 +1080,7 @@ export class UI {
     if (this._activeScreenEffects && this._activeScreenEffects[screenId]) {
       const fx = this._activeScreenEffects[screenId];
       if (fx && fx.ctx && fx.canvas) {
-        fx.ctx.clearRect(0, 0, fx.canvas.width, fx.canvas.height);
+        fx.ctx.clearRect(0, 0, (fx.canvas._cssW || fx.canvas.width), (fx.canvas._cssH || fx.canvas.height));
       }
       delete this._activeScreenEffects[screenId];
     }
@@ -1081,7 +1097,7 @@ export class UI {
       Object.keys(this._activeScreenEffects).forEach((k) => {
         const fx = this._activeScreenEffects[k];
         if (fx && fx.ctx && fx.canvas) {
-          fx.ctx.clearRect(0, 0, fx.canvas.width, fx.canvas.height);
+          fx.ctx.clearRect(0, 0, (fx.canvas._cssW || fx.canvas.width), (fx.canvas._cssH || fx.canvas.height));
         }
       });
       this._activeScreenEffects = {};

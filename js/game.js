@@ -41,7 +41,7 @@ export class Game {
         };
       }
     }
-    this.renderer.setPixelRatio(1);
+    this.renderer.setPixelRatio(Math.min((typeof window !== 'undefined' && window.devicePixelRatio) || 1, 2));
     const initW = container.clientWidth || window.innerWidth || 320;
     const initH = container.clientHeight || window.innerHeight || 240;
     this.renderer.setSize(initW, initH, false);
