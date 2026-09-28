@@ -6,6 +6,14 @@ import { HELP_ROWS as HH } from './story.js';
 import { icon } from './icons.js';
 import { drawPortrait } from './textures.js';
 
+// Pixel arts autorais dos protagonistas (Equipe Nakamura).
+// Solte assets/portrait_daniel.png e assets/portrait_clara.png para usá-las;
+// sem os arquivos, o retrato procedural clássico é usado automaticamente.
+const PORTRAIT_ART = {
+  daniel: './assets/portrait_daniel.png',
+  clara: './assets/portrait_clara.png',
+};
+
 const NAMES = {
   daniel: 'DANIEL', lucia: 'LÚCIA', clara: 'DRA. CLARA', bento: 'BENTO (ZELADOR)',
   alencastro: 'DR. ALENCASTRO', medico: 'DR. MATIAS', vulto: 'VULTO',
@@ -206,9 +214,29 @@ export class UI {
 
   renderCampaignPortraits() {
     const c1 = this.$('campPortDaniel');
-    if (c1) drawPortrait(c1, 'daniel');
+    if (c1) this.applyPortraitArt(c1, 'daniel');
     const c2 = this.$('campPortClara');
-    if (c2) drawPortrait(c2, 'clara');
+    if (c2) this.applyPortraitArt(c2, 'clara');
+  }
+
+  // Retratos pixel-art autorais (assets/portrait_<quem>.png) com fallback
+  // procedural (drawPortrait) caso o arquivo não exista.
+  applyPortraitArt(canvas, who) {
+    const src = PORTRAIT_ART[who];
+    if (!src || !canvas || typeof canvas.getContext !== 'function') return false;
+    if (typeof Image === 'undefined') { drawPortrait(canvas, who); return true; } // ambiente sem DOM
+    const img = new Image();
+    img.onload = () => {
+      const x = canvas.getContext('2d');
+      if (!x) return;
+      x.imageSmoothingEnabled = false;
+      x.fillStyle = '#060608';
+      x.fillRect(0, 0, canvas.width, canvas.height);
+      x.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+    img.onerror = () => drawPortrait(canvas, who);
+    img.src = src;
+    return true;
   }
 
   // ==================== TÍTULO (LAYOUT IDÊNTICO À IMAGEM DE REFERÊNCIA) ====================
@@ -2034,7 +2062,7 @@ export class UI {
     this.dlg.t = 0;
     this.el.dlgName.textContent = NAMES[line.who] || line.who.toUpperCase();
     this.el.dlgText.textContent = '';
-    drawPortrait(this.el.dlgPortrait, line.who);
+    if (!this.applyPortraitArt(this.el.dlgPortrait, line.who)) drawPortrait(this.el.dlgPortrait, line.who);
     if (this.audio && this.audio.speakSubtitle) {
       this.audio.speakSubtitle(line.text, line.who);
     }
