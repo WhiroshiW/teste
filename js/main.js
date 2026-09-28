@@ -9,7 +9,7 @@ function showErr(msg) {
   if (e) {
     e.className = '';
     e.style.cssText = 'position:fixed;top:12px;left:12px;right:12px;z-index:999999;background:#8b0000;color:#fff;padding:16px;border:3px solid #ff4d4d;font-family:monospace;font-size:14px;box-shadow:0 0 20px #000;line-height:1.5;';
-    e.innerHTML = '<b>⚠️ ERRO DO JOGO:</b><br>' + msg;
+    e.innerHTML = '<b>(!) ERRO DO JOGO:</b><br>' + msg;
   }
 }
 

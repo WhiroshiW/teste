@@ -2764,3 +2764,20 @@ html, body {
   #galleryCanvas { max-width: 100%; height: 200px; }
   .extraGrid { grid-template-columns: 1fr; }
 }
+
+/* ============ ÍCONES SVG (biblioteca gothica — substitui emojis) ============ */
+.ic {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: -0.14em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: visible;
+  flex-shrink: 0;
+}
+.ic.lg { width: 1.5em; height: 1.5em; stroke-width: 1.4; }
+.ic.sm { width: 0.8em; height: 0.8em; }

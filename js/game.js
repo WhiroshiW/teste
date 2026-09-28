@@ -9,6 +9,7 @@ import {
   rankFor, rankForMercenaries, fmtTime, healthStatus,
   SAVE_KEY, POINTS_KEY, UNLOCKS_KEY, HISCORES_KEY, OPTS_KEY
 } from './config.js';
+import { icon } from './icons.js';
 import { buildTextures } from './textures.js';
 import { buildRoom, ROOM_IDS, makePickupMesh } from './world.js';
 import { Player, Enemy, NPC, TimeTotem, Particles, collideCircle, pointInSolids } from './entities.js';
@@ -170,7 +171,7 @@ export class Game {
     localStorage.setItem(POINTS_KEY, String(this.points));
     if (this.ui.el.titlePointsVal) this.ui.el.titlePointsVal.textContent = this.points.toLocaleString();
     if (this.ui.el.shopPointsVal) this.ui.el.shopPointsVal.textContent = this.points.toLocaleString();
-    if (reason) this.ui.toast(`⭐ +${n} PONTOS: ${reason}`, 3.5);
+    if (reason) this.ui.toast(`${icon('star')} +${n} PONTOS: ${reason}`, 3.5);
   }
 
   buyShopItem(item) {
@@ -215,11 +216,11 @@ export class Game {
     this.opts.cam = this.camMode;
     this.saveOpts();
     this.audio.sfx('uiSelect');
-    const msg = this.camMode === 'chase' ? '📷 CÂMERA: 3ª PESSOA (LIVRE)' : '📷 CÂMERA: FIXA (PS1 CLÁSSICO)';
+    const msg = this.camMode === 'chase' ? `${icon('camera')} CÂMERA: 3ª PESSOA (LIVRE)` : `${icon('camera')} CÂMERA: FIXA (PS1 CLÁSSICO)`;
     this.ui.toast(msg, 2.5);
     if (this.ui.el.optCam) this.ui.el.optCam.value = this.camMode;
     if (this.ui.el.invCamSwitch) {
-      this.ui.el.invCamSwitch.textContent = `📷 CÂMERA: ${this.camMode === 'chase' ? '3ª PESSOA' : 'FIXA PS1'}`;
+      this.ui.el.invCamSwitch.innerHTML = `${icon('camera')} CÂMERA: ${this.camMode === 'chase' ? '3ª PESSOA' : 'FIXA PS1'}`;
     }
   }
 
@@ -909,7 +910,7 @@ export class Game {
   startCampaign(campId) {
     if (campId === 'bento' && !this.unlocks.extra_bento) {
       this.audio.sfx('dryfire');
-      this.ui.toast('🔒 Turno do Bento bloqueado! Compre na Loja de Pontos por 1.200 PTS.', 3.5);
+      this.ui.toast(icon('lock') + ' Turno do Bento bloqueado! Compre na Loja de Pontos por 1.200 PTS.', 3.5);
       return;
     }
 
@@ -969,7 +970,7 @@ export class Game {
   startMercenaries() {
     if (!this.unlocks.extra_mercenaries) {
       this.audio.sfx('dryfire');
-      this.ui.toast('🔒 Modo Mercenários bloqueado! Compre na Loja de Pontos por 1.000 PTS.', 3.5);
+      this.ui.toast(icon('lock') + ' Modo Mercenários bloqueado! Compre na Loja de Pontos por 1.000 PTS.', 3.5);
       return;
     }
 
@@ -1018,7 +1019,7 @@ export class Game {
   startSurvivor() {
     if (!this.unlocks.extra_survivor) {
       this.audio.sfx('dryfire');
-      this.ui.toast('🔒 Modo Sobrevivente bloqueado! Compre na Loja de Pontos por 1.000 PTS.', 3.5);
+      this.ui.toast(icon('lock') + ' Modo Sobrevivente bloqueado! Compre na Loja de Pontos por 1.000 PTS.', 3.5);
       return;
     }
 
@@ -1049,7 +1050,7 @@ export class Game {
     this.audio.ambient('floresta');
 
     this.spawnSurvivorWave();
-    this.ui.toast(`🛡️ SOBREVIVENTE: ONDA ${this.survivorWave}!`, 4);
+    this.ui.toast(`${icon('shield')} SOBREVIVENTE: ONDA ${this.survivorWave}!`, 4);
   }
 
   spawnSurvivorWave() {
@@ -1398,7 +1399,7 @@ export class Game {
       this.removeItem(it.item, 1);
       this.audio.sfx('heal');
       this.ui.hp(this.player.hp);
-      this.ui.toast(`❤ Vida recuperada (+${cfg.power})`, 2.5);
+      this.ui.toast(`${icon('heart')} Vida recuperada (+${cfg.power})`, 2.5);
     }
   }
 
@@ -1413,7 +1414,7 @@ export class Game {
 
   examineItem(it) {
     const cfg = ITEMS[it.item];
-    this.ui.toast(`${cfg.icon} ${cfg.name}: ${cfg.desc}`, 4.5);
+    this.ui.toast(`${icon(cfg.icon)} ${cfg.name}: ${cfg.desc}`, 4.5);
   }
 
   combineItems(srcIdx, destIdx) {
@@ -1430,7 +1431,7 @@ export class Game {
       if (dDef.ammo === src.item) {
         this.equipWeapon(dest);
         this.audio.sfx('pickupKey');
-        this.ui.toast(`⚙️ ${dDef.name} recarregada com ${sDef.name}!`, 3.5);
+        this.ui.toast(`${icon('gear')} ${dDef.name} recarregada com ${sDef.name}!`, 3.5);
         this.updateAmmoHud();
         return;
       }
@@ -1438,7 +1439,7 @@ export class Game {
       if (sDef.ammo === dest.item) {
         this.equipWeapon(src);
         this.audio.sfx('pickupKey');
-        this.ui.toast(`⚙️ ${sDef.name} recarregada com ${dDef.name}!`, 3.5);
+        this.ui.toast(`${icon('gear')} ${sDef.name} recarregada com ${dDef.name}!`, 3.5);
         this.updateAmmoHud();
         return;
       }
@@ -1449,7 +1450,7 @@ export class Game {
       dest.qty += src.qty;
       this.inv.splice(srcIdx, 1);
       this.audio.sfx('pickup');
-      this.ui.toast(`📦 Doses de ${dDef.name} agrupadas no mesmo frasco (x${dest.qty}).`, 3);
+      this.ui.toast(`${icon('box')} Doses de ${dDef.name} agrupadas no mesmo frasco (x${dest.qty}).`, 3);
       return;
     }
 
@@ -1465,10 +1466,10 @@ export class Game {
       return;
     }
     if (!def.ammo) {
-      this.ui.ammo(w.name, 'BRANCA', def.icon || '🔪', true);
+      this.ui.ammo(w.name, 'BRANCA', def.icon || 'knife', true);
     } else {
       const c = this.infiniteAmmo ? '∞' : this.countItem(def.ammo);
-      this.ui.ammo(w.name, `${c} / ${this.infiniteAmmo ? '∞' : c}`, def.icon || '🔫', true);
+      this.ui.ammo(w.name, `${c} / ${this.infiniteAmmo ? '∞' : c}`, def.icon || 'handgun', true);
     }
   }
 
@@ -1638,7 +1639,7 @@ export class Game {
     setTimeout(() => {
       this.ui.hideSaveBox();
       this.state = 'play';
-      this.ui.toast(`💾 Prontuário arquivado com sucesso no Sanatório. (${this.saves} registros)`, 4);
+      this.ui.toast(`${icon('ribbon')} Prontuário arquivado com sucesso no Sanatório. (${this.saves} registros)`, 4);
     }, 650);
   }
 
@@ -1936,7 +1937,7 @@ export class Game {
           this.audio.sfx('memorial');
           say(D.armario, () => {
             this.showBanner('crank');
-            this.ui.toast('💠 +1 FRAGMENTO DE MEMÓRIA (2/4)', 4);
+            this.ui.toast(icon('shard') + ' +1 FRAGMENTO DE MEMÓRIA (2/4)', 4);
           });
           this.checkObjective();
         } else say(D.armario_after);
@@ -2066,7 +2067,7 @@ export class Game {
     if (p.item === 'forest_key') this.flags.hasForestKey = true;
 
     this.audio.sfx(itDef && itDef.type === 'key' ? 'pickupKey' : 'pickup');
-    this.ui.toast(`Coletou: ${itDef ? itDef.icon : ''} ${itDef ? itDef.name : p.item}${p.qty > 1 ? ` x${p.qty}` : ''}`, 2.5);
+    this.ui.toast(`Coletou: ${itDef ? icon(itDef.icon) : ''} ${itDef ? itDef.name : p.item}${p.qty > 1 ? ` x${p.qty}` : ''}`, 2.5);
     this.updateAmmoHud();
     this.checkObjective();
   }
@@ -2368,7 +2369,7 @@ export class Game {
       const bonus = c.ref.smash();
       this.mercTimer += bonus;
       this.audio.sfx('totem');
-      this.ui.toast(`💎 +${bonus} SEGUNDOS!`, 2.5);
+      this.ui.toast(`${icon('gem')} +${bonus} SEGUNDOS!`, 2.5);
     } else if (c.kind === 'pickup') {
       this.pickupAt(c.ref);
     } else if (c.kind === 'door') {
@@ -2559,7 +2560,7 @@ export class Game {
     else if (c.kind === 'pickup') {
       const it = ITEMS[c.ref.item];
       const extra = c.ref.item === 'page' ? ` (Pág. ${this.flags.pages.filter(Boolean).length + 1}/8)` : c.ref.qty > 1 ? ` x${c.ref.qty}` : '';
-      this.ui.prompt(`<b>E</b> — Pegar ${it.icon} ${it.name}${extra}`);
+      this.ui.prompt(`<b>E</b> — Pegar ${icon(it.icon)} ${it.name}${extra}`);
     }
 
     // Barra de chefe
@@ -2615,7 +2616,7 @@ export class Game {
       this.addItem(this.currentCampaign === 'clara' ? 'ammo38' : 'ammo9', 15);
       this.updateAmmoHud();
 
-      this.ui.toast(`🎉 ONDA ${this.survivorWave - 1} CONCLUÍDA! (+${bonus} Pts • Recursos Reabastecidos)`, 3.5);
+      this.ui.toast(`${icon('sparkle')} ONDA ${this.survivorWave - 1} CONCLUÍDA! (+${bonus} Pts • Recursos Reabastecidos)`, 3.5);
       setTimeout(() => this.spawnSurvivorWave(), 3000);
     }
   }

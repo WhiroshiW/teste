@@ -3,6 +3,7 @@
 // ============================================================
 import { ITEMS, WEAPONS, healthStatus, SHOP_ITEMS, GALLERY_MODELS, CAMPAIGNS } from './config.js';
 import { HELP_ROWS as HH } from './story.js';
+import { icon } from './icons.js';
 import { drawPortrait } from './textures.js';
 
 const NAMES = {
@@ -1188,7 +1189,7 @@ export class UI {
           <line x1="18" y1="23" x2="18" y2="26" stroke="#a6b2c2" stroke-width="1.2"/>
         </svg>`;
       }
-      return `<span style="font-size:20px;">${fallback || '⭐'}</span>`;
+      return icon(fallback || 'star', 'lg');
     };
 
     filtered.forEach((it) => {
@@ -1615,7 +1616,7 @@ export class UI {
     });
     click('optTestSpark', () => {
       this.audio.sfx('spark');
-      this.toast('⚡ TESTE DO PAINEL ELÉTRICO: CIRCUITO NOMINAL DE 220V ESTABILIZADO.', 3);
+      this.toast(icon('bolt') + ' TESTE DO PAINEL ELÉTRICO: CIRCUITO NOMINAL DE 220V ESTABILIZADO.', 3);
       const pilot = document.querySelector('.pilotLight');
       if (pilot) {
         pilot.style.background = '#ffd700';
@@ -1701,7 +1702,7 @@ export class UI {
           this.hideExtraModes();
           this.showShop(this.game.points, this.game.unlocks);
         });
-        this.toast('🔒 Adquira o Modo Mercenários na Loja por 1.000 PTS!', 3.5);
+        this.toast(icon('lock') + ' Adquira o Modo Mercenários na Loja por 1.000 PTS!', 3.5);
         return;
       }
       this.audio.sfx('uiSelect');
@@ -1718,7 +1719,7 @@ export class UI {
           this.hideExtraModes();
           this.showShop(this.game.points, this.game.unlocks);
         });
-        this.toast('🔒 Adquira o Modo Sobrevivente na Loja por 1.000 PTS!', 3.5);
+        this.toast(icon('lock') + ' Adquira o Modo Sobrevivente na Loja por 1.000 PTS!', 3.5);
         return;
       }
       this.audio.sfx('uiSelect');
@@ -1735,7 +1736,7 @@ export class UI {
           this.hideExtraModes();
           this.showShop(this.game.points, this.game.unlocks);
         });
-        this.toast('🔒 Adquira o Turno do Bento na Loja por 1.200 PTS!', 3.5);
+        this.toast(icon('lock') + ' Adquira o Turno do Bento na Loja por 1.200 PTS!', 3.5);
         return;
       }
       this.audio.sfx('uiSelect');
@@ -1875,11 +1876,11 @@ export class UI {
       s.className = 'hpStatus ' + st.cls;
     }
   }
-  ammo(weaponName, ammoStr, icon = '🔫', visible = true) {
+  ammo(weaponName, ammoStr, iconToken = 'handgun', visible = true) {
     if (!this.el.ammoBox) return;
     this.el.ammoBox.classList.toggle('hidden', !visible);
     if (this.el.ammoWeaponName) this.el.ammoWeaponName.textContent = weaponName ? weaponName.toUpperCase() : '';
-    if (this.el.ammoIcon) this.el.ammoIcon.textContent = icon;
+    if (this.el.ammoIcon) this.el.ammoIcon.innerHTML = icon(iconToken);
     if (this.el.ammoText) this.el.ammoText.textContent = ammoStr;
   }
   prompt(txt) {
@@ -1904,7 +1905,7 @@ export class UI {
     if (this.el.extraTimer) this.el.extraTimer.textContent = timerStr;
     if (this.el.extraScore) this.el.extraScore.textContent = (scoreVal || 0).toLocaleString();
     if (this.el.extraCombo) {
-      this.el.extraCombo.textContent = comboVal > 1 ? `COMBO x${comboVal} 🔥` : '';
+      this.el.extraCombo.innerHTML = comboVal > 1 ? `COMBO x${comboVal} ${icon('fire')}` : '';
     }
   }
   toast(txt, dur = 3) {
@@ -1953,7 +1954,7 @@ export class UI {
   showBanner(itemId, qty) {
     const it = ITEMS[itemId];
     if (!it) return;
-    this.el.bannerIcon.textContent = it.icon;
+    this.el.bannerIcon.innerHTML = icon(it.icon);
     this.el.bannerName.textContent = (qty > 1 ? qty + 'x ' : '') + it.name;
     this.el.bannerDesc.textContent = it.desc;
     this.el.banner.classList.toggle('key', it.type === 'key' || it.type === 'weapon');
@@ -2101,9 +2102,9 @@ export class UI {
       const isComb = this.combineSource === i;
       slot.className = 'invCell' + (isSel ? ' sel' : '') + (isComb ? ' combining' : '') + (it ? (it.equipped ? ' equipped' : '') : ' empty');
       if (it) {
-        const itemCfg = ITEMS[it.item] || { name: it.item, icon: '📦' };
+        const itemCfg = ITEMS[it.item] || { name: it.item, icon: 'box' };
         const num = it.qty > 1 ? `<span class="invQty">${it.qty}</span>` : '';
-        slot.innerHTML = `<span class="invIcon">${itemCfg.icon}</span>${num}`;
+        slot.innerHTML = `<span class="invIcon">${icon(itemCfg.icon)}</span>${num}`;
       } else {
         slot.innerHTML = '<span class="invIcon" style="opacity:0.25">◻</span>';
       }
@@ -2153,7 +2154,7 @@ export class UI {
     this.el.invObjective.textContent = this.game.currentObjective();
 
     if (this.el.invCamSwitch) {
-      this.el.invCamSwitch.textContent = `📷 CÂMERA: ${this.game.camMode === 'chase' ? '3ª PESSOA' : 'FIXA PS1'}`;
+      this.el.invCamSwitch.innerHTML = `${icon('camera')} CÂMERA: ${this.game.camMode === 'chase' ? '3ª PESSOA' : 'FIXA PS1'}`;
     }
   }
 
@@ -2167,8 +2168,8 @@ export class UI {
       this.invCmds = [];
       return;
     }
-    const cfg = ITEMS[it.item] || { name: it.item, icon: '📦', desc: '', type: 'item' };
-    this.el.invIcon.textContent = cfg.icon;
+    const cfg = ITEMS[it.item] || { name: it.item, icon: 'box', desc: '', type: 'item' };
+    this.el.invIcon.innerHTML = icon(cfg.icon);
     this.el.invName.textContent = cfg.name + (it.qty > 1 ? ` (x${it.qty})` : '') + (it.equipped ? ' [EQUIPADA]' : '');
     this.el.invDesc.textContent = cfg.desc;
 
@@ -2253,7 +2254,7 @@ export class UI {
       this.combineSource = this.invSel;
       this.invMode = 'grid';
       this.audio.sfx('uiSelect');
-      this.toast('⚙️ Selecione o segundo item para combinar.', 3);
+      this.toast(icon('gear') + ' Selecione o segundo item para combinar.', 3);
       this.renderInventory();
     } else if (cmd === 'EXAMINAR') {
       this.game.examineItem(it);
@@ -2477,7 +2478,7 @@ export class UI {
       }
 
       if (modalTitle) modalTitle.textContent = 'DATILOGRAFAR PRONTUÁRIO';
-      const overwriteNote = !slot.empty ? `<br><span style="color:#ff8888;font-size:11px;">⚠️ ATENÇÃO: Isso irá sobrescrever o registro "${slot.title}"!</span>` : '';
+      const overwriteNote = !slot.empty ? `<br><span style="color:#ff8888;font-size:11px;"><svg class="ic"><use href="#i-alert"></use></svg> ATENÇÃO: Isso irá sobrescrever o registro "${slot.title}"!</span>` : '';
       const ribbonNote = hasInfInk ? '<br><span style="color:#6ee688;font-size:11px;">Fita de Tinta Infinita Ativa.</span>' : '<br><span style="color:#cad8ec;font-size:11px;">Consome 1 Fita de Tinta da sua maleta.</span>';
       if (modalMsg) modalMsg.innerHTML = `Deseja registrar o seu prontuário no <b>Slot ${numStr}</b>?${overwriteNote}${ribbonNote}`;
       if (btnYes) btnYes.textContent = '► SIM (DATILOGRAFAR)';
@@ -2495,7 +2496,7 @@ export class UI {
           this.hideSaveBox();
           if (this.game) {
             this.game.state = 'play';
-            this.toast(`💾 Prontuário arquivado com sucesso no Slot ${numStr}.`, 4);
+            this.toast(`${icon('ribbon')} Prontuário arquivado com sucesso no Slot ${numStr}.`, 4);
           }
         }, 550);
       };
