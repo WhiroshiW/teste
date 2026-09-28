@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0, post-check=0, pre-check=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>SANTA LÚCIA — survival horror estilo PS1</title>
+<link rel="icon" href="data:,">
+<script>
+  // REGRA: Limpeza agressiva contínua de caches locais do navegador
+  try {
+    if ('caches' in window) {
+      caches.keys().then(names => Promise.all(names.map(name => caches.delete(name))));
+    }
+    if (window.navigator && navigator.serviceWorker) {
+      navigator.serviceWorker.getRegistrations().then(regs => Promise.all(regs.map(r => r.unregister())));
+    }
+    const currentBuild = '1924_1997_v5';
+    const lastBuild = localStorage.getItem('SANTA_LUCIA_VER');
+    if (lastBuild !== currentBuild) {
+      localStorage.setItem('SANTA_LUCIA_VER', currentBuild);
+    }
+  } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/style.css?v=1924_1997_v5">
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.min.js?v=1924_1997_v5" } }
+</script>
+</head>
+<body>
+<!-- Cortina cinemática para transição suave de telas (estilo Resident Evil Remake) -->
+<div id="screenCurtain" class="screenCurtain"></div>
+
+<div id="screen"></div>
+<div id="scan"></div>
+
+<!-- ============ INTRO DOS PATROCINADORES (ESTILO RESIDENT EVIL REMAKE) ============ -->
+<div id="sponsorSplash" class="overlay hidden">
+  <div class="sponsorContainer">
+    <div id="sponsorImg" class="sponsorImage"></div>
+    <div class="sponsorVignette"></div>
+    <div class="sponsorGrain"></div>
+    <div id="sponsorSkipBtn" class="sponsorSkipPrompt">
+      <span>[ ESPAÇO / CLIQUE ] PULAR</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TÍTULO (REMASTER IDÊNTICO À IMAGEM DE REFERÊNCIA) ============ -->
+<div id="title" class="overlay hidden">
+  <a href="./baixar.html" target="_blank" id="titleDownloadBtn" style="position:absolute;top:14px;right:16px;z-index:999999;background:rgba(18,24,34,0.85);border:1px solid #3d8b52;color:#6ee688;padding:6px 14px;border-radius:4px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:1px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;backdrop-filter:blur(4px);cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.5);" title="Clique para abrir a página de download do projeto .ZIP">
+    📥 BAIXAR PROJETO (.ZIP)
+  </a>
+  <div id="titleBgImg" class="titleBgImg"></div>
+  <canvas id="title3DCanvas" class="title3DCanvas"></canvas>
+  <canvas id="titleRainCanvas" class="titleRainCanvas"></canvas>
+  <div id="titleLightningFlash" class="titleLightningFlash"></div>
+
+  <div class="titleRightBlock">
+    <div class="titleTop">EQUIPE NAKAMURA APRESENTA</div>
+    <h1 class="logo">SANTA LÚCIA</h1>
+    <div class="titleOrnament">
+      <svg viewBox="0 0 300 24" class="ornamentSvg">
+        <path d="M 0 12 L 125 12 M 175 12 L 300 12" stroke="#685d4f" stroke-width="1.5" />
+        <circle cx="125" cy="12" r="2" fill="#8a7c6a" />
+        <circle cx="175" cy="12" r="2" fill="#8a7c6a" />
+        <path d="M 150 2 C 146 7, 142 9, 137 12 C 142 15, 146 17, 150 22 C 154 17, 158 15, 163 12 C 158 9, 154 7, 150 2 Z" fill="none" stroke="#8a7c6a" stroke-width="1.5" />
+        <circle cx="150" cy="12" r="2.5" fill="#c8a028" />
+        <circle cx="143" cy="12" r="1.5" fill="#8a7c6a" />
+        <circle cx="157" cy="12" r="1.5" fill="#8a7c6a" />
+      </svg>
+    </div>
+    <div id="titleMenu" class="menu"></div>
+    <div id="titleSaveInfo" class="saveInfo"></div>
+  </div>
+</div>
+
+<!-- ============ INTRO CINEMATOGRÁFICA DO SANATÓRIO ============ -->
+<div id="introCutscene" class="overlay hidden">
+  <div class="introCinematic">
+    <div class="cinematicLetterbox top"></div>
+    <div class="cinematicCenter">
+      <div id="introYearTag" class="introYearTag">SERRA DA MANTIQUEIRA · OUTUBRO DE 1997</div>
+      <div id="introQuoteText" class="introQuoteText"></div>
+    </div>
+    <div class="cinematicLetterbox bottom">
+      <div id="introSkipBtn" class="cinematicSkipPrompt">▶ [ ENTER / ESPAÇO / TOQUE ] PULAR INTRO</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SELEÇÃO DE CAMPANHA (RE2 STYLE) ============ -->
+<div id="campaignSelect" class="overlay hidden">
+  <div class="panel large">
+    <h2>ESCOLHA O PROTAGONISTA</h2>
+    <p class="tip">Duas histórias que se cruzam e revelam a verdade completa do Sanatório Santa Lúcia.</p>
+    <div class="campGrid">
+      <!-- Campanha A: Daniel -->
+      <div class="campCard" id="campDaniel">
+        <canvas id="campPortDaniel" width="96" height="96" class="campPort"></canvas>
+        <div class="campInfo">
+          <h3>CAMPANHA A</h3>
+          <h4>DANIEL SILVA</h4>
+          <div class="campSub">O Irmão em Luto</div>
+          <p>Acorda no sanatório onde foi internado há 10 anos. Busca a irmã Lúcia seguindo ecos do passado.</p>
+          <div class="campGear"><b>Início:</b> Faca, Pistola M9, Comprimidos</div>
+          <button class="btn campBtn" id="btnSelectDaniel">JOGAR COM DANIEL</button>
+        </div>
+      </div>
+
+      <!-- Campanha B: Clara -->
+      <div class="campCard" id="campClara">
+        <canvas id="campPortClara" width="96" height="96" class="campPort"></canvas>
+        <div class="campInfo">
+          <h3>CAMPANHA B</h3>
+          <h4>DRA. CLARA MENDES</h4>
+          <div class="campSub">A Médica Investigadora</div>
+          <p>Chega através da floresta sob chuva para expor os experimentos cruéis do Dr. Alencastro e salvar sobreviventes.</p>
+          <div class="campGear"><b>Início:</b> Bisturi, Revólver .38, Cartão Médico</div>
+          <button class="btn campBtn" id="btnSelectClara">JOGAR COM CLARA</button>
+        </div>
+      </div>
+    </div>
+    <div class="rowBtns">
+      <button id="campBack" class="btn">◀ VOLTAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ EXTRAS: LOJA DE PONTOS (IDÊNTICO À REFERÊNCIA) ============ -->
+<div id="pointsShop" class="overlay hidden">
+  <div class="menuBackdropLayer">
+    <div class="backdropImage bgShop"></div>
+    <canvas class="backdropWeatherCanvas" id="shopWeatherCanvas"></canvas>
+    <div class="backdropVignette"></div>
+  </div>
+  <div class="shopScreenContainer">
+    <!-- Título Cinzelado & Ornamentos em Cruz/Losango -->
+    <div class="shopHeaderBlock">
+      <div class="shopTitleDeco top">
+        <svg viewBox="0 0 180 20" class="shopDecoSvg" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="20" y1="10" x2="72" y2="10" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="62,7 72,10 62,13" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="50,8 58,10 50,12" stroke="#5d6878" stroke-width="0.8" stroke-linecap="round"/>
+          <line x1="108" y1="10" x2="160" y2="10" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="118,7 108,10 118,13" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="130,8 122,10 130,12" stroke="#5d6878" stroke-width="0.8" stroke-linecap="round"/>
+          <polygon points="90,1 98,10 90,19 82,10" stroke="#b6c2d0" stroke-width="1.4" fill="#0d1218"/>
+          <polygon points="90,4 95,10 90,16 85,10" stroke="#717e90" stroke-width="0.8" fill="none"/>
+          <circle cx="90" cy="10" r="1.6" fill="#e2e8f0"/>
+          <line x1="90" y1="1" x2="90" y2="0" stroke="#b6c2d0" stroke-width="1.2"/>
+          <line x1="90" y1="19" x2="90" y2="20" stroke="#b6c2d0" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <h1 class="shopMainTitle">LOJA DE PONTOS</h1>
+      <div class="shopTitleDeco btm">
+        <svg viewBox="0 0 180 20" class="shopDecoSvg" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="20" y1="10" x2="72" y2="10" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="62,7 72,10 62,13" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="50,8 58,10 50,12" stroke="#5d6878" stroke-width="0.8" stroke-linecap="round"/>
+          <line x1="108" y1="10" x2="160" y2="10" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="118,7 108,10 118,13" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="130,8 122,10 130,12" stroke="#5d6878" stroke-width="0.8" stroke-linecap="round"/>
+          <polygon points="90,1 98,10 90,19 82,10" stroke="#b6c2d0" stroke-width="1.4" fill="#0d1218"/>
+          <polygon points="90,4 95,10 90,16 85,10" stroke="#717e90" stroke-width="0.8" fill="none"/>
+          <circle cx="90" cy="10" r="1.6" fill="#e2e8f0"/>
+          <line x1="90" y1="1" x2="90" y2="0" stroke="#b6c2d0" stroke-width="1.2"/>
+          <line x1="90" y1="19" x2="90" y2="20" stroke="#b6c2d0" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div class="shopSubTitle">
+        <div class="shopSubLine">
+          <span class="subFlourish">─── ❖ ───</span> GASTE SEUS PONTOS EM MELHORIAS <span class="subFlourish">─── ❖ ───</span>
+        </div>
+        <div class="shopSubLine">
+          <span class="subFlourish">─── ❖ ───</span> E VANTAGENS <span class="subFlourish">─── ❖ ───</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bloco de Pontos do Jogador -->
+    <div class="shopPointsPlate">
+      <svg viewBox="0 0 24 24" class="shopGemSvg" width="22" height="22" fill="none">
+        <polygon points="6,3 18,3 23,9 12,21 1,9" stroke="#9bb2cc" stroke-width="1.3" fill="rgba(30,45,65,0.6)"/>
+        <line x1="1" y1="9" x2="23" y2="9" stroke="#9bb2cc" stroke-width="1.1"/>
+        <polyline points="6,3 9,9 12,21 15,9 18,3" stroke="#9bb2cc" stroke-width="1"/>
+        <line x1="9" y1="9" x2="15" y2="9" stroke="#9bb2cc" stroke-width="1"/>
+      </svg>
+      <div class="shopPointsData">
+        <div class="shopPointsLabel">SEUS PONTOS:</div>
+        <div class="shopPointsNum" id="shopPointsVal">0</div>
+      </div>
+    </div>
+
+    <!-- Abas / Categorias da Loja -->
+    <div class="shopCategoryTabs">
+      <button class="shopCatBtn active" data-cat="upgrades">MELHORIAS (5)</button>
+      <button class="shopCatBtn" data-cat="modes">MODOS EXTRAS (3)</button>
+      <button class="shopCatBtn" data-cat="weapons">ARMAS & EXTRAS (8)</button>
+    </div>
+
+    <!-- Lista Dinâmica de Cards Estilizados (Cards idênticos à referência) -->
+    <div id="shopList" class="shopCardList"></div>
+
+    <!-- Rodapé: Botão Voltar Gótico à Esquerda -->
+    <div class="shopFooterBar">
+      <button id="shopBack" class="optBackGothicBtn">❮ VOLTAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ EXTRAS: MENU DE MODOS & LOJA (IDÊNTICO À REFERÊNCIA) ============ -->
+<div id="extraModes" class="overlay hidden">
+  <div class="menuBackdropLayer">
+    <div class="backdropImage bgExtras"></div>
+    <canvas class="backdropWeatherCanvas" id="extrasWeatherCanvas"></canvas>
+    <div class="backdropVignette"></div>
+  </div>
+  <div class="extrasScreenContainer">
+    <!-- Título Cinzelado & Ornamento em Cruz -->
+    <div class="extrasHeaderBlock">
+      <h1 class="extrasMainTitle">EXTRAS</h1>
+      <div class="extrasTitleDeco">
+        <svg viewBox="0 0 180 18" class="extrasDecoSvg" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="10" y1="9" x2="72" y2="9" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="62,6 72,9 62,12" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="108" y1="9" x2="170" y2="9" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="118,6 108,9 118,12" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <polygon points="90,1 98,9 90,17 82,9" stroke="#b6c2d0" stroke-width="1.4" fill="#0d1218"/>
+          <polygon points="90,4 95,9 90,14 85,9" stroke="#717e90" stroke-width="0.8" fill="none"/>
+          <circle cx="90" cy="9" r="1.5" fill="#e2e8f0"/>
+          <line x1="90" y1="1" x2="90" y2="0" stroke="#b6c2d0" stroke-width="1.2"/>
+          <line x1="90" y1="17" x2="90" y2="18" stroke="#b6c2d0" stroke-width="1.2"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Lista de 4 Opções Góticas com Indicador Animado (Idêntica à Imagem) -->
+    <div class="extrasMenuCol">
+      <!-- 1. Loja de Pontos -->
+      <div class="extrasCardBtn" id="extraToShop">
+        <div class="extrasCardLeft">
+          <span class="btnSelGlowIcon">❖</span>
+          <svg class="extrasCardIcon" viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <polygon points="12,2 15,9 22,12 15,15 12,22 9,15 2,12 9,9" stroke="#b4c2d2" stroke-width="1.3" fill="rgba(24,32,44,0.6)"/>
+            <circle cx="12" cy="12" r="1.5" fill="#e0e8f4"/>
+          </svg>
+          <span class="extrasCardText">LOJA DE PONTOS</span>
+        </div>
+        <div class="extrasCardRight">
+          <span class="extrasCardChevron">❯</span>
+        </div>
+      </div>
+
+      <!-- 2. The Mercenaries -->
+      <div class="extrasCardBtn" id="btnPlayMercenaries" data-play-text="THE MERCENARIES">
+        <div class="extrasCardLeft">
+          <span class="btnSelGlowIcon">❖</span>
+          <svg class="extrasCardIcon" viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <path d="M 5 4 L 19 4 L 19 12 C 19 18 12 21 12 21 C 12 21 5 18 5 12 Z" stroke="#a0acbc" stroke-width="1.3" fill="rgba(20,28,38,0.7)"/>
+            <path d="M 12 4 L 12 20 M 5 10 L 19 10" stroke="#687688" stroke-width="1"/>
+          </svg>
+          <span class="extrasCardText">THE MERCENARIES</span>
+        </div>
+        <div class="extrasCardRight">
+          <span class="extraStatus" id="statusMercenaries">
+            <svg class="extrasLockSvg" viewBox="0 0 16 16" width="14" height="14" fill="none">
+              <rect x="3" y="7" width="10" height="8" rx="1" stroke="#8a96a6" stroke-width="1.2" fill="#141a22"/>
+              <path d="M 5 7 L 5 4 C 5 2.5 6.3 1.5 8 1.5 C 9.7 1.5 11 2.5 11 4 L 11 7" stroke="#8a96a6" stroke-width="1.2"/>
+              <circle cx="8" cy="11" r="1" fill="#8a96a6"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <!-- 3. Sobrevivente -->
+      <div class="extrasCardBtn" id="btnPlaySurvivor" data-play-text="SOBREVIVENTE">
+        <div class="extrasCardLeft">
+          <span class="btnSelGlowIcon">❖</span>
+          <svg class="extrasCardIcon" viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <path d="M 12 2 L 12 22 M 6 8 L 18 8 M 8 7 L 8 9 M 16 7 L 16 9" stroke="#a6b2c2" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="12" cy="8" r="1.5" fill="#e0e8f4"/>
+          </svg>
+          <span class="extrasCardText">SOBREVIVENTE</span>
+        </div>
+        <div class="extrasCardRight">
+          <span class="extraStatus" id="statusSurvivor">
+            <svg class="extrasLockSvg" viewBox="0 0 16 16" width="14" height="14" fill="none">
+              <rect x="3" y="7" width="10" height="8" rx="1" stroke="#8a96a6" stroke-width="1.2" fill="#141a22"/>
+              <path d="M 5 7 L 5 4 C 5 2.5 6.3 1.5 8 1.5 C 9.7 1.5 11 2.5 11 4 L 11 7" stroke="#8a96a6" stroke-width="1.2"/>
+              <circle cx="8" cy="11" r="1" fill="#8a96a6"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <!-- 4. O Turno da Noite -->
+      <div class="extrasCardBtn" id="btnPlayBento" data-play-text="O TURNO DA NOITE">
+        <div class="extrasCardLeft">
+          <span class="btnSelGlowIcon">❖</span>
+          <svg class="extrasCardIcon" viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <path d="M 15 4 C 8.5 4 4.5 9.5 5 15 C 5.5 20.5 11 22 15 20 C 10 18 9 12 13 8 C 14 7 14.8 5.5 15 4 Z" stroke="#a6b2c2" stroke-width="1.4" fill="rgba(24,32,44,0.6)"/>
+            <polygon points="18,5 19,7 21,7.5 19.5,9 20,11 18,10 16,11 16.5,9 15,7.5 17,7" stroke="#8a98a8" stroke-width="0.8" fill="#c0cce0"/>
+          </svg>
+          <span class="extrasCardText">O TURNO DA NOITE</span>
+        </div>
+        <div class="extrasCardRight">
+          <span class="extraStatus" id="statusBento">
+            <svg class="extrasLockSvg" viewBox="0 0 16 16" width="14" height="14" fill="none">
+              <rect x="3" y="7" width="10" height="8" rx="1" stroke="#8a96a6" stroke-width="1.2" fill="#141a22"/>
+              <path d="M 5 7 L 5 4 C 5 2.5 6.3 1.5 8 1.5 C 9.7 1.5 11 2.5 11 4 L 11 7" stroke="#8a96a6" stroke-width="1.2"/>
+              <circle cx="8" cy="11" r="1" fill="#8a96a6"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <!-- 5. Intro dos Patrocinadores -->
+      <div class="extrasCardBtn" id="btnPlaySponsors">
+        <div class="extrasCardLeft">
+          <span class="btnSelGlowIcon">❖</span>
+          <svg class="extrasCardIcon" viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <rect x="3" y="4" width="18" height="16" rx="2" stroke="#a6b2c2" stroke-width="1.3" fill="rgba(24,32,44,0.6)"/>
+            <polygon points="10,8 16,12 10,16" fill="#e0e8f4"/>
+          </svg>
+          <span class="extrasCardText">INTRO PATROCINADORES</span>
+        </div>
+        <div class="extrasCardRight">
+          <span class="extrasCardChevron">❯</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rodapé: Inscrição Santa Lúcia & Botão Voltar -->
+    <div class="extrasFooterBlock">
+      <div class="extrasFooterDeco">
+        <svg viewBox="0 0 120 12" class="extrasFooterSvg" fill="none">
+          <line x1="10" y1="6" x2="50" y2="6" stroke="#485362" stroke-width="1"/>
+          <polygon points="60,3 63,6 60,9 57,6" stroke="#768394" stroke-width="1" fill="#0d1218"/>
+          <line x1="70" y1="6" x2="110" y2="6" stroke="#485362" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="extrasFooterTitle">SANTA LÚCIA</div>
+      <div class="extrasFooterSubtitle">SANATÓRIO • 1921</div>
+      <div class="extrasBackRow">
+        <button id="extraBack" class="optBackGothicBtn">❮ VOLTAR</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ GALERIA 3D (COMPATIBILIDADE) ============ -->
+<div id="modelViewer" class="overlay hidden">
+  <div class="panel large">
+    <h2>GALERIA 3D DE PERSONAGENS & MONSTROS</h2>
+    <div class="galleryBody">
+      <div class="gallery3d">
+        <div class="galleryHint">Arraste para girar em 360°</div>
+      </div>
+      <div class="gallerySide">
+        <select id="gallerySelect" class="gallerySelect"></select>
+      </div>
+    </div>
+    <div class="rowBtns">
+      <button id="galleryBack" class="btn">◀ VOLTAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ AJUDA ============ -->
+<div id="help" class="overlay hidden">
+  <div class="panel">
+    <h2>COMO JOGAR</h2>
+    <div id="helpRows"></div>
+    <p class="tip"><b>Alternar Câmera:</b> Aperte <b>V</b> ou <b>C</b> para alternar entre Câmera Fixa PS1 e 3ª Pessoa (estilo GTA)!<br>Munição é escassa: às vezes, correr é a resposta.<br>Examine tudo. Registre no DIÁRIO (precisa de Fita de Tinta).</p>
+    <button id="helpBack" class="btn">◀ VOLTAR</button>
+  </div>
+</div>
+
+<!-- ============ OPÇÕES: PAINEL ELÉTRICO INDUSTRIAL (LAYOUT IDÊNTICO À REFERÊNCIA) ============ -->
+<div id="options" class="overlay hidden">
+  <div class="menuBackdropLayer">
+    <div class="backdropImage bgOptions"></div>
+    <canvas class="backdropWeatherCanvas" id="optionsWeatherCanvas"></canvas>
+    <div class="backdropVignette"></div>
+  </div>
+  <div class="optCabinetContainer">
+    <!-- Cabeçalho com Título Cinzelado e Ornamentos em Cruz -->
+    <div class="optHeaderTitleBlock">
+      <div class="optTitleDeco top">
+        <svg viewBox="0 0 180 20" class="optDecoSvg" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="20" y1="10" x2="72" y2="10" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="62,7 72,10 62,13" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="50,8 58,10 50,12" stroke="#5d6878" stroke-width="0.8" stroke-linecap="round"/>
+          <line x1="108" y1="10" x2="160" y2="10" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="118,7 108,10 118,13" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="130,8 122,10 130,12" stroke="#5d6878" stroke-width="0.8" stroke-linecap="round"/>
+          <polygon points="90,1 98,10 90,19 82,10" stroke="#b6c2d0" stroke-width="1.4" fill="#0d1218"/>
+          <polygon points="90,4 95,10 90,16 85,10" stroke="#717e90" stroke-width="0.8" fill="none"/>
+          <circle cx="90" cy="10" r="1.6" fill="#e2e8f0"/>
+          <line x1="90" y1="1" x2="90" y2="0" stroke="#b6c2d0" stroke-width="1.2"/>
+          <line x1="90" y1="19" x2="90" y2="20" stroke="#b6c2d0" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <h1 class="optMainTitle">CONFIGURAÇÕES</h1>
+      <div class="optTitleDeco btm">
+        <svg viewBox="0 0 180 20" class="optDecoSvg" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="20" y1="10" x2="72" y2="10" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="62,7 72,10 62,13" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="50,8 58,10 50,12" stroke="#5d6878" stroke-width="0.8" stroke-linecap="round"/>
+          <line x1="108" y1="10" x2="160" y2="10" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="118,7 108,10 118,13" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="130,8 122,10 130,12" stroke="#5d6878" stroke-width="0.8" stroke-linecap="round"/>
+          <polygon points="90,1 98,10 90,19 82,10" stroke="#b6c2d0" stroke-width="1.4" fill="#0d1218"/>
+          <polygon points="90,4 95,10 90,16 85,10" stroke="#717e90" stroke-width="0.8" fill="none"/>
+          <circle cx="90" cy="10" r="1.6" fill="#e2e8f0"/>
+          <line x1="90" y1="1" x2="90" y2="0" stroke="#b6c2d0" stroke-width="1.2"/>
+          <line x1="90" y1="19" x2="90" y2="20" stroke="#b6c2d0" stroke-width="1.2"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Gabinete Central Dividido em Duas Colunas (Abas à Esquerda, Conteúdo à Direita) -->
+    <div class="optCabinet">
+      <!-- Coluna da Esquerda: Abas de Categoria com Ícones e Indicador Animado -->
+      <div class="optTabsCol">
+        <div class="optTabItem active" data-tab="gameplay">
+          <span class="btnSelGlowIcon">❖</span>
+          <span class="optTabIcon">⚙</span>
+          <span class="optTabText">JOGABILIDADE</span>
+        </div>
+        <div class="optTabItem" data-tab="audio">
+          <span class="btnSelGlowIcon">❖</span>
+          <span class="optTabIcon">🔊</span>
+          <span class="optTabText">ÁUDIO</span>
+        </div>
+        <div class="optTabItem" data-tab="video">
+          <span class="btnSelGlowIcon">❖</span>
+          <span class="optTabIcon">🖥</span>
+          <span class="optTabText">VÍDEO</span>
+        </div>
+        <div class="optTabItem" data-tab="language">
+          <span class="btnSelGlowIcon">❖</span>
+          <span class="optTabIcon">🌐</span>
+          <span class="optTabText">IDIOMA</span>
+        </div>
+        <div class="optTabItem" data-tab="controls">
+          <span class="btnSelGlowIcon">❖</span>
+          <span class="optTabIcon">🎮</span>
+          <span class="optTabText">CONTROLES</span>
+        </div>
+
+        <button id="optRestoreBtn" class="optRestoreBtn">
+          <span class="optRestoreIcon">🔄</span> RESTAURAR PADRÕES
+        </button>
+      </div>
+
+      <!-- Coluna da Direita: Área de Opções da Categoria Selecionada -->
+      <div class="optContentCol">
+        <!-- 1. ABA JOGABILIDADE (IDÊNTICA À REFERÊNCIA) -->
+        <div class="optTabContent" id="tabContent_gameplay">
+          <div class="optSectionHeader">JOGABILIDADE</div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Dificuldade</span>
+            <div class="optSettingControl" data-opt="difficulty">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_difficulty">Normal</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Vibração</span>
+            <div class="optSettingControl" data-opt="vibration">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_vibration">Ativado</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Mostrar Dicas</span>
+            <div class="optSettingControl" data-opt="hints">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_hints">Ativado</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Brilho</span>
+            <div class="optSettingSliderWrap">
+              <input type="range" min="1" max="3" value="2" class="optMetalSlider" id="val_brightness">
+              <span class="optSliderPct" id="pct_brightness">70%</span>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Idioma do Jogo</span>
+            <div class="optSettingControl" data-opt="lang">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_lang">Português (BR)</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Munição Infinita</span>
+            <div class="optSettingControl" data-opt="infAmmo">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_infAmmo">Desativado</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. ABA ÁUDIO -->
+        <div class="optTabContent hidden" id="tabContent_audio">
+          <div class="optSectionHeader">ÁUDIO</div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Volume Geral</span>
+            <div class="optSettingSliderWrap">
+              <input type="range" min="0" max="10" value="9" class="optMetalSlider" id="val_master">
+              <span class="optSliderPct" id="pct_master">90%</span>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Volume Música</span>
+            <div class="optSettingSliderWrap">
+              <input type="range" min="0" max="10" value="8" class="optMetalSlider" id="val_music">
+              <span class="optSliderPct" id="pct_music">80%</span>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Efeitos Sonoros</span>
+            <div class="optSettingSliderWrap">
+              <input type="range" min="0" max="10" value="9" class="optMetalSlider" id="val_sfx">
+              <span class="optSliderPct" id="pct_sfx">90%</span>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Voz Sintetizada</span>
+            <div class="optSettingControl" data-opt="voice">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_voice">Ativado</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. ABA VÍDEO -->
+        <div class="optTabContent hidden" id="tabContent_video">
+          <div class="optSectionHeader">VÍDEO</div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Modo de Câmera</span>
+            <div class="optSettingControl" data-opt="cam">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_cam">Fixa PS1</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Varredura CRT (Scanlines)</span>
+            <div class="optSettingControl" data-opt="crt">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_crt">Ativado</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Filtros Visuais</span>
+            <div class="optSettingControl" data-opt="filter">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_filter">Padrão PS1</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Renderização 3D</span>
+            <div class="optSettingControl" data-opt="res">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_res">PS1 Autêntico</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. ABA IDIOMA -->
+        <div class="optTabContent hidden" id="tabContent_language">
+          <div class="optSectionHeader">IDIOMA</div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Idioma do Jogo</span>
+            <div class="optSettingControl" data-opt="lang2">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_lang2">Português (BR)</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Legendas</span>
+            <div class="optSettingControl" data-opt="subtitles">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_subtitles">Ativado</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. ABA CONTROLES COM SUPORTE PS4 & XBOX -->
+        <div class="optTabContent hidden" id="tabContent_controls">
+          <div class="optSectionHeader">ESQUEMA DE CONTROLES</div>
+          <div class="optCtrlTabs">
+            <button class="optCtrlTabBtn active" data-ctrl="gamepad">🎮 PS4 & XBOX</button>
+            <button class="optCtrlTabBtn" data-ctrl="keyboard">⌨ TECLADO & MOUSE</button>
+          </div>
+
+          <div id="ctrlScheme_gamepad" class="ctrlSchemeView">
+            <div class="ctrlStatusPill" id="ctrlStatusPill">
+              <span class="ctrlLed"></span> <span id="ctrlStatusText">PLUG & PLAY DETECTADO AUTOMATICAMENTE</span>
+            </div>
+            <div class="optCtrlRow"><span class="optCtrlKey ps">Analógico Esq. / D-Pad</span><span class="optCtrlAction">Movimentação / Girar</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey ps">L2 / LT (ou L1 / LB)</span><span class="optCtrlAction">Mirar Arma</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey ps">R2 / RT (ou R1 / RB)</span><span class="optCtrlAction">Disparar Arma (com recuo háptico)</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey ps">✕ (PS4) / Ⓐ (Xbox)</span><span class="optCtrlAction">Interagir / Pegar / Confirmar</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey ps">⭘ (PS4) / Ⓑ (Xbox)</span><span class="optCtrlAction">Voltar / Cancelar / Correr</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey ps">△ (PS4) / Ⓨ (Xbox)</span><span class="optCtrlAction">Abrir / Fechar Inventário</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey ps">▢ (PS4) / Ⓧ (Xbox)</span><span class="optCtrlAction">Recarregar / Combinar</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey ps">Share / View</span><span class="optCtrlAction">Alternar Câmera Fixa / 3ª Pessoa</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey ps">Options / Menu</span><span class="optCtrlAction">Pausar / Menu do Jogo</span></div>
+          </div>
+
+          <div id="ctrlScheme_keyboard" class="ctrlSchemeView hidden">
+            <div class="optCtrlRow"><span class="optCtrlKey">W / S</span><span class="optCtrlAction">Andar Frente / Trás</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey">A / D</span><span class="optCtrlAction">Girar / Virar</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey">Shift</span><span class="optCtrlAction">Correr</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey">Espaço / Botão Dir.</span><span class="optCtrlAction">Mirar Arma</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey">F / Botão Esq.</span><span class="optCtrlAction">Disparar Arma</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey">E / Enter</span><span class="optCtrlAction">Interagir / Examinar</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey">I / Tab</span><span class="optCtrlAction">Abrir Inventário</span></div>
+            <div class="optCtrlRow"><span class="optCtrlKey">V / C</span><span class="optCtrlAction">Alternar Câmera PS1 / Livre</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rodapé: Botão Voltar Gótico à Esquerda e Dica de Controle ao Centro (IDÊNTICO À REFERÊNCIA) -->
+    <div class="optFooterBar">
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button id="optBack" class="optBackGothicBtn">❮ VOLTAR</button>
+        <a href="./santa_lucia_remaster.zip" download="santa_lucia_remaster.zip" class="optBackGothicBtn" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;color:#6ee688;border-color:rgba(110,230,136,0.4);" title="Baixar arquivo compactado .ZIP de todo o projeto">
+          📥 BAIXAR PROJETO (.ZIP)
+        </a>
+      </div>
+      <div class="optFooterCenterHint">
+        <svg viewBox="0 0 60 12" class="optFooterFlourish" fill="none">
+          <line x1="0" y1="6" x2="26" y2="6" stroke="#485362" stroke-width="1"/>
+          <polygon points="30,3 33,6 30,9 27,6" stroke="#768394" stroke-width="1" fill="#0d1218"/>
+          <line x1="34" y1="6" x2="60" y2="6" stroke="#485362" stroke-width="1"/>
+        </svg>
+        <span class="optHintText">SELECIONE</span>
+        <svg class="optDpadIcon" viewBox="0 0 16 16" width="14" height="14" fill="none">
+          <path d="M 5.5 1 L 10.5 1 L 10.5 5.5 L 15 5.5 L 15 10.5 L 10.5 10.5 L 10.5 15 L 5.5 15 L 5.5 10.5 L 1 10.5 L 1 5.5 L 5.5 5.5 Z" stroke="#9ba6b6" stroke-width="1.3" fill="rgba(24,32,42,0.85)"/>
+        </svg>
+        <span class="optHintText">CONFIRME</span>
+        <svg class="optCircleIcon" viewBox="0 0 16 16" width="14" height="14" fill="none">
+          <circle cx="8" cy="8" r="5.5" stroke="#d43b3b" stroke-width="1.8" fill="rgba(60,15,15,0.7)"/>
+          <circle cx="8" cy="8" r="3.2" stroke="#e64c4c" stroke-width="0.8" fill="none"/>
+        </svg>
+        <svg viewBox="0 0 60 12" class="optFooterFlourish" fill="none">
+          <line x1="0" y1="6" x2="26" y2="6" stroke="#485362" stroke-width="1"/>
+          <polygon points="30,3 33,6 30,9 27,6" stroke="#768394" stroke-width="1" fill="#0d1218"/>
+          <line x1="34" y1="6" x2="60" y2="6" stroke="#485362" stroke-width="1"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ HUD ============ -->
+<div id="hud" class="hidden">
+  <div id="roomName" class="roomNameBanner hidden">
+    <div class="roomStamp">SANATÓRIO SANTA LÚCIA · 1997</div>
+    <div id="roomTitleText" class="roomTitleText">SAGUÃO PRINCIPAL</div>
+    <div id="roomSubText" class="roomSubText">ALA CENTRAL · PISO 1</div>
+  </div>
+  <div id="hpBox" class="hudTacticalBox">
+    <div class="hudTacticalTop">
+      <span class="hudLabel">ECG STATUS</span>
+      <span id="hpStatus" class="hpStatus ok">FINE</span>
+    </div>
+    <div class="hudTacticalMain">
+      <div class="hudPulseBeat"></div>
+      <span id="hpText" class="hudHpVal">100 HP</span>
+    </div>
+  </div>
+  <div id="ammoBox" class="hudTacticalBox ammoTactical hidden">
+    <div class="hudTacticalTop">
+      <span class="hudLabel">EQUIPAMENTO</span>
+      <span id="ammoWeaponName" class="hudWeaponName">PISTOLA M9</span>
+    </div>
+    <div class="hudTacticalMain">
+      <span id="ammoIcon" class="hudAmmoIcon">🔫</span>
+      <span id="ammoText" class="hudAmmoVal">15 / 60</span>
+    </div>
+  </div>
+  <div id="prompt" class="hidden"></div>
+  <div id="cross" class="hidden">＋</div>
+  <div id="target" class="hidden">◇</div>
+  <div id="bossBar" class="hidden"><div id="bossName">VULTO</div><div class="bossTrack"><div id="bossFill"></div></div></div>
+  <div id="toast" class="hidden"></div>
+
+  <!-- HUD Modos Extras -->
+  <div id="extraHud" class="hidden">
+    <div class="extraHudItem">⏱️ <span id="extraTimer">02:00</span></div>
+    <div class="extraHudItem">⭐ <span id="extraScore">0</span></div>
+    <div class="extraHudItem"><span id="extraCombo">COMBO x0</span></div>
+  </div>
+
+  <!-- Botão rápido de câmera -->
+  <button id="hudCamBtn" class="hudCamBtn">📷 CÂMERA</button>
+</div>
+
+<!-- ============ BANNER DE ITEM ============ -->
+<div id="banner" class="hidden">
+  <div id="bannerIcon">🔑</div>
+  <div><div id="bannerName">Item</div><div id="bannerDesc">Descrição</div></div>
+  <div class="bannerHint">[E] continuar</div>
+</div>
+
+<!-- ============ DIÁLOGO ============ -->
+<div id="dialog" class="hidden">
+  <canvas id="dlgPortrait" width="96" height="96"></canvas>
+  <div class="dlgBody">
+    <div id="dlgName">DANIEL</div>
+    <div id="dlgText"></div>
+    <div class="dlgHint">▼ [E / ENTER / clique]</div>
+  </div>
+</div>
+
+<!-- ============ INVENTÁRIO (ESTILO RESIDENT EVIL CLÁSSICO) ============ -->
+<div id="inventory" class="overlay hidden">
+  <div class="panel inv reInv">
+    <div class="invHeader">
+      <div class="invHeaderLeft">
+        <div class="panelStamp">SANATÓRIO SANTA LÚCIA · MALETA DE SOBREVIVÊNCIA</div>
+        <h2>PRONTUÁRIO & EQUIPAMENTO</h2>
+      </div>
+      <!-- ECG Cardíaco animado estilo Resident Evil clássico -->
+      <div class="ecgMonitor">
+        <div class="ecgBezel">
+          <canvas id="ecgCanvas" width="160" height="40"></canvas>
+          <div class="ecgScanlines"></div>
+        </div>
+        <div class="ecgData">
+          <span id="ecgBpm" class="ecgBpm">72 BPM</span>
+          <span id="ecgStatus" class="ecgStatus">FINE</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aviso de Modo de Combinação (RE style) -->
+    <div id="invCombineNotice" class="invCombineNotice hidden">
+      <span>⚙️ SELECIONE O SEGUNDO ITEM PARA COMBINAR (ESC PARA CANCELAR)</span>
+    </div>
+
+    <div class="invMain">
+      <div id="invGrid"></div>
+      <div class="invSide">
+        <div class="invDetail">
+          <div class="invIconWrap">
+            <div id="invIcon">—</div>
+          </div>
+          <div id="invName">Vazio</div>
+          <div id="invDesc">Espaço livre na maleta de sobrevivência.</div>
+          <div id="invCmds"></div>
+        </div>
+        <div class="invMeta">
+          <div id="invHeroName">DANIEL SILVA</div>
+          <div id="invWeapon">ARMA: Nenhuma</div>
+          <div id="invPages">PÁGINAS: 0/8</div>
+          <div id="invTime">TEMPO: 00:00:00</div>
+        </div>
+      </div>
+    </div>
+    <div class="invObj">◎ <span id="invObjective"></span></div>
+    <div class="invFoot">
+      <div class="invHelpTip">💡 [2 Cliques / ENTER] Usar ou Equipar rápido</div>
+      <button id="invCamSwitch" class="btn small">📷 CÂMERA (V)</button>
+      <button id="invClose" class="btn">FECHAR [TAB / ESC]</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ COFRE ============ -->
+<div id="safe" class="overlay hidden">
+  <div class="panel small safePanel">
+    <div class="panelStamp">SEGURANÇA REFORÇADA · SANATÓRIO SANTA LÚCIA</div>
+    <h2>COFRE DE ALTA SEGURANÇA</h2>
+    <p class="tip">Digite o código confidencial de 4 dígitos.<br>← → seleciona dígito • ↑ ↓ altera número • ENTER confirma</p>
+    <div id="safeDigits"></div>
+    <div class="rowBtns">
+      <button id="safeOk" class="btn">🔓 ABRIR COFRE</button>
+      <button id="safeCancel" class="btn">CANCELAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MENU CARREGAR E SALVAR (IDÊNTICO À REFERÊNCIA DO SANATÓRIO) ============ -->
+<div id="saveBox" class="overlay hidden">
+  <div class="menuBackdropLayer">
+    <div class="backdropImage bgSave"></div>
+    <canvas id="saveWeatherCanvas" class="backdropWeatherCanvas"></canvas>
+    <div class="backdropVignette"></div>
+  </div>
+
+  <div class="saveScreenContainer">
+    <!-- Cabeçalho com Título Cinzelado e Adorno em Cruz -->
+    <div class="saveHeaderBlock">
+      <h1 class="saveMainTitle">MENU CARREGAR E SALVAR</h1>
+      <div class="saveTitleDeco">
+        <svg class="saveDecoSvg" viewBox="0 0 160 16" fill="none">
+          <line x1="0" y1="8" x2="60" y2="8" stroke="#8a96a6" stroke-width="1.2"/>
+          <line x1="100" y1="8" x2="160" y2="8" stroke="#8a96a6" stroke-width="1.2"/>
+          <polygon points="80,1 84,7 90,8 84,9 80,15 76,9 70,8 76,7" fill="#8a96a6"/>
+          <circle cx="65" cy="8" r="1.5" fill="#8a96a6"/>
+          <circle cx="95" cy="8" r="1.5" fill="#8a96a6"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Barra de Abas Superiores: CRIAR | DELETAR | SAVES -->
+    <div class="saveModeTabsBar">
+      <button id="saveTabCreate" class="saveModeTabBtn" data-mode="create">
+        <span class="btnSelGlowIcon">❖</span>
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" class="saveTabIcon">
+          <path d="M 17 3 C 14 3 9 7 6 12 L 4 17 L 9 15 C 14 12 17 7 17 3 Z" stroke="currentColor" stroke-width="1.3" fill="rgba(255,255,255,0.08)"/>
+          <path d="M 6 12 L 11 17" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+        <span>CRIAR</span>
+      </button>
+
+      <button id="saveTabDelete" class="saveModeTabBtn" data-mode="delete">
+        <span class="btnSelGlowIcon">❖</span>
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" class="saveTabIcon">
+          <path d="M 5 9 C 5 5 8 3 10 3 C 12 3 15 5 15 9 C 15 12 13 13 13 15 L 7 15 C 7 13 5 12 5 9 Z" stroke="currentColor" stroke-width="1.3" fill="rgba(255,255,255,0.08)"/>
+          <circle cx="8" cy="9" r="1.5" fill="currentColor"/>
+          <circle cx="12" cy="9" r="1.5" fill="currentColor"/>
+          <line x1="8" y1="13" x2="8" y2="15" stroke="currentColor" stroke-width="1.2"/>
+          <line x1="12" y1="13" x2="12" y2="15" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+        <span>DELETAR</span>
+      </button>
+
+      <button id="saveTabLoad" class="saveModeTabBtn active" data-mode="load">
+        <span class="btnSelGlowIcon">❖</span>
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" class="saveTabIcon">
+          <path d="M 10 5 C 7 3 3 3.5 2 4 L 2 15 C 3 14.5 7 14 10 16 C 13 14 17 14.5 18 15 L 18 4 C 17 3.5 13 3 10 5 Z" stroke="currentColor" stroke-width="1.3" fill="rgba(255,255,255,0.08)"/>
+          <line x1="10" y1="5" x2="10" y2="16" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+        <span>SAVES</span>
+      </button>
+    </div>
+
+    <!-- Grid dos 6 Slots de Salvamento (01 a 06) -->
+    <div id="saveSlotsGrid" class="saveSlotsGrid"></div>
+
+    <!-- Informações de Contexto (Fita de Tinta e Prontuário) -->
+    <div id="saveStatusInfoBar" class="saveStatusInfoBar">
+      <div class="saveInfoPill">
+        <span class="saveInfoDot"></span>
+        <span id="saveRibbonVal" class="saveRibbonVal">x2 RESTANTES</span>
+      </div>
+      <div class="saveInfoHero">
+        <span id="saveHeroName" class="saveHeroName">DANIEL SILVA</span>
+        <span class="saveInfoSep">·</span>
+        <span id="saveRoomName" class="saveRoomName">SAGUÃO PRINCIPAL</span>
+        <span class="saveInfoSep">·</span>
+        <span id="saveTimeVal" class="saveTimeVal">00:15:30</span>
+      </div>
+      <span id="saveCountVal" class="hidden">00 VEZES</span>
+    </div>
+
+    <!-- Rodapé: SELECIONAR | CONFIRMAR | VOLTAR -->
+    <div class="saveFooterBar">
+      <div class="saveFooterHint">
+        <svg viewBox="0 0 16 16" width="13" height="13" fill="none">
+          <rect x="4" y="2" width="8" height="12" rx="4" stroke="#788496" stroke-width="1.2"/>
+          <line x1="8" y1="4" x2="8" y2="7" stroke="#788496" stroke-width="1.2"/>
+        </svg>
+        <span>SELECIONAR</span>
+      </div>
+
+      <div class="saveFooterHint">
+        <svg viewBox="0 0 16 16" width="13" height="13" fill="none">
+          <circle cx="6" cy="6" r="3" stroke="#ffd700" stroke-width="1.2"/>
+          <line x1="8.5" y1="8.5" x2="14" y2="14" stroke="#ffd700" stroke-width="1.3"/>
+          <line x1="11" y1="11" x2="13" y2="9" stroke="#ffd700" stroke-width="1.2"/>
+        </svg>
+        <span>CONFIRMAR</span>
+      </div>
+
+      <button id="saveBackBtn" class="saveBackGothicBtn">
+        <span class="btnSelGlowIcon">❖</span>
+        <span class="saveKeyTag">ESC</span>
+        <span>VOLTAR</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmação Gótico -->
+  <div id="saveConfirmModal" class="saveConfirmModal hidden">
+    <div class="saveModalPanel">
+      <div class="saveModalHeader">
+        <span class="saveModalBadge">PRONTUÁRIO CLÍNICO & REGISTRO DE MEMÓRIA</span>
+        <h3 id="saveModalTitle">DATILOGRAFAR PRONTUÁRIO</h3>
+      </div>
+      <p id="saveModalMsg">Deseja registrar o seu prontuário nesta máquina de escrever no Slot 01?</p>
+      <div id="saveStamp" class="saveStamp hidden">ARQUIVADO</div>
+      <div class="saveModalBtns">
+        <button id="saveYes" class="saveModalActionBtn confirm">► SIM (CONFIRMAR)</button>
+        <button id="saveNo" class="saveModalActionBtn cancel">NÃO (RETORNAR)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PAUSE ============ -->
+<div id="pause" class="overlay hidden">
+  <div class="panel small">
+    <h2>PAUSADO</h2>
+    <div id="pauseMenu" class="menu"></div>
+  </div>
+</div>
+
+<!-- ============ GAME OVER ============ -->
+<div id="gameover" class="overlay hidden">
+  <div class="goBox">
+    <h1 class="goTitle">VOCÊ MORREU</h1>
+    <p>A escuridão venceu... desta vez.<br>Mas toda noite termina. Tente de novo.</p>
+    <div class="rowBtns">
+      <button id="goRetry" class="btn">CONTINUAR</button>
+      <button id="goTitle" class="btn">TÍTULO</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FINAL ============ -->
+<div id="ending" class="overlay hidden">
+  <div class="panel">
+    <h2 id="endTitle">FINAL</h2>
+    <div id="endRank" class="rank">S</div>
+    <div id="endStats" class="stats"></div>
+    <div id="endMsg" class="tip"></div>
+    <div class="endPointsEarned">PONTOS GANHOS NESTA JORNADA: +<span id="endPointsVal">0</span></div>
+    <button id="endBtn" class="btn">VOLTAR AO TÍTULO</button>
+  </div>
+</div>
+
+<!-- ============ PORTA ============ -->
+<div id="door" class="hidden"><canvas id="doorCanvas" width="320" height="180"></canvas></div>
+
+<!-- ============ TOUCH ============ -->
+<div id="touch" class="hidden">
+  <div class="tLeft">
+    <div class="tRow"><button id="tF" class="tBtn">▲</button></div>
+    <div class="tRow"><button id="tL" class="tBtn">◀</button><button id="tB" class="tBtn">▼</button><button id="tR" class="tBtn">▶</button></div>
+    <div class="tRow"><button id="tRun" class="tBtn small">CORRER</button><button id="tCam" class="tBtn small">CAM</button></div>
+  </div>
+  <div class="tRight">
+    <button id="tAim" class="tBtn">MIRAR</button>
+    <button id="tFire" class="tBtn">ATIRAR</button>
+    <button id="tAct" class="tBtn">E</button>
+    <button id="tInv" class="tBtn small">INV</button>
+  </div>
+</div>
+
+<div id="err" class="hidden"></div>
+
+<script type="module">
+  // Injeção de script principal com cache-buster em tempo real (Regra 2)
+  const _tsJs = Date.now();
+  import(`./js/main.js?t=${_tsJs}`).catch((err) => {
+    console.error('Falha ao carregar main.js:', err);
+    const errEl = document.getElementById('err');
+    if (errEl) {
+      errEl.classList.remove('hidden');
+      errEl.textContent = 'Erro ao inicializar o motor de jogo: ' + err.message;
+    }
+  });
+</script>
+</body>
+</html>
