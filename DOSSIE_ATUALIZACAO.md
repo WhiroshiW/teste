@@ -75,3 +75,11 @@ Todas as 9 suítes passam com 100% de sucesso.
 ```bash
 python3 tools/make_release_zip.py
 ```
+
+> **⚠️ Nota de encerramento (limpeza posterior):** com a decisão de design de **remover todos os botões de download** da tela de título e das configurações, os itens abaixo foram apagados do projeto nesta mesma branch:
+> - `baixar.html` e `download.html` (páginas de download órfãs)
+> - `santa_lucia_remaster.zip` (sem mais botões que o sirvam)
+> - `tools/make_release_zip.py` (gerador sem mais pacote a gerar)
+> - `vendor/three.module.js` (Three.js não-minificado de 1,27 MB sem nenhuma referência — o import map usa apenas `three.module.min.js`)
+>
+> Todo o conteúdo permanece recuperável pelo histórico do Git. O **backup do gerador do mapa 3D** (`js/world.js`, 21 ambientes) está em `backup/` (local, fora do versionamento) e cada versão commitada do arquivo fica preservada no histórico da branch.
