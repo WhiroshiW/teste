@@ -707,14 +707,20 @@ html, body {
 
 #dialog {
   position: fixed; bottom: 4%; left: 50%; transform: translateX(-50%); z-index: 30;
-  width: min(680px, 93vw); display: flex; gap: 14px;
-  background: rgba(6, 7, 12, 0.96); border: 2px solid #6c7285;
-  box-shadow: 0 0 24px rgba(0,0,0,0.95), inset 0 0 0 1px #1a1c26; padding: 14px;
+  width: min(680px, 93vw); display: flex; gap: 16px;
+  background: linear-gradient(165deg, rgba(10,13,18,0.96), rgba(5,7,11,0.97));
+  border: 1px solid #4a5568;
+  box-shadow: 0 18px 44px rgba(0,0,0,0.85), inset 0 0 0 1px #141a22; padding: 16px;
 }
 #dialog.evil { border-color: #c42020; box-shadow: 0 0 28px rgba(196,32,32,0.5), inset 0 0 0 1px #300a0a; }
-#dlgPortrait { width: 88px; height: 88px; image-rendering: pixelated; border: 2px solid #444c5c; flex-shrink: 0; background: #060608; }
-.dlgBody { flex: 1; }
-#dlgName { color: #f2cb42; font-weight: bold; letter-spacing: 2px; font-size: 14px; margin-bottom: 6px; text-shadow: 1px 1px 2px #000, 0 0 8px rgba(242,203,66,0.4); }
+.dCorner { position: absolute; width: 14px; height: 14px; border: 0 solid #8d99a8; pointer-events: none; z-index: 1; transition: border-color 0.2s; }
+#dialog.evil .dCorner { border-color: #ff6b6b; }
+.dlgPortFrame { position: relative; padding: 5px; border: 1px solid #4a5568; background: #0b0e13; flex-shrink: 0; align-self: flex-start; }
+#dialog.evil .dlgPortFrame { border-color: #7a2020; }
+.dlgPortFrame::after { content: ''; position: absolute; inset: 2px; border: 1px solid #2a323e; pointer-events: none; }
+#dlgPortrait { width: 88px; height: 88px; image-rendering: pixelated; border: 1px solid #59636f; display: block; background: #060608; }
+.dlgBody { flex: 1; min-width: 0; }
+#dlgName { font-family: 'Cinzel', serif; color: #f2cb42; font-weight: bold; letter-spacing: 3px; font-size: 14px; margin-bottom: 6px; text-shadow: 1px 1px 2px #000, 0 0 8px rgba(242,203,66,0.4); }
 #dialog.evil #dlgName { color: #ff5555; text-shadow: 1px 1px 2px #000, 0 0 8px rgba(255,85,85,0.6); }
 #dlgText { font-size: clamp(13px, 2.6vw, 16px); line-height: 1.65; min-height: 56px; white-space: pre-wrap; color: #f4f6fa; text-shadow: 1px 1px 2px #000; }
 .dlgHint { text-align: right; color: #8a90a0; font-size: 11px; animation: blink 1s infinite; letter-spacing: 1px; }
@@ -1481,23 +1487,82 @@ html, body {
 /* ============ novos estilos: campanhas, loja, extras, ecg ============ */
 .panel.large { max-width: min(860px, 96vw); }
 
-/* Seleção de Campanha */
+/* Seleção de Campanha — Cinemática (mockup Nakamura) */
+.bgCamp { background-image: url('../assets/camp_bg.jpg'); }
+.campScreenContainer {
+  position: relative; z-index: 2; width: 100%; max-width: 1240px; height: 100%; margin: 0 auto;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: clamp(10px, 2.4vh, 24px);
+  padding: clamp(14px, 3vh, 32px) clamp(14px, 3vw, 40px) calc(clamp(14px, 3vh, 32px) + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+}
+.campHeaderBlock { text-align: center; }
+.campCrossDeco { width: min(260px, 60vw); height: auto; display: block; margin: 0 auto 2px; opacity: 0.95; }
+.campMainTitle {
+  font-family: 'Cinzel', serif; font-weight: 700;
+  font-size: clamp(22px, 4vw, 42px); letter-spacing: clamp(3px, 0.7vw, 9px);
+  color: #e9edf3; margin: 0;
+  text-shadow: 0 2px 14px #000, 0 0 30px rgba(0,0,0,0.9);
+}
+.campSubTitle {
+  font-family: 'Cinzel', serif; font-size: clamp(9px, 1.2vw, 12px);
+  letter-spacing: clamp(2px, 0.4vw, 4px); line-height: 2; color: #98a4b2;
+  margin: 8px 0 0; text-shadow: 0 1px 6px #000;
+}
 .campGrid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px; margin: 18px 0; text-align: left;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(14px, 2.4vw, 30px); width: 100%; max-width: 1180px; text-align: left; margin: 0;
 }
 .campCard {
-  background: #111118; border: 2px solid #3d2a2a; padding: 14px;
-  display: flex; gap: 14px; border-radius: 4px; transition: 0.2s border-color, 0.2s transform;
+  position: relative; display: flex; gap: clamp(12px, 1.6vw, 22px); align-items: flex-start;
+  padding: clamp(14px, 2vw, 26px);
+  background: linear-gradient(160deg, rgba(10,13,18,0.93), rgba(5,7,11,0.97));
+  border: 1px solid #39434f;
+  box-shadow: 0 18px 44px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(16,20,26,0.9);
+  cursor: pointer; transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
 }
-.campCard:hover { border-color: #c8a028; transform: translateY(-2px); }
-.campPort { width: 84px; height: 84px; border: 2px solid #5a5a66; image-rendering: pixelated; flex-shrink: 0; }
-.campInfo { display: flex; flex-direction: column; justify-content: space-between; }
-.campInfo h3 { color: #c8a028; font-size: 13px; letter-spacing: 2px; }
-.campInfo h4 { color: #f0f0f0; font-size: 16px; margin: 2px 0 4px; }
-.campSub { color: #8899aa; font-size: 12px; font-style: italic; margin-bottom: 6px; }
-.campGear { font-size: 11px; color: #a0a096; margin: 6px 0 10px; }
-.campBtn { width: 100%; font-size: 12px; padding: 8px; margin: 0; }
+.campCard:hover, .campCard.sel { border-color: #5f6d80; transform: translateY(-3px); }
+.campCard.sel { box-shadow: 0 18px 44px rgba(0,0,0,0.7), 0 0 24px rgba(160,180,205,0.12), inset 0 0 0 1px rgba(16,20,26,0.9); }
+.cCorner { position: absolute; width: 16px; height: 16px; border: 0 solid #99a5b3; pointer-events: none; transition: border-color 0.2s; z-index: 1; }
+.campCard:hover .cCorner, .campCard.sel .cCorner, #dialog:hover .dCorner { border-color: #d3dce6; }
+.cCorner.tl, .dCorner.tl { top: 5px; left: 5px; border-top-width: 1px; border-left-width: 1px; }
+.cCorner.tr, .dCorner.tr { top: 5px; right: 5px; border-top-width: 1px; border-right-width: 1px; }
+.cCorner.bl, .dCorner.bl { bottom: 5px; left: 5px; border-bottom-width: 1px; border-left-width: 1px; }
+.cCorner.br, .dCorner.br { bottom: 5px; right: 5px; border-bottom-width: 1px; border-right-width: 1px; }
+.campPortFrame { position: relative; padding: 6px; border: 1px solid #414c5a; background: #0a0d12; flex-shrink: 0; }
+.campPortFrame::after { content: ''; position: absolute; inset: 2px; border: 1px solid #232b36; pointer-events: none; }
+.campPort { width: clamp(84px, 9vw, 122px); height: clamp(84px, 9vw, 122px); border: 1px solid #59636f; image-rendering: pixelated; display: block; }
+.campInfo { display: flex; flex-direction: column; min-width: 0; }
+.campTag { color: #c9a227; font-family: 'Cinzel', serif; font-size: clamp(10px, 1.1vw, 12px); letter-spacing: 3px; }
+.campInfo h4 { color: #eef1f6; font-family: 'Cinzel', serif; font-size: clamp(15px, 2vw, 24px); letter-spacing: 2px; margin: 5px 0 3px; }
+.campSub { color: #93a1b0; font-family: 'Cinzel', serif; font-style: italic; font-size: clamp(11px, 1.3vw, 14px); margin-bottom: 10px; }
+.campDesc { color: #c3ccd6; font-size: clamp(12px, 1.4vw, 15px); line-height: 1.6; margin: 0; }
+.campDivider { position: relative; height: 1px; margin: clamp(10px, 1.6vh, 16px) 0; background: linear-gradient(90deg, rgba(150,165,185,0.55), rgba(150,165,185,0.12)); }
+.campDivider::after { content: '◆'; position: absolute; right: 0; top: -6px; font-size: 8px; color: #a8b4c2; }
+.campGear { display: flex; gap: 10px; align-items: flex-start; color: #aeb8c4; font-size: clamp(11px, 1.2vw, 13px); line-height: 1.55; }
+.campGear .ic { margin-top: 2px; color: #cdd6e0; width: 1.2em; height: 1.2em; }
+.campBtn {
+  margin-top: clamp(10px, 1.8vh, 16px); width: 100%; padding: clamp(10px, 1.6vh, 14px) 10px;
+  background: linear-gradient(180deg, #151b25, #0b0f15);
+  border: 1px solid #4c596b; box-shadow: inset 0 0 0 1px #0a0d12, inset 0 0 20px rgba(0,0,0,0.65);
+  color: #e2e8f0; font-family: 'Cinzel', serif; font-size: clamp(12px, 1.4vw, 16px);
+  letter-spacing: clamp(2px, 0.4vw, 5px); cursor: pointer; transition: all 0.18s;
+}
+.campBtn:hover { border-color: #c9a227; color: #fff; box-shadow: inset 0 0 0 1px #0a0d12, 0 0 18px rgba(201,162,39,0.22); }
+.campCard.sel .campBtn { border-color: #8fa0b4; }
+.campFooterBlock { display: flex; justify-content: center; }
+.campBackGothicBtn {
+  min-width: 210px; padding: 12px 30px;
+  background: linear-gradient(180deg, #151b25, #0b0f15);
+  border: 1px solid #4c596b; box-shadow: inset 0 0 0 1px #0a0d12;
+  color: #dfe6ee; font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 4px;
+  cursor: pointer; transition: all 0.18s;
+}
+.campBackGothicBtn:hover { border-color: #c9a227; color: #fff; }
+@media (max-width: 880px) {
+  .campGrid { grid-template-columns: 1fr; }
+  .campScreenContainer { justify-content: flex-start; }
+}
 
 /* ============ CAMADA DE AMBIENTE 3D DINÂMICO (PARALLAX + CLIMA + PROFUNDIDADE) ============ */
 .menuBackdropLayer {

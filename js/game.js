@@ -397,6 +397,12 @@ export class Game {
           this.ui.transitionTo(() => { this.ui.hideGallery(); this.ui.showShop(this.points, this.unlocks); }); return;
         }
       }
+      if (!this.ui.el.campaignSelect.classList.contains('hidden')) {
+        if (code === 'KeyA' || code === 'ArrowLeft') this.ui.campNav(-1);
+        else if (code === 'KeyD' || code === 'ArrowRight') this.ui.campNav(1);
+        else if (code === 'Enter' || code === 'Space' || code === 'KeyE') this.ui.campConfirm();
+        return;
+      }
       if (code === 'KeyW' || code === 'ArrowUp') this.ui.titleNav(-1);
       else if (code === 'KeyS' || code === 'ArrowDown') this.ui.titleNav(1);
       else if (code === 'Enter' || code === 'Space' || code === 'KeyE') this.ui.titleConfirm();

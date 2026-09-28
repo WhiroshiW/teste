@@ -673,8 +673,33 @@ export class UI {
   }
 
   // ==================== SELEÇÃO DE CAMPANHA ====================
-  showCampaignSelect() { this.show(this.el.campaignSelect); }
-  hideCampaignSelect() { this.hide(this.el.campaignSelect); }
+  showCampaignSelect() {
+    this.campSelIdx = 0;
+    this.renderCampSelection();
+    this.show(this.el.campaignSelect);
+    this.startScreenParallaxAndFX('campaignSelect', 'campWeatherCanvas', 'shop');
+  }
+  hideCampaignSelect() {
+    this.hide(this.el.campaignSelect);
+    this.stopScreenParallaxAndFX('campaignSelect');
+  }
+  renderCampSelection() {
+    const cards = [this.el.campDaniel, this.el.campClara];
+    cards.forEach((c, i) => { if (c) c.classList.toggle('sel', i === this.campSelIdx); });
+  }
+  campNav(d) {
+    this.campSelIdx = (this.campSelIdx + d + 2) % 2;
+    this.audio.sfx('uiMove');
+    this.renderCampSelection();
+  }
+  campConfirm() {
+    this.audio.sfx('uiSelect');
+    const id = this.campSelIdx === 0 ? 'daniel' : 'clara';
+    this.transitionTo(() => {
+      this.hideAllOverlays();
+      this.game.startCampaign(id);
+    });
+  }
 
   // ==================== PARALLAX 3D E AMBIENTE CLIMÁTICO (TELAS GÓTICAS) ====================
   initScreenParallaxListeners() {
@@ -1707,6 +1732,19 @@ export class UI {
       this.transitionTo(() => {
         this.hideAllOverlays();
         this.game.startCampaign('clara');
+      });
+    });
+    // Cards de campanha: clique confirma, hover seleciona (estilo mockup)
+    const campCards = [this.$('campDaniel'), this.$('campClara')];
+    campCards.forEach((card, i) => {
+      if (!card) return;
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.campBtn')) return; // o botão tem o próprio handler
+        this.campSelIdx = i;
+        this.campConfirm();
+      });
+      card.addEventListener('mouseenter', () => {
+        if (this.campSelIdx !== i) { this.campSelIdx = i; this.renderCampSelection(); }
       });
     });
 
