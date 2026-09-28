@@ -43,3 +43,35 @@ Execute para validar:
 node test/headless.mjs && node test/test_new_menus.mjs && node test/test_save_load_screen.mjs && node test/test_linear_flow.mjs && node test/test_shop_and_extras.mjs && node test/test_particles_and_re_hud.mjs && node test/test_remastered_plant.mjs && node test/test_sponsor_intro.mjs && node test/test_screen_transitions.mjs
 ```
 Todas as 9 suítes passam com 100% de sucesso.
+
+---
+
+## 3. Validação, Entrega e Correções (Sessão de 28/09/2026 — continuidade)
+
+### A. Auditoria do Patch e do Snapshot
+- `patch_etapa_re_remake.diff` auditado: a **parte textual aplica 100% limpa** sobre a base da Etapa 3 (commit `2670947`) com `git apply --check`. Os 6 binários de sponsors/backgrounds entram como stubs (`Binary files differ`), pois o patch foi gerado sem `--binary` — as artes finais estão versionadas em `assets/`.
+- Snapshot do `main` (commit `88641c5`) conferido arquivo a arquivo: é exatamente **patch aplicado + binários + extras de download** (`baixar.html`, `download.html`, botões no `index.html` e este dossiê).
+- Todos os itens do Dossiê (vinheta com skip/replay, menu de 4 opções, `#screenCurtain`, `uiTransition`, áudio procedural com LFO 0.065Hz, cabeçalhos `Clear-Site-Data`) foram verificados diretamente no código-fonte.
+
+### B. Resultado dos Testes (executado nesta sessão)
+| # | Suíte | Resultado |
+|---|-------|-----------|
+| 1 | `headless.mjs` | ✔ PASSOU |
+| 2 | `test_new_menus.mjs` | ✔ PASSOU |
+| 3 | `test_save_load_screen.mjs` | ✔ PASSOU |
+| 4 | `test_linear_flow.mjs` | ✔ PASSOU |
+| 5 | `test_shop_and_extras.mjs` | ✔ PASSOU |
+| 6 | `test_particles_and_re_hud.mjs` | ✔ PASSOU |
+| 7 | `test_remastered_plant.mjs` | ✔ PASSOU |
+| 8 | `test_sponsor_intro.mjs` | ✔ PASSOU |
+| 9 | `test_screen_transitions.mjs` | ✔ PASSOU |
+
+**9/9 aprovadas — 100% de sucesso.**
+
+### C. Correção Aplicada: Pacote de Download
+- **Defeito encontrado:** `santa_lucia_remaster.zip` era referenciado por `index.html`, `baixar.html` e `download.html`, mas não existia no repositório (os botões retornavam 404).
+- **Correção:** criado `tools/make_release_zip.py`, gerador determinístico do pacote (data fixa, sem `.git`, sem o próprio zip). Pacote regenerado na raiz com 40 arquivos, ~2.7 MB — consistente com o "~2.8 MB" anunciado nas páginas de download.
+- **Regeneração após qualquer alteração do projeto:**
+```bash
+python3 tools/make_release_zip.py
+```
