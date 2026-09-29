@@ -222,6 +222,7 @@ export class Player {
       this.hairMat, this.hairMat, this.hairMat, this.skinMat, this.faceMat, this.hairMat,
     ]);
     this.head.add(this.headMesh);
+    this._bxAll.push(this.headMesh); // esconde junto quando o modelo 3D IA está ativo
     this.hairMesh = bx(0.32, 0.1, 0.32, this.hairMat, 0, 0.18, -0.01, this.head);
 
     // peças procedurais do corpo (para alternar com o modelo IA)
