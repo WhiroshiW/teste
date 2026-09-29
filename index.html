@@ -17,7 +17,7 @@
     if (window.navigator && navigator.serviceWorker) {
       navigator.serviceWorker.getRegistrations().then(regs => Promise.all(regs.map(r => r.unregister())));
     }
-    const currentBuild = '1924_1997_v8';
+    const currentBuild = '1924_1997_v9';
     const lastBuild = localStorage.getItem('SANTA_LUCIA_VER');
     if (lastBuild !== currentBuild) {
       localStorage.setItem('SANTA_LUCIA_VER', currentBuild);
@@ -27,9 +27,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./css/style.css?v=1924_1997_v8">
+<link rel="stylesheet" href="./css/style.css?v=1924_1997_v9">
 <script type="importmap">
-{ "imports": { "three": "./vendor/three.module.min.js?v=1924_1997_v8" } }
+{ "imports": { "three": "./vendor/three.module.min.js?v=1924_1997_v9" } }
 </script>
 </head>
 <body>
@@ -178,7 +178,7 @@
       <!-- Campanha A: Daniel -->
       <div class="campCard" id="campDaniel">
         <i class="cCorner tl"></i><i class="cCorner tr"></i><i class="cCorner bl"></i><i class="cCorner br"></i>
-        <div class="campPortFrame"><canvas id="campPortDaniel" width="96" height="96" class="campPort"></canvas></div>
+        <div class="campPortFrame"><canvas id="campPortDaniel" width="128" height="128" class="campPort"></canvas></div>
         <div class="campInfo">
           <div class="campTag">CAMPANHA A</div>
           <h4>DANIEL SILVA</h4>
@@ -193,7 +193,7 @@
       <!-- Campanha B: Clara -->
       <div class="campCard" id="campClara">
         <i class="cCorner tl"></i><i class="cCorner tr"></i><i class="cCorner bl"></i><i class="cCorner br"></i>
-        <div class="campPortFrame"><canvas id="campPortClara" width="96" height="96" class="campPort"></canvas></div>
+        <div class="campPortFrame"><canvas id="campPortClara" width="128" height="128" class="campPort"></canvas></div>
         <div class="campInfo">
           <div class="campTag">CAMPANHA B</div>
           <h4>DRA. CLARA MENDES</h4>
@@ -806,7 +806,7 @@
 <!-- ============ DIÁLOGO (BALÃO GÓTICO — MOCKUP NAKAMURA) ============ -->
 <div id="dialog" class="hidden">
   <i class="dCorner tl"></i><i class="dCorner tr"></i><i class="dCorner bl"></i><i class="dCorner br"></i>
-  <div class="dlgPortFrame"><canvas id="dlgPortrait" width="96" height="96"></canvas></div>
+  <div class="dlgPortFrame"><canvas id="dlgPortrait" width="128" height="128"></canvas></div>
   <div class="dlgBody">
     <div id="dlgName">DANIEL</div>
     <div id="dlgText"></div>
