@@ -139,6 +139,8 @@ export class Particles {
 }
 
 // ------------------------------- JOGADOR -------------------------------
+import { DANIEL_MODEL } from './model_daniel_data.js';
+
 export class Player {
   constructor(THREE, TEX) {
     this.THREE = THREE;
@@ -164,10 +166,12 @@ export class Player {
     this.shoesMat = lam(0x1a1412);
     this.soleMat = lam(0x0e0e10);
 
+    this._bxAll = [];
     const bx = (w, h, d, m, x, y, z, parent = this.group) => {
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
       mesh.position.set(x, y, z);
       parent.add(mesh);
+      this._bxAll.push(mesh);
       return mesh;
     };
 
@@ -219,6 +223,11 @@ export class Player {
     ]);
     this.head.add(this.headMesh);
     this.hairMesh = bx(0.32, 0.1, 0.32, this.hairMat, 0, 0.18, -0.01, this.head);
+
+    // peças procedurais do corpo (para alternar com o modelo IA)
+    this._boxParts = this._bxAll;
+    this.aiModelData = DANIEL_MODEL || null;
+    this.aiMeshes = null;
 
     // armas na mão direita
     this.gunPivot = new THREE.Group();
@@ -317,6 +326,87 @@ export class Player {
     this.setWeapon('knife');
   }
 
+  // ==================== MODELO 3D IA (Daniel — fatiado em peças PS1) ====================
+  // O GLB do produtor é fatiado em 6 peças (build script) e cada peça é
+  // rigidamente parentada aos grupos do rig procedural — as animações
+  // existentes (walk/attack/hurt/death) funcionam sem alteração.
+  applyAIModel(enabled) {
+    this.aiActive = false;
+    if (!enabled || !this.aiModelData) {
+      // restaura os bonecos procedurais
+      if (this.aiMeshes) for (const m of this.aiMeshes) m.visible = false;
+      for (const m of this._boxParts || []) m.visible = true;
+      if (this.heroExtras) this.heroExtras.visible = true;
+      if (this.legL) this.legL.position.set(-0.13, 0.78, 0);
+      if (this.legR) this.legR.position.set(0.13, 0.78, 0);
+      if (this.armL) this.armL.position.set(-0.33, 1.42, 0);
+      if (this.armR) this.armR.position.set(0.33, 1.42, 0);
+      if (this.head) this.head.position.set(0, 1.62, 0);
+      if (this.gunPivot) this.gunPivot.position.set(0, -0.62, 0.05);
+      return;
+    }
+    if (!this.aiMeshes) {
+      this.aiMeshes = [];
+      const canTex = typeof document !== 'undefined' && typeof document.createElementNS === 'function' && this.THREE.TextureLoader;
+      let tex = null;
+      if (canTex) {
+        try {
+          tex = new this.THREE.TextureLoader().load(this.aiModelData.tex);
+          if ('colorSpace' in tex && this.THREE.SRGBColorSpace) tex.colorSpace = this.THREE.SRGBColorSpace;
+          tex.magFilter = this.THREE.NearestFilter;  // pixels crocantes PS1
+          tex.minFilter = this.THREE.NearestFilter;
+          tex.generateMipmaps = false;
+        } catch (e) { tex = null; }
+      }
+      const decB64 = (b64) => {
+        const bin = atob(b64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return bytes.buffer;
+      };
+      for (const [name, part] of Object.entries(this.aiModelData.parts)) {
+        const i16 = new Int16Array(decB64(part.p));
+        const u16 = new Uint16Array(decB64(part.u));
+        const pos = new Float32Array(part.n * 3);
+        const uv = new Float32Array(part.n * 2);
+        for (let i = 0; i < part.n; i++) {
+          pos[i * 3] = i16[i * 3] / 2048; pos[i * 3 + 1] = i16[i * 3 + 1] / 2048; pos[i * 3 + 2] = i16[i * 3 + 2] / 2048;
+          uv[i * 2] = u16[i * 2] / 65535; uv[i * 2 + 1] = u16[i * 2 + 1] / 65535;
+        }
+        const geo = new this.THREE.BufferGeometry();
+        geo.setAttribute('position', new this.THREE.BufferAttribute(pos, 3));
+        geo.setAttribute('uv', new this.THREE.BufferAttribute(uv, 2));
+        geo.computeVertexNormals(); // normais de face = facetado PS1 autêntico
+        const mat = tex ? new this.THREE.MeshLambertMaterial({ map: tex }) : new this.THREE.MeshLambertMaterial({ color: 0x8a94a2 });
+        this.mats.push(mat);
+        const mesh = new this.THREE.Mesh(geo, mat);
+        mesh.frustumCulled = false;
+        mesh.visible = false;
+        this.aiMeshes.push(mesh);
+        // parentea na peça do rig correspondente
+        const parentMap = { torso: this.group, head: this.head, armL: this.armL, armR: this.armR, legL: this.legL, legR: this.legR };
+        const g = parentMap[name];
+        if (g) g.add(mesh);
+        mesh.userData.part = name;
+      }
+    }
+    // ativa as peças AI e desliga os boxes
+    for (const m of this.aiMeshes) m.visible = true;
+    for (const m of this._boxParts || []) m.visible = false;
+    if (this.heroExtras) this.heroExtras.visible = false;
+    // reposiciona os pivôs para a anatomia do modelo AI
+    const J = {};
+    for (const [name, part] of Object.entries(this.aiModelData.parts)) J[name] = part.j;
+    if (this.legL) this.legL.position.set(...J.legL);
+    if (this.legR) this.legR.position.set(...J.legR);
+    if (this.armL) this.armL.position.set(...J.armL);
+    if (this.armR) this.armR.position.set(...J.armR);
+    if (this.head) this.head.position.set(...J.head);
+    // mão direita do modelo (medida na geometria) para a arma encaixar
+    if (this.gunPivot) this.gunPivot.position.set(-0.114, -0.54, 0.08);
+    this.aiActive = true;
+  }
+
   setHero(heroId, skinId = 'default') {
     this.heroId = heroId;
     this.skinId = skinId;
@@ -357,6 +447,7 @@ export class Player {
       this.hairMat.color.setHex(0x241812);
       this.faceMat.map = this.TEX.faceDaniel;
     }
+    this.applyAIModel(heroId === 'daniel' && skinId === 'default' && !!this.aiModelData);
     this.updateHeroExtras(heroId);
     this.faceMat.needsUpdate = true;
   }
