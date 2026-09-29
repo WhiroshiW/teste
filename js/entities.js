@@ -156,11 +156,12 @@ export class Player {
     this.lam = lam;
 
     this.skinMat = lam(0xc8a080);
-    this.coatMat = lam(0x2a3448);
-    this.coatDMat = lam(0x1c2434);
-    this.pantsMat = lam(0x3a3a40);
+    this.coatMat = lam(0x2a3448, this.TEX.facet);   // facetas de tecido tingidas pela cor
+    this.coatDMat = lam(0x1c2434, this.TEX.facet);
+    this.pantsMat = lam(0x3a3a40, this.TEX.facet);
     this.hairMat = lam(0x241812);
     this.shoesMat = lam(0x1a1412);
+    this.soleMat = lam(0x0e0e10);
 
     const bx = (w, h, d, m, x, y, z, parent = this.group) => {
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
@@ -169,18 +170,30 @@ export class Player {
       return mesh;
     };
 
-    // pernas
+    // pernas (calça facetada + bota com sola, como na turnaround)
     this.legL = new THREE.Group(); this.legL.position.set(-0.13, 0.78, 0);
     this.legR = new THREE.Group(); this.legR.position.set(0.13, 0.78, 0);
     this.group.add(this.legL, this.legR);
     this.legMeshL = bx(0.2, 0.78, 0.24, this.pantsMat, 0, -0.39, 0, this.legL);
     this.legMeshR = bx(0.2, 0.78, 0.24, this.pantsMat, 0, -0.39, 0, this.legR);
-    bx(0.22, 0.12, 0.34, this.shoesMat, 0, -0.72, 0.04, this.legL);
-    bx(0.22, 0.12, 0.34, this.shoesMat, 0, -0.72, 0.04, this.legR);
+    bx(0.22, 0.13, 0.34, this.shoesMat, 0, -0.715, 0.04, this.legL);
+    bx(0.22, 0.13, 0.34, this.shoesMat, 0, -0.715, 0.04, this.legR);
+    bx(0.24, 0.05, 0.36, this.soleMat, 0, -0.755, 0.05, this.legL);
+    bx(0.24, 0.05, 0.36, this.soleMat, 0, -0.755, 0.05, this.legR);
 
-    // tronco
+    // quadril (continuidade calça/jaqueta)
+    bx(0.46, 0.12, 0.3, this.pantsMat, 0, 0.82, 0);
+
+    // tronco (jaqueta facetada com barra mais larga)
     this.torso = bx(0.52, 0.72, 0.32, this.coatMat, 0, 1.14, 0);
-    this.torsoTrim = bx(0.56, 0.3, 0.36, this.coatDMat, 0, 0.72, 0);
+    this.torsoTrim = bx(0.56, 0.32, 0.36, this.coatDMat, 0, 0.78, 0);
+    // fenda central da jaqueta
+    bx(0.045, 0.66, 0.012, this.coatDMat, 0, 1.16, 0.165);
+    // gola alta levantada (silhueta da turnaround)
+    this.collarMesh = bx(0.3, 0.1, 0.3, this.coatMat, 0, 1.53, -0.01);
+    bx(0.3, 0.09, 0.05, this.coatDMat, 0, 1.55, -0.16);
+    // banda dos ombros
+    bx(0.58, 0.09, 0.34, this.coatMat, 0, 1.47, 0);
 
     // braços
     this.armL = new THREE.Group(); this.armL.position.set(-0.33, 1.42, 0);
@@ -190,6 +203,10 @@ export class Player {
     this.armMeshR = bx(0.14, 0.62, 0.16, this.coatMat, 0, -0.28, 0, this.armR);
     bx(0.13, 0.14, 0.14, this.skinMat, 0, -0.62, 0, this.armL);
     bx(0.13, 0.14, 0.14, this.skinMat, 0, -0.62, 0, this.armR);
+
+    // extras específicos de herói (tufos de cabelo, cabelo longo, bib do macacão)
+    this.heroExtras = new THREE.Group();
+    this.group.add(this.heroExtras);
 
     // cabeça
     this.head = new THREE.Group(); this.head.position.set(0, 1.62, 0);
@@ -316,13 +333,13 @@ export class Player {
       this.coatDMat.color.setHex(0x6b1d28); // vinho
       this.pantsMat.color.setHex(0x222228);
       this.hairMat.color.setHex(0x4a2c18);
-      this.faceMat.map = this.TEX.claraBody || this.TEX.faceDaniel;
+      this.faceMat.map = this.TEX.faceClara || this.TEX.faceDaniel;
     } else if (heroId === 'bento') {
       this.coatMat.color.setHex(0x223854); // macacão azul
       this.coatDMat.color.setHex(0x1a283a);
       this.pantsMat.color.setHex(0x223854);
       this.hairMat.color.setHex(0x484848);
-      this.faceMat.map = this.TEX.bentoBody || this.TEX.faceDaniel;
+      this.faceMat.map = this.TEX.faceBento || this.TEX.faceDaniel;
     } else {
       // Daniel
       this.coatMat.color.setHex(0x2a3448);
@@ -331,7 +348,48 @@ export class Player {
       this.hairMat.color.setHex(0x241812);
       this.faceMat.map = this.TEX.faceDaniel;
     }
+    this.updateHeroExtras(heroId);
     this.faceMat.needsUpdate = true;
+  }
+
+  // Detalhes visuais por herói: tufos de cabelo, cabelo longo, bib do macacão
+  updateHeroExtras(heroId) {
+    if (!this.heroExtras) return;
+    while (this.heroExtras.children.length) {
+      const ch = this.heroExtras.children[0];
+      this.heroExtras.remove(ch);
+    }
+    const bx = (w, h, d, m, x, y, z, rx = 0, rz = 0) => {
+      const mesh = new this.THREE.Mesh(new this.THREE.BoxGeometry(w, h, d), m);
+      mesh.position.set(x, y, z);
+      mesh.rotation.x = rx;
+      mesh.rotation.z = rz;
+      this.heroExtras.add(mesh);
+      return mesh;
+    };
+    if (heroId === 'clara') {
+      // cabelo longo caindo pelas costas até os ombros
+      bx(0.27, 0.52, 0.12, this.hairMat, 0, -0.12, -0.16);
+      bx(0.09, 0.44, 0.14, this.hairMat, -0.14, -0.08, 0.02);
+      bx(0.09, 0.44, 0.14, this.hairMat, 0.14, -0.08, 0.02);
+      // barra do jaleco mais longa (médica)
+      bx(0.54, 0.2, 0.34, this.coatMat, 0, 0.62, 0);
+    } else if (heroId === 'bento') {
+      // bib do macacão de zelador + alças
+      bx(0.4, 0.3, 0.02, this.coatMat, 0, 1.22, 0.165);
+      bx(0.06, 0.36, 0.02, this.coatDMat, -0.13, 1.38, 0.168);
+      bx(0.06, 0.36, 0.02, this.coatDMat, 0.13, 1.38, 0.168);
+      // chaveiro grosso no cinto
+      bx(0.05, 0.16, 0.03, this.soleMat, -0.2, 0.88, 0.17);
+      bx(0.09, 0.06, 0.02, this.lam(0x8a929e), -0.2, 0.79, 0.17);
+    } else {
+      // Daniel: franja bagunçada da turnaround
+      bx(0.26, 0.06, 0.05, this.hairMat, 0, 0.155, 0.145, 0.35);
+      bx(0.07, 0.05, 0.07, this.hairMat, -0.1, 0.17, 0.1, 0, -0.3);
+      bx(0.07, 0.05, 0.07, this.hairMat, 0.11, 0.165, 0.09, 0, 0.35);
+      // tufo no topo
+      bx(0.08, 0.06, 0.1, this.hairMat, 0.02, 0.25, -0.04, -0.25);
+    }
   }
 
   addTo(scene) { scene.add(this.group); }
