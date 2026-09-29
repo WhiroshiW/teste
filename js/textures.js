@@ -655,9 +655,11 @@ export function buildTextures(THREE) {
     x.fillStyle = '#4a2c18'; x.fillRect(0, 0, 32, 8);
     x.fillRect(0, 0, 6, 32); x.fillRect(26, 0, 6, 32);
     x.fillRect(6, 6, 3, 4); x.fillRect(23, 6, 3, 4);
-    // olhos firmes e cansados
+    // sobrancelhas firmes
+    x.fillStyle = '#3a2214'; x.fillRect(8, 11, 6, 1); x.fillRect(18, 11, 6, 1);
+    // olhos claros firmes
     x.fillStyle = '#fff'; x.fillRect(9, 13, 4, 3); x.fillRect(19, 13, 4, 3);
-    x.fillStyle = '#2a4a3a'; x.fillRect(10, 14, 2, 2); x.fillRect(20, 14, 2, 2);
+    x.fillStyle = '#2a6a4a'; x.fillRect(10, 14, 2, 2); x.fillRect(20, 14, 2, 2);
     x.fillStyle = 'rgba(120,90,90,0.45)'; x.fillRect(8, 16, 6, 1); x.fillRect(18, 16, 6, 1);
     // boca serena
     x.fillStyle = '#a06058'; x.fillRect(13, 23, 6, 1);
@@ -665,23 +667,51 @@ export function buildTextures(THREE) {
     poster15(x, 32, 32);
     reg('faceClara', c);
   }
-  // ---------- rosto do Bento ----------
+  // ---------- rosto do Bento (calvo frontal + barba grisalha) ----------
   {
     const [c, x] = cv(32, 32);
     x.fillStyle = '#c9a07a'; x.fillRect(0, 0, 32, 32);
-    // cabelo grisalho curto
-    x.fillStyle = '#484848'; x.fillRect(0, 0, 32, 7);
-    x.fillRect(0, 0, 4, 26); x.fillRect(28, 0, 4, 26);
+    // cabelo grisalho só nas laterais (frontão recuado)
+    x.fillStyle = '#8a8a88'; x.fillRect(0, 6, 5, 22); x.fillRect(27, 6, 5, 22);
+    x.fillRect(0, 0, 32, 4);
     // rugas na testa
-    x.fillStyle = 'rgba(90,66,44,0.5)'; x.fillRect(8, 9, 16, 1); x.fillRect(9, 11, 14, 1);
+    x.fillStyle = 'rgba(90,66,44,0.55)'; x.fillRect(8, 9, 16, 1); x.fillRect(9, 11, 14, 1); x.fillRect(10, 13, 12, 1);
+    // sobrancelhas grisalhas espessas
+    x.fillStyle = '#7a7a78'; x.fillRect(7, 14, 7, 2); x.fillRect(18, 14, 7, 2);
     // olhos pequenos e atentos
-    x.fillStyle = '#1a1210'; x.fillRect(9, 15, 4, 2); x.fillRect(19, 15, 4, 2);
-    // barba por fazer grisalha + boca
-    x.fillStyle = 'rgba(110,110,108,0.55)'; x.fillRect(7, 23, 18, 7);
+    x.fillStyle = '#1a1210'; x.fillRect(9, 17, 4, 2); x.fillRect(19, 17, 4, 2);
+    x.fillStyle = 'rgba(90,60,40,0.5)'; x.fillRect(8, 19, 6, 1); x.fillRect(18, 19, 6, 1);
+    // barba grisalha cheia + bigode
+    x.fillStyle = '#9a9a96'; x.fillRect(4, 24, 24, 8); x.fillRect(8, 22, 16, 3);
+    x.fillStyle = '#7a7a76'; x.fillRect(6, 27, 20, 4);
+    // boca entre o bigode
     x.fillStyle = '#5a3830'; x.fillRect(13, 25, 6, 1);
     grain(x, 32, 32, 40, 0.14);
     poster15(x, 32, 32);
     reg('faceBento', c);
+  }
+  // ---------- rosto da Lúcia (franja reta, olhos verdes, doçura triste) ----------
+  {
+    const [c, x] = cv(32, 32);
+    x.fillStyle = '#ecd0b4'; x.fillRect(0, 0, 32, 32);
+    // cabelo castanho escuro: topo + laterais longas
+    x.fillStyle = '#2a1a12'; x.fillRect(0, 0, 32, 9);
+    x.fillRect(0, 0, 6, 32); x.fillRect(26, 0, 6, 32);
+    // franja reta
+    x.fillRect(6, 8, 20, 4);
+    x.fillRect(7, 12, 3, 2); x.fillRect(22, 12, 3, 2);
+    // olhos grandes e verdes
+    x.fillStyle = '#fff'; x.fillRect(8, 15, 5, 4); x.fillRect(19, 15, 5, 4);
+    x.fillStyle = '#2a6a4a'; x.fillRect(10, 16, 2, 3); x.fillRect(21, 16, 2, 3);
+    x.fillStyle = '#1a1210'; x.fillRect(10, 16, 2, 1); x.fillRect(21, 16, 2, 1);
+    // sorriso triste gentil
+    x.fillStyle = '#b87870'; x.fillRect(13, 25, 6, 1);
+    x.fillStyle = 'rgba(200,140,120,0.35)'; x.fillRect(9, 22, 3, 1); x.fillRect(20, 22, 3, 1);
+    // pingente do medalhão
+    x.fillStyle = '#6a2a20'; x.fillRect(15, 29, 2, 3);
+    grain(x, 32, 32, 40, 0.12);
+    poster15(x, 32, 32);
+    reg('faceLucia', c);
   }
   // ---------- facetas de tecido (shading facetado da turnaround) ----------
   // Base BRANCA com facetas em cinza: o color do material tinge o conjunto,

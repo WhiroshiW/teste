@@ -158,6 +158,7 @@ export class Player {
     this.skinMat = lam(0xc8a080);
     this.coatMat = lam(0x2a3448, this.TEX.facet);   // facetas de tecido tingidas pela cor
     this.coatDMat = lam(0x1c2434, this.TEX.facet);
+    this.armMat = lam(0x2a3448, this.TEX.facet);    // mangas (Bento usa camisa creme)
     this.pantsMat = lam(0x3a3a40, this.TEX.facet);
     this.hairMat = lam(0x241812);
     this.shoesMat = lam(0x1a1412);
@@ -199,8 +200,8 @@ export class Player {
     this.armL = new THREE.Group(); this.armL.position.set(-0.33, 1.42, 0);
     this.armR = new THREE.Group(); this.armR.position.set(0.33, 1.42, 0);
     this.group.add(this.armL, this.armR);
-    this.armMeshL = bx(0.14, 0.62, 0.16, this.coatMat, 0, -0.28, 0, this.armL);
-    this.armMeshR = bx(0.14, 0.62, 0.16, this.coatMat, 0, -0.28, 0, this.armR);
+    this.armMeshL = bx(0.14, 0.62, 0.16, this.armMat, 0, -0.28, 0, this.armL);
+    this.armMeshR = bx(0.14, 0.62, 0.16, this.armMat, 0, -0.28, 0, this.armR);
     bx(0.13, 0.14, 0.14, this.skinMat, 0, -0.62, 0, this.armL);
     bx(0.13, 0.14, 0.14, this.skinMat, 0, -0.62, 0, this.armR);
 
@@ -327,24 +328,32 @@ export class Player {
     if (skinId === 'tactical') {
       this.coatMat.color.setHex(0x1c221a);
       this.coatDMat.color.setHex(0x141812);
+      this.armMat.color.setHex(0x1c221a);
       this.pantsMat.color.setHex(0x1a1e18);
+      this.shoesMat.color.setHex(0x141416);
     } else if (heroId === 'clara') {
-      this.coatMat.color.setHex(0xd8d8d4); // jaleco médico
-      this.coatDMat.color.setHex(0x6b1d28); // vinho
-      this.pantsMat.color.setHex(0x222228);
+      this.coatMat.color.setHex(0xd8d8d4); // jaleco médico (turnaround: manchas na barra)
+      this.coatDMat.color.setHex(0x6b1d28); // blusa vinho
+      this.armMat.color.setHex(0xd8d8d4);
+      this.pantsMat.color.setHex(0x465064); // jeans azul-acinzentado
+      this.shoesMat.color.setHex(0xcfcfc8); // tênis brancos
       this.hairMat.color.setHex(0x4a2c18);
       this.faceMat.map = this.TEX.faceClara || this.TEX.faceDaniel;
     } else if (heroId === 'bento') {
-      this.coatMat.color.setHex(0x223854); // macacão azul
-      this.coatDMat.color.setHex(0x1a283a);
-      this.pantsMat.color.setHex(0x223854);
-      this.hairMat.color.setHex(0x484848);
+      this.coatMat.color.setHex(0x2c4666); // macacão jeans azul (turnaround)
+      this.coatDMat.color.setHex(0xd8d0c0); // camisa creme por baixo
+      this.armMat.color.setHex(0xd8d0c0); // mangas da camisa arregaçadas
+      this.pantsMat.color.setHex(0x2c4666);
+      this.shoesMat.color.setHex(0x141416); // botas de borracha
+      this.hairMat.color.setHex(0x8a8a88);
       this.faceMat.map = this.TEX.faceBento || this.TEX.faceDaniel;
     } else {
       // Daniel
       this.coatMat.color.setHex(0x2a3448);
       this.coatDMat.color.setHex(0x1c2434);
+      this.armMat.color.setHex(0x2a3448);
       this.pantsMat.color.setHex(0x3a3a40);
+      this.shoesMat.color.setHex(0x1a1412);
       this.hairMat.color.setHex(0x241812);
       this.faceMat.map = this.TEX.faceDaniel;
     }
@@ -368,20 +377,33 @@ export class Player {
       return mesh;
     };
     if (heroId === 'clara') {
-      // cabelo longo caindo pelas costas até os ombros
-      bx(0.27, 0.52, 0.12, this.hairMat, 0, -0.12, -0.16);
-      bx(0.09, 0.44, 0.14, this.hairMat, -0.14, -0.08, 0.02);
-      bx(0.09, 0.44, 0.14, this.hairMat, 0.14, -0.08, 0.02);
-      // barra do jaleco mais longa (médica)
-      bx(0.54, 0.2, 0.34, this.coatMat, 0, 0.62, 0);
+      // cabelo longo da turnaround: costas + laterais até o peito
+      bx(0.27, 0.7, 0.12, this.hairMat, 0, -0.26, -0.16);
+      bx(0.09, 0.6, 0.14, this.hairMat, -0.14, -0.2, 0.02);
+      bx(0.09, 0.6, 0.14, this.hairMat, 0.14, -0.2, 0.02);
+      // jaleco LONGO até o joelho (turnaround)
+      bx(0.54, 0.52, 0.34, this.coatMat, 0, 0.56, 0);
+      // abas dos bolsos frontais do jaleco
+      bx(0.12, 0.06, 0.02, this.coatDMat, -0.13, 0.88, 0.175);
+      bx(0.12, 0.06, 0.02, this.coatDMat, 0.13, 0.88, 0.175);
+      // tênis brancos com sola
+      bx(0.24, 0.04, 0.36, this.soleMat, 0, -0.775, 0.05, this.legL);
+      bx(0.24, 0.04, 0.36, this.soleMat, 0, -0.775, 0.05, this.legR);
     } else if (heroId === 'bento') {
-      // bib do macacão de zelador + alças
-      bx(0.4, 0.3, 0.02, this.coatMat, 0, 1.22, 0.165);
-      bx(0.06, 0.36, 0.02, this.coatDMat, -0.13, 1.38, 0.168);
-      bx(0.06, 0.36, 0.02, this.coatDMat, 0.13, 1.38, 0.168);
-      // chaveiro grosso no cinto
-      bx(0.05, 0.16, 0.03, this.soleMat, -0.2, 0.88, 0.17);
-      bx(0.09, 0.06, 0.02, this.lam(0x8a929e), -0.2, 0.79, 0.17);
+      // barriga saliente do zelador (turnaround)
+      bx(0.5, 0.42, 0.38, this.coatMat, 0, 1.08, 0.04);
+      // bib do macacão + bolso frontal + alças com fivelas metálicas
+      bx(0.4, 0.32, 0.02, this.coatMat, 0, 1.24, 0.165);
+      bx(0.18, 0.14, 0.012, this.coatDMat, 0, 1.2, 0.178);
+      bx(0.06, 0.38, 0.02, this.coatMat, -0.13, 1.4, 0.168);
+      bx(0.06, 0.38, 0.02, this.coatMat, 0.13, 1.4, 0.168);
+      const buckle = this.lam(0x9aa2ac);
+      bx(0.07, 0.05, 0.028, buckle, -0.13, 1.52, 0.168);
+      bx(0.07, 0.05, 0.028, buckle, 0.13, 1.52, 0.168);
+      // chaveiro grosso pendurado na alça (turnaround)
+      bx(0.05, 0.16, 0.03, this.soleMat, -0.16, 1.02, 0.18);
+      bx(0.09, 0.06, 0.022, buckle, -0.16, 0.93, 0.18);
+      bx(0.02, 0.1, 0.022, buckle, -0.13, 0.96, 0.18);
     } else {
       // Daniel: franja bagunçada da turnaround
       bx(0.26, 0.06, 0.05, this.hairMat, 0, 0.155, 0.145, 0.35);
@@ -1160,25 +1182,73 @@ export class NPC {
       return mesh;
     };
 
-    if (this.who === 'clara') {
-      const coat = lam(0xdcdcd8);
+    if (this.who === 'lucia') {
+      // LÚCIA (turnaround): franzina, vestido rosa-terra longo, franja,
+      // cabelo na cintura, pingente do medalhão, mãos postas à frente
+      const dress = lam(0xa8847c);
+      const dressD = lam(0x8f6e66);
+      const hair = lam(0x2a1a12);
+      const skin = lam(0xecd0b4);
+      // vestido longo (saia + torso)
+      bx(0.44, 0.78, 0.32, dress, 0, 0.52, 0);
+      bx(0.5, 0.06, 0.36, dressD, 0, 0.15, 0); // barra
+      bx(0.36, 0.55, 0.26, dress, 0, 1.18, 0);
+      // braços delicados com mãos postas à frente
+      bx(0.08, 0.48, 0.1, dress, -0.2, 1.22, 0, this.group).rotation.z = 0.12;
+      bx(0.08, 0.48, 0.1, dress, 0.2, 1.22, 0, this.group).rotation.z = -0.12;
+      bx(0.14, 0.08, 0.1, skin, 0, 1.02, 0.16); // mãos postas
+      // cabeça + cabelo: franja reta + laterais + costas na cintura
+      this.head = bx(0.26, 0.3, 0.26, skin, 0, 1.62, 0);
+      bx(0.3, 0.12, 0.3, hair, 0, 1.77, -0.01);
+      bx(0.3, 0.09, 0.05, hair, 0, 1.7, 0.145); // franja
+      bx(0.3, 0.62, 0.1, hair, 0, 1.42, -0.15); // costas
+      bx(0.06, 0.52, 0.12, hair, -0.16, 1.44, 0);
+      bx(0.06, 0.52, 0.12, hair, 0.16, 1.44, 0);
+      // pingente do medalhão
+      bx(0.05, 0.07, 0.02, lam(0x6a2a20), 0, 1.38, 0.14);
+      // sapatinhos simples
+      bx(0.16, 0.08, 0.24, lam(0x4a3428), -0.09, 0.04, 0.02);
+      bx(0.16, 0.08, 0.24, lam(0x4a3428), 0.09, 0.04, 0.02);
+    } else if (this.who === 'clara') {
+      const coat = lam(0xd8d8d4);
       const wine = lam(0x6b1d28);
-      const dark = lam(0x222228);
-      const skin = lam(0xddb294);
+      const dark = lam(0x465064);
+      const skin = lam(0xdcb194);
+      const hair = lam(0x4a2c18);
       bx(0.2, 0.78, 0.24, dark, -0.12, 0.39, 0);
       bx(0.2, 0.78, 0.24, dark, 0.12, 0.39, 0);
-      bx(0.48, 0.72, 0.3, coat, 0, 1.14, 0);
-      bx(0.24, 0.4, 0.32, wine, 0, 1.16, 0.01);
+      // jaleco longo aberto com blusa vinho
+      bx(0.48, 0.5, 0.3, coat, 0, 1.14, 0);
+      bx(0.5, 0.5, 0.32, coat, 0, 0.66, 0);
+      bx(0.24, 0.42, 0.32, wine, 0, 1.18, 0.01);
+      bx(0.2, 0.78, 0.24, skin, -0.12, 1.44, 0.02); // antebraço à mostra
+      bx(0.2, 0.78, 0.24, skin, 0.12, 1.44, 0.02);
       this.head = bx(0.28, 0.32, 0.28, skin, 0, 1.62, 0);
-      bx(0.3, 0.14, 0.3, lam(0x4a2c18), 0, 1.76, -0.01); // cabelo
+      bx(0.3, 0.14, 0.3, hair, 0, 1.76, -0.01);
+      bx(0.3, 0.6, 0.1, hair, 0, 1.44, -0.15); // cabelo longo
+      bx(0.06, 0.5, 0.12, hair, -0.16, 1.46, 0);
+      bx(0.06, 0.5, 0.12, hair, 0.16, 1.46, 0);
+      bx(0.2, 0.1, 0.3, lam(0xcfcfc8), -0.12, 0.04, 0.04); // tênis brancos
+      bx(0.2, 0.1, 0.3, lam(0xcfcfc8), 0.12, 0.04, 0.04);
     } else if (this.who === 'bento') {
-      const blue = lam(0x223854);
+      const blue = lam(0x2c4666);
+      const cream = lam(0xd8d0c0);
       const skin = lam(0xba9476);
       bx(0.22, 0.78, 0.26, blue, -0.13, 0.39, 0);
       bx(0.22, 0.78, 0.26, blue, 0.13, 0.39, 0);
       bx(0.54, 0.72, 0.34, blue, 0, 1.14, 0);
+      bx(0.5, 0.42, 0.38, blue, 0, 1.06, 0.04); // barriga
+      bx(0.4, 0.3, 0.02, blue, 0, 1.24, 0.185); // bib
+      bx(0.3, 0.24, 0.02, cream, 0, 1.3, 0.005); // camisa creme no peito
+      bx(0.14, 0.5, 0.16, cream, -0.34, 1.3, 0); // mangas arregaçadas
+      bx(0.14, 0.5, 0.16, cream, 0.34, 1.3, 0);
+      bx(0.12, 0.24, 0.14, skin, -0.34, 0.94, 0); // antebraços
+      bx(0.12, 0.24, 0.14, skin, 0.34, 0.94, 0);
       this.head = bx(0.3, 0.34, 0.3, skin, 0, 1.62, 0);
-      bx(0.32, 0.12, 0.34, lam(0x3a3e44), 0, 1.76, 0); // boné
+      bx(0.32, 0.1, 0.34, lam(0x8a8a88), 0, 1.78, -0.02); // cabelo grisalho lateral
+      bx(0.24, 0.12, 0.28, lam(0x9a9a96), 0, 1.48, 0.06); // barba grisalha
+      bx(0.22, 0.12, 0.3, lam(0x141416), -0.12, 0.04, 0.05); // botas
+      bx(0.22, 0.12, 0.3, lam(0x141416), 0.12, 0.04, 0.05);
     } else {
       // Daniel
       const coat = lam(0x2a3448);

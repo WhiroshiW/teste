@@ -29,17 +29,17 @@ PS1-era survival horror character, PlayStation 1 1998 aesthetic (Resident Evil 2
 
 ## 3. FICHAS POR PERSONAGEM (usar SEMPRE com a seção 4 do dossiê de specs)
 
-### 3.1 DANIEL (prioridade máxima) — usar com `docs/refs/daniel_turnaround.png`
+### 3.1 DANIEL (prioridade máxima) — usar com `docs/refs/daniel_turnaround.png` *(reenviar ao chat para arquivar)*
 ```
 Young Brazilian man, 27, survival horror protagonist. Skinny, tired posture, slightly sloped shoulders. Messy dark brown hair falling over forehead. Pale tired face with strong purple dark circles under brown eyes, straight sad mouth. High-collar navy blue jacket (#2a3448 main, #1c2434 shadows) with visible fabric facets, slightly flared hem; plain dark gray trousers (#3a3a40); black chunky boots with thick dark soles. Hands relaxed when not aiming. Height 1.75m.
 ```
 
-### 3.2 CLARA
+### 3.2 CLARA — usar com `docs/refs/clara_turnaround.png`
 ```
 Brazilian woman, 32, psychiatrist investigator. Slim, upright contained posture. Long straight medium-brown hair over both shoulders (#4a2c18), pale firm face, calm tired hazel eyes, determined expression. White medical lab coat (#d8d8d4) with collar over dark wine-red blouse (#6b1d28), dark blue-gray formal trousers (#222228), worn white shoes. Height 1.68m.
 ```
 
-### 3.3 BENTO
+### 3.3 BENTO — usar com `docs/refs/bento_turnaround.png`
 ```
 Brazilian caretaker, 60s, robust and thickset with slight belly and broad shoulders. Short gray hair, gray stubble, small attentive dark eyes, tough but kind weathered tan face (#c9a07a) with forehead wrinkles. Blue one-piece work coverall (#223854) over dirty white undershirt, black rubber boots, heavy key ring hanging from belt. Height 1.72m.
 ```
@@ -56,6 +56,11 @@ Mutated mad-scientist director, 3.4m tall. Torn dark night-purple suit (#181422)
 
 ### 3.6 DEMAIS INIMIGOS
 Sintam-se livres para gerar também: Sombra, Infectado (camisa de força), Enfermeira (Sombra Cirúrgica), Aberração de Cinzas, Lamento, Rastejador, Cão Sombrio, Carrasco — usar fichas 4.1–4.8 do `docs/PERSONAGENS_PS1_ESPECIFICACAO.md` + Prompt Base. Mesmo fluxo.
+
+### 3.7 LÚCIA — usar com `docs/refs/lucia_turnaround.png`
+```
+Frail Brazilian girl, 19, fragile build and withdrawn posture, hands held together in front. Waist-length dark brown hair with straight full bangs. Pale gentle face, large soft green eyes, faint sad smile. Long dusty-rose ankle-length dress with long sleeves (#a8847c), simple dark brown shoes, thin red-brown cord necklace with small pendant (#6a2a20). Height 1.60m. Patient ID SL-07-23.
+```
 
 ## 4. CHECKLIST ANTES DE ME ENVIAR
 - [ ] `.glb` abre num visualizador (ex.: threejs.org/editor ou gltf.report) sem erros
