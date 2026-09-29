@@ -891,7 +891,9 @@ export class Enemy {
     }
 
     // ================= 5. SOMBRA / LAMENTO / VULTO (PADRÃO) =================
-    const bodyM = lam(0x0c0c12);
+    // Turnaround: espectro flutuante com capa facetada, capuz pontudo,
+    // bainha esfarrapada, vazio negro no rosto e névoa espectral na base.
+    const bodyM = lam(0x0c0c12, 0x000000, this.TEX.facet);
     const darkM = lam(0x060608);
 
     const cloak = new this.THREE.Mesh(
@@ -901,6 +903,36 @@ export class Enemy {
     cloak.position.y = 0.75 * s;
     this.group.add(cloak);
     this.cloak = cloak;
+
+    // bainha esfarrapada: pontas em zigue-zague na base (turnaround)
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2;
+      const spikeH = (i % 2 === 0 ? 0.34 : 0.22) * s;
+      const spike = new this.THREE.Mesh(
+        new this.THREE.ConeGeometry(0.055 * s, spikeH, 4),
+        darkM
+      );
+      spike.rotation.x = Math.PI; // aponta para baixo
+      spike.position.set(Math.sin(a) * 0.33 * s, spikeH / 2 + 0.05 * s, Math.cos(a) * 0.33 * s);
+      this.group.add(spike);
+    }
+
+    // capuz pontudo sobre os ombros
+    const hood = new this.THREE.Mesh(
+      new this.THREE.ConeGeometry(0.3 * s, 0.62 * s, 5),
+      bodyM
+    );
+    hood.position.set(0, 1.72 * s, -0.02 * s);
+    hood.rotation.x = 0.1;
+    this.group.add(hood);
+
+    // vazio negro do rosto (os olhos brilham contra o absolutamente escuro)
+    const voidM = new this.THREE.MeshBasicMaterial({ color: 0x030306 });
+    this.mats.push(voidM);
+    const faceVoid = new this.THREE.Mesh(new this.THREE.PlaneGeometry(0.22 * s, 0.26 * s), voidM);
+    faceVoid.position.set(0, 1.74 * s, 0.185 * s);
+    faceVoid.rotation.x = -0.08;
+    this.group.add(faceVoid);
 
     const torso = new this.THREE.Mesh(new this.THREE.BoxGeometry(0.5 * s, 0.6 * s, 0.34 * s), bodyM);
     torso.position.y = 1.35 * s;
@@ -917,9 +949,9 @@ export class Enemy {
     const eyeM = new this.THREE.MeshBasicMaterial({ color: this.cfg.eye });
     this.mats.push(eyeM);
     const eL = new this.THREE.Mesh(eyeG, eyeM);
-    eL.position.set(-0.08 * s, 1.82 * s, 0.16 * s);
+    eL.position.set(-0.08 * s, 1.77 * s, 0.19 * s);
     const eR = new this.THREE.Mesh(eyeG, eyeM);
-    eR.position.set(0.08 * s, 1.82 * s, 0.16 * s);
+    eR.position.set(0.08 * s, 1.77 * s, 0.19 * s);
     this.group.add(eL, eR);
 
     const glow = new this.THREE.Sprite(new this.THREE.SpriteMaterial({
@@ -927,9 +959,23 @@ export class Enemy {
       opacity: 0.55, blending: this.THREE.AdditiveBlending, depthWrite: false,
     }));
     glow.scale.set(0.7 * s, 0.35 * s, 1);
-    glow.position.set(0, 1.82 * s, 0.1 * s);
+    glow.position.set(0, 1.77 * s, 0.12 * s);
     this.group.add(glow);
     this.eyeGlow = glow;
+
+    // névoa espectral na base (turnaround: nuvem de píxeis acinzentada)
+    this.mist = [];
+    for (let i = 0; i < 3; i++) {
+      const puff = new this.THREE.Sprite(new this.THREE.SpriteMaterial({
+        map: this.TEX.blob, color: 0x9aa0a8, transparent: true,
+        opacity: 0.28, depthWrite: false,
+      }));
+      const ps = (0.75 + i * 0.22) * s;
+      puff.scale.set(ps, ps * 0.5, 1);
+      puff.position.set((i - 1) * 0.16 * s, (0.1 + (i % 2) * 0.08) * s, (i % 2 ? 0.1 : -0.12) * s);
+      this.group.add(puff);
+      this.mist.push(puff);
+    }
 
     this.arms = [];
     for (const side of [-1, 1]) {
@@ -1153,6 +1199,13 @@ export class Enemy {
     }
     if (this.cloak) this.cloak.rotation.y += 0.01;
     if (this.crown) this.crown.rotation.z += 0.02;
+    if (this.mist) {
+      const t = performance.now() / 1000;
+      this.mist.forEach((puff, i) => {
+        puff.material.opacity = 0.2 + Math.sin(t * 1.3 + i * 2.1) * 0.1;
+        puff.position.x = Math.sin(t * 0.7 + i * 2.1) * 0.12 * this.cfg.scale;
+      });
+    }
   }
 }
 
