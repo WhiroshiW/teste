@@ -139,7 +139,7 @@ export class Particles {
 }
 
 // ------------------------------- JOGADOR -------------------------------
-import { DANIEL_MODEL } from './model_daniel_data.js';
+import { CLARA_MODEL } from './model_clara_data.js';
 
 export class Player {
   constructor(THREE, TEX) {
@@ -226,7 +226,7 @@ export class Player {
 
     // peças procedurais do corpo (para alternar com o modelo IA)
     this._boxParts = this._bxAll;
-    this.aiModelData = DANIEL_MODEL || null;
+    this.aiModelData = CLARA_MODEL || null; // MODELO: Dra. Clara (dr.glb) no slot do Daniel, temporariamente
     this.aiMeshes = null;
 
     // armas na mão direita
@@ -403,7 +403,7 @@ export class Player {
     if (this.armR) this.armR.position.set(...J.armR);
     if (this.head) this.head.position.set(...J.head);
     // mão direita do modelo (medida na geometria) para a arma encaixar
-    if (this.gunPivot) this.gunPivot.position.set(-0.114, -0.54, 0.08);
+    if (this.gunPivot) this.gunPivot.position.set(-0.114, -0.597, 0.08);
     this.aiActive = true;
   }
 
@@ -601,12 +601,17 @@ export class Player {
       collideCircle(this.group.position, 0.38, room.solids);
 
       const sw = Math.sin(this.walkPhase);
-      this.legL.rotation.x = sw * 0.55;
-      this.legR.rotation.x = -sw * 0.55;
-      this.armL.rotation.x = -sw * 0.45;
-      this.armR.rotation.x = sw * 0.45;
+      // modelo IA (peças rígidas, sem joelho): passos mais curtos e
+      // compensação de quadril para os pés não flutuarem no arco
+      const legAmp = this.aiActive ? 0.30 : 0.55;
+      const armAmp = this.aiActive ? 0.26 : 0.45;
+      this.legL.rotation.x = sw * legAmp;
+      this.legR.rotation.x = -sw * legAmp;
+      this.armL.rotation.x = -sw * armAmp;
+      this.armR.rotation.x = sw * armAmp;
       this.armL.rotation.z = 0.05; this.armR.rotation.z = -0.05;
       this.torso.rotation.y = -sw * 0.06;
+      if (this.aiActive) this.torso.position.y = 1.14 - Math.abs(sw) * 0.045;
 
       if ((prevPhase % Math.PI) > (this.walkPhase % Math.PI)) {
         ev.step = true;
@@ -614,6 +619,7 @@ export class Player {
       }
     } else {
       this.moving = false;
+      if (this.aiActive && this.torso) this.torso.position.y += (1.14 - this.torso.position.y) * Math.min(1, dt * 8);
       this.legL.rotation.x *= Math.max(0, 1 - dt * 10);
       this.legR.rotation.x *= Math.max(0, 1 - dt * 10);
       this.armL.rotation.x *= Math.max(0, 1 - dt * 10);
