@@ -17,7 +17,7 @@
     if (window.navigator && navigator.serviceWorker) {
       navigator.serviceWorker.getRegistrations().then(regs => Promise.all(regs.map(r => r.unregister())));
     }
-    const currentBuild = '1924_1997_v9';
+    const currentBuild = '1924_1997_v10';
     const lastBuild = localStorage.getItem('SANTA_LUCIA_VER');
     if (lastBuild !== currentBuild) {
       localStorage.setItem('SANTA_LUCIA_VER', currentBuild);
@@ -27,9 +27,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./css/style.css?v=1924_1997_v9">
+<link rel="stylesheet" href="./css/style.css?v=1924_1997_v10">
 <script type="importmap">
-{ "imports": { "three": "./vendor/three.module.min.js?v=1924_1997_v9" } }
+{ "imports": { "three": "./vendor/three.module.min.js?v=1924_1997_v10" } }
 </script>
 </head>
 <body>
@@ -1003,9 +1003,30 @@
 
 <!-- ============ PAUSE ============ -->
 <div id="pause" class="overlay hidden">
-  <div class="panel small">
-    <h2>PAUSADO</h2>
-    <div id="pauseMenu" class="menu"></div>
+  <div class="pauseScrim" id="pauseScrim"></div>
+  <div class="pauseParchment">
+    <i class="pCorner tl"></i><i class="pCorner tr"></i><i class="pCorner bl"></i><i class="pCorner br"></i>
+    <svg class="pOrnamentTop" viewBox="0 0 120 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M60 3 C56 8 56 13 60 17 C64 13 64 8 60 3Z" stroke="#8a2a2a" stroke-width="1.2"/>
+      <path d="M60 17 C55 21 50 21 45 18 M60 17 C65 21 70 21 75 18" stroke="#7a2424" stroke-width="1"/>
+      <path d="M38 13 C48 10 54 12.5 60 12.5 C66 12.5 72 10 82 13" stroke="#6b2020" stroke-width="0.9"/>
+      <circle cx="60" cy="21" r="1.4" fill="#8a2a2a"/>
+      <circle cx="45" cy="18" r="1" fill="#7a2424"/><circle cx="75" cy="18" r="1" fill="#7a2424"/>
+    </svg>
+    <h2 class="pauseTitle">PAUSADO</h2>
+    <svg class="pDivider" viewBox="0 0 200 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="18" y1="7" x2="86" y2="7" stroke="#7a2424" stroke-width="1"/>
+      <polygon points="100,2 106,7 100,12 94,7" stroke="#8a2a2a" stroke-width="1.1" fill="none"/>
+      <line x1="114" y1="7" x2="182" y2="7" stroke="#7a2424" stroke-width="1"/>
+      <circle cx="86" cy="7" r="1.2" fill="#7a2424"/><circle cx="114" cy="7" r="1.2" fill="#7a2424"/>
+    </svg>
+    <div id="pauseMenu" class="pauseMenu"></div>
+    <svg class="pOrnamentBottom" viewBox="0 0 160 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M80 4 C75 9 75 14 80 19 C85 14 85 9 80 4Z" stroke="#7a2424" stroke-width="1.1"/>
+      <path d="M18 12 C40 7 60 13.5 80 11.5 C100 13.5 120 7 142 12" stroke="#5f1c1c" stroke-width="0.9"/>
+      <circle cx="80" cy="21" r="1.2" fill="#7a2424"/>
+      <circle cx="18" cy="12" r="1" fill="#5f1c1c"/><circle cx="142" cy="12" r="1" fill="#5f1c1c"/>
+    </svg>
   </div>
 </div>
 

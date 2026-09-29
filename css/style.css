@@ -2877,3 +2877,74 @@ html, body {
   background-repeat: no-repeat;
   background-size: cover;
 }
+
+/* ============ PAUSA — PERGAMINHO GÓTICO (MOCKUP NAKAMURA) ============ */
+#pause { z-index: 60; }
+.pauseScrim {
+  position: absolute; inset: 0;
+  background: rgba(3, 4, 6, 0.74);
+  backdrop-filter: blur(4px) saturate(0.8);
+  -webkit-backdrop-filter: blur(4px) saturate(0.8);
+}
+.pauseParchment {
+  position: relative; z-index: 2;
+  width: min(520px, 92vw); max-height: min(90vh, 880px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: clamp(6px, 1.6vh, 16px);
+  padding: clamp(20px, 3.6vh, 38px) clamp(16px, 4vw, 44px);
+  background: linear-gradient(175deg, rgba(17,14,12,0.97), rgba(8,6,5,0.985) 55%, rgba(13,10,8,0.97));
+  border: 1px solid rgba(138, 42, 42, 0.75);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.85),
+    inset 0 0 0 4px rgba(8, 6, 5, 0.9),
+    inset 0 0 0 5px rgba(122, 36, 36, 0.35),
+    inset 0 0 70px rgba(0, 0, 0, 0.8);
+}
+.pCorner { position: absolute; width: 22px; height: 22px; border: 0 solid #8a2a2a; z-index: 3; pointer-events: none; }
+.pCorner.tl { top: 9px; left: 9px; border-top-width: 2px; border-left-width: 2px; }
+.pCorner.tr { top: 9px; right: 9px; border-top-width: 2px; border-right-width: 2px; }
+.pCorner.bl { bottom: 9px; left: 9px; border-bottom-width: 2px; border-left-width: 2px; }
+.pCorner.br { bottom: 9px; right: 9px; border-bottom-width: 2px; border-right-width: 2px; }
+.pauseTitle {
+  font-family: 'Cinzel', serif; font-weight: 900;
+  font-size: clamp(38px, 8vw, 64px); letter-spacing: clamp(4px, 1vw, 10px);
+  margin: 0; line-height: 1.05; text-align: center;
+  background: linear-gradient(180deg, #f0d488 0%, #d4a94e 38%, #8a6425 62%, #5f4318 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.9));
+}
+.pOrnamentTop { width: min(120px, 42%); opacity: 0.95; }
+.pDivider { width: min(220px, 62%); }
+.pOrnamentBottom { width: min(160px, 52%); opacity: 0.9; }
+.pauseMenu { width: 100%; display: flex; flex-direction: column; }
+.pauseItem {
+  position: relative; display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: clamp(11px, 2.2vh, 17px) 10px;
+  font-family: 'Cinzel', serif; font-size: clamp(15px, 2.6vw, 21px);
+  letter-spacing: clamp(2px, 0.5vw, 5px);
+  color: #cfc8b8; cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+.pauseItem + .pauseItem::before {
+  content: ''; position: absolute; top: 0; left: 12%; right: 12%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(165, 152, 130, 0.35), transparent);
+}
+.pauseItem + .pauseItem::after {
+  content: '◆'; position: absolute; top: -5px; left: 50%; transform: translateX(-50%);
+  font-size: 8px; color: #8a8272;
+}
+.pauseItem .pArrow {
+  position: absolute; left: clamp(8px, 5vw, 30px);
+  opacity: 0; color: #d8b25a; font-size: 0.75em; transition: opacity 0.15s, transform 0.15s;
+  text-shadow: 0 0 8px rgba(216, 178, 90, 0.6);
+}
+.pauseItem.sel {
+  background: linear-gradient(90deg, rgba(90, 22, 22, 0), rgba(90, 22, 22, 0.85) 18%, rgba(72, 16, 16, 0.92) 82%, rgba(90, 22, 22, 0));
+  color: #f4ead2; text-shadow: 0 1px 4px #000;
+}
+.pauseItem.sel .pArrow { opacity: 1; transform: translateX(2px); }
+.pauseItem:hover { color: #efe6cf; }
+@media (max-height: 560px) {
+  .pauseParchment { gap: 4px; padding-top: 14px; padding-bottom: 14px; }
+  .pauseItem { padding-top: 8px; padding-bottom: 8px; }
+}

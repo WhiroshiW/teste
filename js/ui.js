@@ -1747,6 +1747,10 @@ export class UI {
       });
     }
 
+    // Clique no fundo escurecido da pausa = continuar
+    const pScrim = this.$('pauseScrim');
+    if (pScrim) pScrim.addEventListener('click', () => this.game.pauseAction('resume'));
+
     // Seleção de campanha
     click('btnSelectDaniel', () => {
       this.audio.sfx('uiSelect');
@@ -2624,8 +2628,8 @@ export class UI {
     m.innerHTML = '';
     this.pauseItems.forEach((act, i) => {
       const d = document.createElement('div');
-      d.className = 'menuItem' + (i === this.menuIdx.pause ? ' sel' : '');
-      d.textContent = (i === this.menuIdx.pause ? '▶ ' : '　') + labels[act];
+      d.className = 'pauseItem' + (i === this.menuIdx.pause ? ' sel' : '');
+      d.innerHTML = `<span class="pArrow">►</span><span class="pLabel">${labels[act]}</span>`;
       d.onclick = () => this.game.pauseAction(act);
       d.onmouseenter = () => {
         if (this.menuIdx.pause !== i) { this.menuIdx.pause = i; this.audio.sfx('uiMove'); this.renderPause(); }
