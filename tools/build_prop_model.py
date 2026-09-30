@@ -82,13 +82,19 @@ def build(name, cfg):
     mn=(min(xs),min(ys),min(zs)); dims=(max(xs)-mn[0], max(ys)-mn[1], max(zs)-mn[2])
     gx,gy,gz = cfg['grip']
     pivot=[mn[0]+gx*dims[0], mn[1]+gy*dims[1], mn[2]+gz*dims[2]]
+    # CRÍTICO: expandir para TRIANGLE SOUP usando o índice (GLBs indexados:
+    # vértices consecutivos NÃO formam triângulos na ordem do buffer!)
+    soup=[]
+    for t in range(0,len(indices),3):
+        soup += [indices[t], indices[t+1], indices[t+2]]
     P,U=[],[]
-    for i in range(n):
+    for i in soup:
         px,py,pz=rpos[i]
         P+=[round(((px*k-pivot[0]*k))*Q),round(((py*k-pivot[1]*k))*Q),round(((pz*k-pivot[2]*k))*Q)]
         U+=[round(cl(uvraw[i*2])*QU),round((1.0-cl(uvraw[i*2+1]))*QU)]
+    n=len(soup)  # runtime consome soup (3 verts por tri, sem índice)
     ntris=len(indices)//3
-    print(f"{name}: {n} verts / {ntris} tris | dims {tuple(round(d,3) for d in dims)} -> len {cfg['len']}")
+    print(f"{name}: {n} verts soup / {ntris} tris | dims {tuple(round(d,3) for d in dims)} -> len {cfg['len']}")
     out_geo=base64.b64encode(struct.pack(f'<{len(P)}h{len(U)}H',*(P+U))).decode()
     tex_data=None
     if g.get('images'):
