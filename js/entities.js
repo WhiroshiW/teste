@@ -248,7 +248,7 @@ export class Player {
     const grip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.16, 0.08), darkWood);
     grip.position.set(0, -0.1, 0.02); pistol.add(grip);
     this.pistolM = pistol;
-    pistol.rotation.x = 0.6; // descanso: cano pra baixo, lateral visível; mira compensa
+    pistol.rotation.x = 1.57; // cano segue o eixo dos dedos: baixo no descanso, frente na mira
     if (WEAPON_MODELS.pistola) { // prop IA substitui o procedural (escala near-camera)
       const g = this.buildPropMesh(WEAPON_MODELS.pistola);
       g.scale.setScalar(0.55);
@@ -269,8 +269,8 @@ export class Player {
     kb.position.set(0, 0, 0.2); this.knifeM.add(kb);
     const kh = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.07, 0.12), darkWood);
     kh.position.set(0, 0, 0); this.knifeM.add(kh);
-    this.knifeM.rotation.set(1.0, 0, -0.25); // lâmina pra baixo na diagonal, cabo CENTRADO no punho
-    this.knifeM.position.set(0, 0.05, 0.02); // sobe pro miolo do punho fechado
+    this.knifeM.rotation.set(1.57, 0, -0.25); // lâmina alinhada ao eixo dos DEDOS (local -Y):
+    this.knifeM.position.set(0, -0.02, 0.04);  // desce no descanso e aponta pra frente na mira sozinha
     if (WEAPON_MODELS.faca) { // prop IA substitui o procedural (escala near-camera)
       const f = this.buildPropMesh(WEAPON_MODELS.faca);
       f.scale.setScalar(1.05);
@@ -286,7 +286,7 @@ export class Player {
     revCyl.rotation.x = Math.PI / 2; revCyl.position.set(0, 0.01, 0.04); this.revolverM.add(revCyl);
     const revGrip = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.14, 0.07), darkWood);
     revGrip.position.set(0, -0.09, -0.02); this.revolverM.add(revGrip);
-    this.revolverM.rotation.x = 0.6; // descanso: cano pra baixo, lateral visível
+    this.revolverM.rotation.x = 1.57; // cano segue o eixo dos dedos
     if (WEAPON_MODELS.revolver) { // prop IA (Dra. Clara)
       const r = this.buildPropMesh(WEAPON_MODELS.revolver);
       r.scale.setScalar(0.55);
@@ -298,7 +298,7 @@ export class Player {
     this.scalpelM = new THREE.Group();
     const scB = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.03, 0.24), metalM);
     scB.position.set(0, 0, 0.12); this.scalpelM.add(scB);
-    this.scalpelM.rotation.x = 0.6; // descanso: lâmina pra baixo, face visível
+    this.scalpelM.rotation.x = 1.57; // lâmina segue o eixo dos dedos
     if (WEAPON_MODELS.bisturi) { // prop IA (Dra. Clara)
       const s = this.buildPropMesh(WEAPON_MODELS.bisturi);
       s.scale.setScalar(0.7);
@@ -312,7 +312,7 @@ export class Player {
     wrB.position.set(0, 0, 0.22); this.wrenchM.add(wrB);
     const wrH = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.08, 0.12), lam(0x4a5058));
     wrH.position.set(0, 0.02, 0.44); this.wrenchM.add(wrH);
-    this.wrenchM.rotation.x = 0.6; // descanso: cabeça pra baixo, lateral visível
+    this.wrenchM.rotation.x = 1.57; // cabeça segue o eixo dos dedos
     if (WEAPON_MODELS.chave_inglesa) { // prop IA (Bento)
       const c = this.buildPropMesh(WEAPON_MODELS.chave_inglesa);
       c.scale.setScalar(0.6);
@@ -666,7 +666,7 @@ export class Player {
       if (this.aiActive) { // mira compacta: braços à frente, arma nivelada
         this.armR.rotation.set(-1.52, -0.04, -0.05);
         this.armL.rotation.set(-1.44, 0.05, 0.05);
-        if (this.gunPivot) this.gunPivot.rotation.x = 0.92; // nivela o cano da pistola; faca MANTÉM a diagonal (zerar fazia a lâmina apontar pro céu)
+        if (this.gunPivot) this.gunPivot.rotation.x = 0; // sem compensação: braço erguido já aponta cano/lâmina pra frente (seguem o eixo dos dedos)
       }
       else { this.armR.rotation.set(-1.45, 0.18, 0); this.armL.rotation.set(-1.40, -0.22, 0); }
       this.legL.rotation.x = 0; this.legR.rotation.x = 0;
