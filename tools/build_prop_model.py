@@ -23,7 +23,7 @@ Q, QU = 2048.0, 65535.0
 # pistolas = cano em -X (yaw -90° traz o cano para +Z), cabo desce em -Y.
 # 'revolver' = arma de fogo da Dra. (Pistola_clara.glb no slot revolverM).
 PROPS = {
-  'faca':            dict(file='Faca_daniel.glb',      len=0.30, pitch=0.0,  yaw=0.0,  roll=0.0, grip=[0.5,0.5,0.15], color=0x9aa0a8),
+  'faca':            dict(file='Faca_daniel.glb',      len=0.30, pitch=0.0,  yaw=0.0,  roll=0.0, grip=[0.5,0.5,0.32], color=0x9aa0a8),
   'pistola':         dict(file='Pistola_daniel.glb',   len=0.26, pitch=0.0,  yaw=-1.5708, roll=0.0, grip=[0.5,0.30,0.15], color=0x2e3238),
   'revolver':        dict(file='Pistola_clara.glb',    len=0.26, pitch=0.0,  yaw=-1.5708, roll=0.0, grip=[0.5,0.30,0.15], color=0x3a3f46),
   'bisturi':         dict(file='Bisturi_da_clara.glb', len=0.20, pitch=0.0,  yaw=0.0,  roll=0.0, grip=[0.5,0.5,0.15], color=0xb8c0c8),
