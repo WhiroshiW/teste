@@ -149,7 +149,7 @@ export function createPSX(THREE, renderer) {
   }
 
   function snapMaterial(mat) {
-    if (!mat || mat.userData.psxSnapped) return;
+    if (!mat || mat.userData.psxSnapped || mat.userData.noPsx) return;
     mat.userData.psxSnapped = true;
     mat.onBeforeCompile = (shader) => {
       shader.vertexShader = shader.vertexShader.replace(

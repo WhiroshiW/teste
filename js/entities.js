@@ -269,10 +269,11 @@ export class Player {
     kb.position.set(0, 0, 0.2); this.knifeM.add(kb);
     const kh = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.07, 0.12), darkWood);
     kh.position.set(0, 0, 0); this.knifeM.add(kh);
-    this.knifeM.rotation.x = 1.2; // lâmina apontando pra baixo (jeito natural de carregar)
+    this.knifeM.rotation.set(1.2, 0, -0.35); // lâmina pra baixo e PRA FORA da perna
+    this.knifeM.position.z = 0.05;           // um pouco à frente da coxa
     if (WEAPON_MODELS.faca) { // prop IA substitui o procedural (escala near-camera)
       const f = this.buildPropMesh(WEAPON_MODELS.faca);
-      f.scale.setScalar(0.85);
+      f.scale.setScalar(1.0);
       this.knifeM.add(f);
       kb.visible = false; kh.visible = false;
     }
@@ -485,6 +486,7 @@ export class Player {
       } catch (e) { mat = null; }
     }
     if (!mat) mat = new this.THREE.MeshLambertMaterial({ color: data.color || 0x777777 });
+    mat.userData.noPsx = true; // armas fora do vertex-snap (grade 160x90 engole objetos de 3px)
     this.mats.push(mat);
     const mesh = new this.THREE.Mesh(geo, mat);
     mesh.frustumCulled = false;
@@ -662,7 +664,7 @@ export class Player {
       if (this.aiActive) { // mira compacta: braços à frente, arma nivelada
         this.armR.rotation.set(-1.52, -0.04, -0.05);
         this.armL.rotation.set(-1.44, 0.05, 0.05);
-        if (this.gunPivot) this.gunPivot.rotation.x = 0.32; // nivela: braço(-1.52)+descanso(+1.2)+mira(+0.32)=cano horizontal
+        if (this.gunPivot) { this.gunPivot.rotation.x = 0.32; this.knifeM.rotation.set(0, 0, 0); this.knifeM.position.z = 0; } // mira: nivela cano e alinha faca
       }
       else { this.armR.rotation.set(-1.45, 0.18, 0); this.armL.rotation.set(-1.40, -0.22, 0); }
       this.legL.rotation.x = 0; this.legR.rotation.x = 0;
