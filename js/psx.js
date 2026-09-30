@@ -138,6 +138,20 @@ export function createPSX(THREE, renderer) {
   quad.frustumCulled = false;
   postScene.add(quad);
 
+  // Camada de ARMAS: RT 2x da resolucao do mundo com NearestFilter —
+  // pixelado PS1 na mesma estetica, mas 2x mais denso que o mundo
+  // (legivel sem sumir) e sem vertex-snap.
+  let rtArmas = new THREE.WebGLRenderTarget(rtW * 2, rtH * 2, {
+    minFilter: THREE.NearestFilter,
+    magFilter: THREE.NearestFilter,
+    depthBuffer: true,
+  });
+  const armaScene = new THREE.Scene();
+  const armaMat = new THREE.MeshBasicMaterial({ map: rtArmas.texture, transparent: true, depthTest: false, depthWrite: false });
+  const armaQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), armaMat);
+  armaQuad.frustumCulled = false;
+  armaScene.add(armaQuad);
+
   let shakeAmp = 0;
   let aspect = 16 / 9;
   let high = false;
@@ -145,6 +159,7 @@ export function createPSX(THREE, renderer) {
     const h = high ? 270 : 180;
     const w = Math.max(240, Math.min(640, Math.round(h * aspect)));
     rt.setSize(w, h);
+    rtArmas.setSize(w * 2, h * 2);
     return w / h;
   }
 
@@ -188,17 +203,22 @@ export function createPSX(THREE, renderer) {
       renderer.render(scene, camera);
       renderer.setRenderTarget(null);
       renderer.render(postScene, postCam);
-      // passada 2: ARMAS em resolução cheia, sem efeito nenhum — camada 1
-      // (scene.background force-clearia o canvas e apagaria o mundo -> salva/restaura)
+      // passada 2: ARMAS na camada 1 -> RT 2x com nearest (estetica PS1, 2x denso)
       const bgSave = scene.background;
       scene.background = null;
-      renderer.autoClear = false;
-      renderer.clearDepth();
+      const clearAlphaSave = renderer.getClearAlpha();
+      renderer.setRenderTarget(rtArmas);
+      renderer.setClearColor(0x000000, 0);
       camera.layers.set(1);
       renderer.render(scene, camera);
-      renderer.autoClear = true;
+      renderer.setRenderTarget(null);
+      renderer.setClearColor(0x000000, clearAlphaSave);
       scene.background = bgSave;
       camera.layers.set(0);
+      // compoe a camada de armas por cima do mundo (transparente)
+      renderer.autoClear = false;
+      renderer.render(armaScene, postCam);
+      renderer.autoClear = true;
     },
     snapScene(scene) {
       scene.traverse((o) => {

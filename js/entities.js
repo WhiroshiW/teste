@@ -269,8 +269,8 @@ export class Player {
     kb.position.set(0, 0, 0.2); this.knifeM.add(kb);
     const kh = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.07, 0.12), darkWood);
     kh.position.set(0, 0, 0); this.knifeM.add(kh);
-    this.knifeM.rotation.set(0.6, 0, -0.35); // lâmina pra baixo, FACE da lâmina visível pelas câmeras
-    this.knifeM.position.z = 0.05;           // um pouco à frente da coxa
+    this.knifeM.rotation.set(1.25, 0, -0.25); // lâmina pra baixo na diagonal, cabo no punho
+    this.knifeM.position.set(0, 0.03, 0.03);  // encaixada na palma (gunPivot já é a mão)
     if (WEAPON_MODELS.faca) { // prop IA substitui o procedural (escala near-camera)
       const f = this.buildPropMesh(WEAPON_MODELS.faca);
       f.scale.setScalar(1.15);
