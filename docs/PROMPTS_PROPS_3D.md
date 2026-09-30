@@ -29,6 +29,11 @@ faceted low-poly shading, clean hard-edged planes, flat light gray
 background, even lighting, no ground shadow, no text, no other objects.
 ```
 
+## ✅ REFERÊNCIAS DE IMAGEM JÁ GERADAS (docs/refs/, estilo do turnaround do produtor)
+`arma_faca_ref.png` · `arma_pistola_ref.png` · `arma_revolver_ref.png` ·
+`arma_bisturi_ref.png` · `arma_chave_inglesa_ref.png` — usar estas como
+imagem de entrada na IA 3D (image-to-3D).
+
 ## LOTE 1 — Armas & itens (prioridade máxima: aparecem na mão do personagem)
 | Objeto | Arquivo | [OBJECT] no prompt |
 |---|---|---|
