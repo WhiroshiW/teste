@@ -46,6 +46,7 @@ function solid(room, x0, z0, x1, z1, tag = null) {
 
 function pointLight(THREE, room, color, intensity, distance, x, y, z, flicker = null) {
   const l = new THREE.PointLight(color, intensity, distance);
+  l.layers.enable(1); // ilumina também a camada das armas (render full-res)
   l.position.set(x, y, z);
   room.group.add(l);
   if (flicker) {
