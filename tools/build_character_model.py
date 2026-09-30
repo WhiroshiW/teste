@@ -31,8 +31,8 @@ CFG = {
    var='DANIEL_MODEL', head_cut=0.80, head_joint=0.83, shoulder=(0.10,0.76), hand=(0.36,0.50),
    leg_cut=0.52, leg_joint=0.055, arm_x=0.115, arm_y=(0.40,0.79)),
  'clara': dict(out='js/model_clara_data.js', tex_out='assets/clara_body_ai.jpg', tex_js='./assets/clara_body_ai.jpg',
-   var='CLARA_MODEL', head_cut=0.83, head_joint=0.86, shoulder=(0.12,0.78), hand=(0.19,0.50),
-   leg_cut=0.50, leg_joint=0.058, arm_x=0.125, arm_y=(0.38,0.77)),
+   var='CLARA_MODEL', head_cut=0.80, head_joint=0.83, shoulder=(0.10,0.76), hand=(0.36,0.50),
+   leg_cut=0.52, leg_joint=0.055, arm_x=0.115, arm_y=(0.40,0.79)),
 }
 c = CFG[WHO]
 

@@ -18,14 +18,18 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC_DIR = os.path.join(ROOT, 'modelos 3d')
 Q, QU = 2048.0, 65535.0
 
-# nome -> config (file em 'modelos 3d/'; knobs afinados na chegada de cada GLB)
+# nome -> config (file em 'modelos 3d/'; knobs medidos na chegada de cada GLB)
+# Orientações medidas: faca/bisturi/chave = cabo em -Z, ponta +Z;
+# pistolas = cano em -X (yaw -90° traz o cano para +Z), cabo desce em -Y.
+# 'revolver' = arma de fogo da Dra. (Pistola_clara.glb no slot revolverM).
 PROPS = {
-  'faca':            dict(file='faca.glb',            len=0.30, pitch=0.0, yaw=0.0, roll=0.0, grip=[0.5,0.5,0.15], color=0x8a8f96),
-  'pistola':         dict(file='pistola.glb',         len=0.26, pitch=0.0, yaw=0.0, roll=0.0, grip=[0.5,0.2,0.5],  color=0x2e3238),
-  'revolver':        dict(file='revolver.glb',        len=0.30, pitch=0.0, yaw=0.0, roll=0.0, grip=[0.5,0.2,0.5],  color=0x3a3f46),
-  'bisturi':         dict(file='bisturi.glb',         len=0.20, pitch=0.0, yaw=0.0, roll=0.0, grip=[0.5,0.5,0.85], color=0xb8c0c8),
-  'chave_inglesa':   dict(file='chave_inglesa.glb',   len=0.34, pitch=0.0, yaw=0.0, roll=0.0, grip=[0.5,0.5,0.85], color=0x5a6068),
+  'faca':            dict(file='Faca_daniel.glb',      len=0.30, pitch=0.0,  yaw=0.0,  roll=0.0, grip=[0.5,0.5,0.15], color=0x9aa0a8),
+  'pistola':         dict(file='Pistola_daniel.glb',   len=0.26, pitch=0.0,  yaw=-1.5708, roll=0.0, grip=[0.5,0.30,0.15], color=0x2e3238),
+  'revolver':        dict(file='Pistola_clara.glb',    len=0.26, pitch=0.0,  yaw=-1.5708, roll=0.0, grip=[0.5,0.30,0.15], color=0x3a3f46),
+  'bisturi':         dict(file='Bisturi_da_clara.glb', len=0.20, pitch=0.0,  yaw=0.0,  roll=0.0, grip=[0.5,0.5,0.15], color=0xb8c0c8),
+  'chave_inglesa':   dict(file='chave_inglesa.glb',    len=0.34, pitch=0.0,  yaw=0.0,  roll=0.0, grip=[0.5,0.5,0.15], color=0x5a6068),
 }
+MAX_TRIS = 30000  # acima disso o tool decima com gltfpack automaticamente
 
 def load_glb(path):
     data = open(path,'rb').read()
@@ -46,6 +50,16 @@ def cl(x): return min(1.0,max(0.0,x))
 def build(name, cfg):
     path = os.path.join(SRC_DIR, cfg['file'])
     if not os.path.exists(path): return None
+    # auto-decimação: props > MAX_TRIS passam pelo gltfpack (subprocess)
+    g0, b0 = load_glb(path)
+    p0 = g0['meshes'][0]['primitives'][0]
+    tris0 = g0['accessors'][p0['indices']]['count']//3 if 'indices' in p0 else g0['accessors'][p0['attributes']['POSITION']]['count']//3
+    if tris0 > MAX_TRIS:
+        ratio = max(0.15, min(0.9, MAX_TRIS/tris0))
+        tmp = f"/tmp/prop_{name}_opt.glb"
+        print(f"{name}: {tris0} tris > {MAX_TRIS} -> gltfpack -si {ratio:.2f}")
+        os.system(f"npx --yes gltfpack -i '{path}' -o '{tmp}' -si {ratio:.2f} -noq > /dev/null 2>&1")
+        if os.path.exists(tmp): path = tmp
     g, bin_data = load_glb(path)
     prim = g['meshes'][0]['primitives'][0]
     praw = read_acc(g, bin_data, prim['attributes']['POSITION'])
