@@ -30,6 +30,14 @@ background, even lighting, no ground shadow, no text, no other objects.
 ```
 
 ## ✅ REFERÊNCIAS DE IMAGEM JÁ GERADAS (docs/refs/, estilo do turnaround do produtor)
+
+### INIMIGOS (lote atual)
+`inimigo_sombra_ref.png` (olhos #fff6c8) · `inimigo_infectado_ref.png`
+(olhos #ff3333) · `inimigo_enfermeira_ref.png` (olhos #ffee55) — GLBs:
+`sombra.glb`, `infectado.glb`, `enfermeira.glb` na pasta 'modelos 3d/'.
+⚠️ Glow dos olhos: o motor aplica sprite luminoso na cor da ficha via
+cfg.eye — independe dos pixels da textura do modelo IA.
+
 `arma_faca_ref.png` · `arma_pistola_ref.png` · `arma_revolver_ref.png` ·
 `arma_bisturi_ref.png` · `arma_chave_inglesa_ref.png` — usar estas como
 imagem de entrada na IA 3D (image-to-3D).
