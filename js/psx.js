@@ -182,10 +182,19 @@ export function createPSX(THREE, renderer) {
       } else {
         uniforms.uShake.value.set(0, 0);
       }
+      // passada 1: mundo PS1 (RT baixa-res + dither) — camada 0
       renderer.setRenderTarget(rt);
+      camera.layers.set(0);
       renderer.render(scene, camera);
       renderer.setRenderTarget(null);
       renderer.render(postScene, postCam);
+      // passada 2: ARMAS em resolução cheia, sem efeito nenhum — camada 1
+      renderer.autoClear = false;
+      renderer.clearDepth();
+      camera.layers.set(1);
+      renderer.render(scene, camera);
+      renderer.autoClear = true;
+      camera.layers.set(0);
     },
     snapScene(scene) {
       scene.traverse((o) => {

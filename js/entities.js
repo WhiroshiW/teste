@@ -486,9 +486,11 @@ export class Player {
       } catch (e) { mat = null; }
     }
     if (!mat) mat = new this.THREE.MeshLambertMaterial({ color: data.color || 0x777777 });
-    mat.userData.noPsx = true; // armas fora do vertex-snap (grade 160x90 engole objetos de 3px)
+    mat.userData.noPsx = true;      // fora do vertex-snap
+    if (mat.emissive) mat.emissive.setHex(0x14161c); // leve brilho p/ ler no escuro
     this.mats.push(mat);
     const mesh = new this.THREE.Mesh(geo, mat);
+    mesh.layers.set(1);             // renderiza na passada full-res (fora do filtro PS1)
     mesh.frustumCulled = false;
     return mesh;
   }
