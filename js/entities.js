@@ -413,9 +413,12 @@ export class Player {
     this._aiHeadY = J.head[1];
     // pose por modelo: fecha braços abertos (A-pose) via rotação Z do pivô
     const pose = this.aiModelData.pose || { armOpen: 0, gun: [0, -0.6, 0.08] };
-    this._aiArmZ = { L: pose.armOpen, R: -pose.armOpen };
-    if (this.armL) this.armL.rotation.z = pose.armOpen;
-    if (this.armR) this.armR.rotation.z = -pose.armOpen;
+    // fechamento parcial: braços ficam VISÍVEIS ao lado do corpo (fechar
+    // 100% os afunda dentro do torso do modelo)
+    const restZ = Math.max(0.14, (pose.armOpen || 0) * 0.62);
+    this._aiArmZ = { L: restZ, R: -restZ };
+    if (this.armL) { this.armL.rotation.z = restZ; this.armL.position.x = this.aiModelData.parts.armL.j[0] - 0.022; }
+    if (this.armR) { this.armR.rotation.z = -restZ; this.armR.position.x = this.aiModelData.parts.armR.j[0] + 0.022; }
     // arma no frame local da mão (acompanha o fechamento do braço)
     if (this.gunPivot) this.gunPivot.position.set(...pose.gun);
     this.aiActive = true;
@@ -587,7 +590,10 @@ export class Player {
       if (input.l) this.angle += TURN * 0.8 * dt;
       if (input.r) this.angle -= TURN * 0.8 * dt;
       this.moving = false;
-      if (this.aiActive) { this.armR.rotation.set(-1.45, 0.18, -0.12); this.armL.rotation.set(-1.40, -0.22, 0.12); }
+      if (this.aiActive) { // mira compacta: braços à frente alinhados ao corpo
+        this.armR.rotation.set(-1.52, -0.04, -0.05);
+        this.armL.rotation.set(-1.44, 0.05, 0.05);
+      }
       else { this.armR.rotation.set(-1.45, 0.18, 0); this.armL.rotation.set(-1.40, -0.22, 0); }
       this.legL.rotation.x = 0; this.legR.rotation.x = 0;
       this.group.rotation.y = this.angle;
