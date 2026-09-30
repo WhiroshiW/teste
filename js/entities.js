@@ -248,7 +248,7 @@ export class Player {
     const grip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.16, 0.08), darkWood);
     grip.position.set(0, -0.1, 0.02); pistol.add(grip);
     this.pistolM = pistol;
-    pistol.rotation.x = 1.2; // descanso: cano pra baixo; na mira o gunPivot compensa
+    pistol.rotation.x = 0.6; // descanso: cano pra baixo, lateral visível; mira compensa
     if (WEAPON_MODELS.pistola) { // prop IA substitui o procedural (escala near-camera)
       const g = this.buildPropMesh(WEAPON_MODELS.pistola);
       g.scale.setScalar(0.55);
@@ -269,11 +269,11 @@ export class Player {
     kb.position.set(0, 0, 0.2); this.knifeM.add(kb);
     const kh = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.07, 0.12), darkWood);
     kh.position.set(0, 0, 0); this.knifeM.add(kh);
-    this.knifeM.rotation.set(1.2, 0, -0.35); // lâmina pra baixo e PRA FORA da perna
+    this.knifeM.rotation.set(0.6, 0, -0.35); // lâmina pra baixo, FACE da lâmina visível pelas câmeras
     this.knifeM.position.z = 0.05;           // um pouco à frente da coxa
     if (WEAPON_MODELS.faca) { // prop IA substitui o procedural (escala near-camera)
       const f = this.buildPropMesh(WEAPON_MODELS.faca);
-      f.scale.setScalar(1.0);
+      f.scale.setScalar(1.15);
       this.knifeM.add(f);
       kb.visible = false; kh.visible = false;
     }
@@ -286,7 +286,7 @@ export class Player {
     revCyl.rotation.x = Math.PI / 2; revCyl.position.set(0, 0.01, 0.04); this.revolverM.add(revCyl);
     const revGrip = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.14, 0.07), darkWood);
     revGrip.position.set(0, -0.09, -0.02); this.revolverM.add(revGrip);
-    this.revolverM.rotation.x = 1.2; // descanso: cano pra baixo
+    this.revolverM.rotation.x = 0.6; // descanso: cano pra baixo, lateral visível
     if (WEAPON_MODELS.revolver) { // prop IA (Dra. Clara)
       const r = this.buildPropMesh(WEAPON_MODELS.revolver);
       r.scale.setScalar(0.55);
@@ -298,7 +298,7 @@ export class Player {
     this.scalpelM = new THREE.Group();
     const scB = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.03, 0.24), metalM);
     scB.position.set(0, 0, 0.12); this.scalpelM.add(scB);
-    this.scalpelM.rotation.x = 1.2; // descanso: lâmina pra baixo
+    this.scalpelM.rotation.x = 0.6; // descanso: lâmina pra baixo, face visível
     if (WEAPON_MODELS.bisturi) { // prop IA (Dra. Clara)
       const s = this.buildPropMesh(WEAPON_MODELS.bisturi);
       s.scale.setScalar(0.7);
@@ -312,7 +312,7 @@ export class Player {
     wrB.position.set(0, 0, 0.22); this.wrenchM.add(wrB);
     const wrH = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.08, 0.12), lam(0x4a5058));
     wrH.position.set(0, 0.02, 0.44); this.wrenchM.add(wrH);
-    this.wrenchM.rotation.x = 1.2; // descanso: cabeça da chave pra baixo
+    this.wrenchM.rotation.x = 0.6; // descanso: cabeça pra baixo, lateral visível
     if (WEAPON_MODELS.chave_inglesa) { // prop IA (Bento)
       const c = this.buildPropMesh(WEAPON_MODELS.chave_inglesa);
       c.scale.setScalar(0.6);
@@ -487,7 +487,7 @@ export class Player {
     }
     if (!mat) mat = new this.THREE.MeshLambertMaterial({ color: data.color || 0x777777 });
     mat.userData.noPsx = true;      // fora do vertex-snap
-    if (mat.emissive) mat.emissive.setHex(0x14161c); // leve brilho p/ ler no escuro
+    if (mat.emissive) mat.emissive.setHex(0x232833); // brilho sutil p/ a arma ler no escuro
     this.mats.push(mat);
     const mesh = new this.THREE.Mesh(geo, mat);
     mesh.layers.set(1);             // renderiza na passada full-res (fora do filtro PS1)
@@ -666,7 +666,7 @@ export class Player {
       if (this.aiActive) { // mira compacta: braços à frente, arma nivelada
         this.armR.rotation.set(-1.52, -0.04, -0.05);
         this.armL.rotation.set(-1.44, 0.05, 0.05);
-        if (this.gunPivot) { this.gunPivot.rotation.x = 0.32; this.knifeM.rotation.set(0, 0, 0); this.knifeM.position.z = 0; } // mira: nivela cano e alinha faca
+        if (this.gunPivot) { this.gunPivot.rotation.x = 0.92; this.knifeM.rotation.set(0, 0, 0); this.knifeM.position.z = 0; } // mira: nivela cano e alinha faca
       }
       else { this.armR.rotation.set(-1.45, 0.18, 0); this.armL.rotation.set(-1.40, -0.22, 0); }
       this.legL.rotation.x = 0; this.legR.rotation.x = 0;
