@@ -622,12 +622,13 @@ export class Player {
     this.wrenchM.visible = w === 'wrench';
     this.grenadeM.visible = w === 'grenade_launcher';
     this.magnumM.visible = w === 'magnum';
-    this.gunPivot.visible = this.aiming;
+    // arma SEMPRE na mão (estilo survival horror) — some só ao morrer
+    this.gunPivot.visible = !this.dead;
   }
 
   setAim(b) {
     this.aiming = b;
-    this.gunPivot.visible = b;
+    this.gunPivot.visible = !this.dead; // arma sempre na mão
     if (!b && this.gunPivot) this.gunPivot.rotation.x = 0;
   }
 
