@@ -49,6 +49,13 @@ background, even lighting, no ground shadow, no text, no other objects.
 `lampada.glb` (hanging industrial lamp) · `corredor_tile.glb` (short modular
 sanatorium corridor section with doorway — EXPERIMENTAL)
 
+## 🗺️ ROTEIRO OFICIAL (definido pelo produtor)
+1. **AGORA:** pistola do Daniel (`pistola.glb`) + faca (`faca.glb`) — modelagem mínima e essencial
+2. Armas da Dra. Clara (bisturi `bisturi.glb`)
+3. **PAUSA: produtor testa se o jogo está JOGÁVEL e ZERÁVEL** — só depois segue
+4. Inimigos em 3D
+5. Animações exclusivas por personagem (correr, atirar, segurar faca, golpes etc.)
+
 ## Pendente (delegado, não esquecer)
 - [ ] Braços abertos na pose de ATAQUE do modelo IA — a mira esquece de
   aplicar o fechamento Z antes de levantar o braço (fix: aplicar restZ na
