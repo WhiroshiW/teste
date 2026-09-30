@@ -189,11 +189,15 @@ export function createPSX(THREE, renderer) {
       renderer.setRenderTarget(null);
       renderer.render(postScene, postCam);
       // passada 2: ARMAS em resolução cheia, sem efeito nenhum — camada 1
+      // (scene.background force-clearia o canvas e apagaria o mundo -> salva/restaura)
+      const bgSave = scene.background;
+      scene.background = null;
       renderer.autoClear = false;
       renderer.clearDepth();
       camera.layers.set(1);
       renderer.render(scene, camera);
       renderer.autoClear = true;
+      scene.background = bgSave;
       camera.layers.set(0);
     },
     snapScene(scene) {
