@@ -140,6 +140,7 @@ export class Particles {
 
 // ------------------------------- JOGADOR -------------------------------
 import { CLARA_MODEL } from './model_clara_data.js';
+import { DANIEL_MODEL } from './model_daniel_data.js';
 
 export class Player {
   constructor(THREE, TEX) {
@@ -340,14 +341,17 @@ export class Player {
       if (this.heroExtras) this.heroExtras.visible = true;
       if (this.legL) this.legL.position.set(-0.13, 0.78, 0);
       if (this.legR) this.legR.position.set(0.13, 0.78, 0);
-      if (this.armL) this.armL.position.set(-0.33, 1.42, 0);
-      if (this.armR) this.armR.position.set(0.33, 1.42, 0);
+      if (this.armL) { this.armL.position.set(-0.33, 1.42, 0); this.armL.rotation.z = 0.05; }
+      if (this.armR) { this.armR.position.set(0.33, 1.42, 0); this.armR.rotation.z = -0.05; }
+      if (this.gunPivot) this.gunPivot.position.set(0, -0.62, 0.05);
       if (this.head) this.head.position.set(0, 1.62, 0);
       if (this.gunPivot) this.gunPivot.position.set(0, -0.62, 0.05);
       return;
     }
-    if (!this.aiMeshes) {
+    if (!this.aiMeshes || this._aiBuiltFor !== this.aiModelData) {
+      if (this.aiMeshes) for (const m of this.aiMeshes) if (m.parent) m.parent.remove(m);
       this.aiMeshes = [];
+      this._aiBuiltFor = this.aiModelData;
       const canTex = typeof document !== 'undefined' && typeof document.createElementNS === 'function' && this.THREE.TextureLoader;
       let tex = null;
       if (canTex) {
@@ -403,8 +407,13 @@ export class Player {
     if (this.armL) this.armL.position.set(...J.armL);
     if (this.armR) this.armR.position.set(...J.armR);
     if (this.head) this.head.position.set(...J.head);
-    // mão direita do modelo (medida na geometria) para a arma encaixar
-    if (this.gunPivot) this.gunPivot.position.set(-0.114, -0.597, 0.08);
+    // pose por modelo: fecha braços abertos (A-pose) via rotação Z do pivô
+    const pose = this.aiModelData.pose || { armOpen: 0, gun: [0, -0.6, 0.08] };
+    this._aiArmZ = { L: pose.armOpen, R: -pose.armOpen };
+    if (this.armL) this.armL.rotation.z = pose.armOpen;
+    if (this.armR) this.armR.rotation.z = -pose.armOpen;
+    // arma no frame local da mão (acompanha o fechamento do braço)
+    if (this.gunPivot) this.gunPivot.position.set(...pose.gun);
     this.aiActive = true;
   }
 
@@ -448,7 +457,9 @@ export class Player {
       this.hairMat.color.setHex(0x241812);
       this.faceMat.map = this.TEX.faceDaniel;
     }
-    this.applyAIModel(heroId === 'daniel' && skinId === 'default' && !!this.aiModelData);
+    this.aiModelData = (heroId === 'daniel' && DANIEL_MODEL) ? DANIEL_MODEL
+      : (heroId === 'clara' && CLARA_MODEL) ? CLARA_MODEL : null;
+    this.applyAIModel(!!this.aiModelData && skinId === 'default');
     this.updateHeroExtras(heroId);
     this.faceMat.needsUpdate = true;
   }
@@ -610,7 +621,8 @@ export class Player {
       this.legR.rotation.x = -sw * legAmp;
       this.armL.rotation.x = -sw * armAmp;
       this.armR.rotation.x = sw * armAmp;
-      this.armL.rotation.z = 0.05; this.armR.rotation.z = -0.05;
+      this.armL.rotation.z = this.aiActive ? this._aiArmZ.L : 0.05;
+      this.armR.rotation.z = this.aiActive ? this._aiArmZ.R : -0.05;
       this.torso.rotation.y = -sw * 0.06;
       if (this.aiActive) this.torso.position.y = 1.14 - Math.abs(sw) * 0.045;
 
