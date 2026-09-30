@@ -666,7 +666,7 @@ export class Player {
       if (this.aiActive) { // mira compacta: braços à frente, arma nivelada
         this.armR.rotation.set(-1.52, -0.04, -0.05);
         this.armL.rotation.set(-1.44, 0.05, 0.05);
-        if (this.gunPivot) { this.gunPivot.rotation.x = 0.92; this.knifeM.rotation.set(0, 0, 0); this.knifeM.position.z = 0; } // mira: nivela cano e alinha faca
+        if (this.gunPivot) this.gunPivot.rotation.x = 0.92; // nivela o cano da pistola; faca MANTÉM a diagonal (zerar fazia a lâmina apontar pro céu)
       }
       else { this.armR.rotation.set(-1.45, 0.18, 0); this.armL.rotation.set(-1.40, -0.22, 0); }
       this.legL.rotation.x = 0; this.legR.rotation.x = 0;
