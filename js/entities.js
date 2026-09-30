@@ -361,6 +361,7 @@ export class Player {
           tex.magFilter = this.THREE.NearestFilter;  // pixels crocantes PS1
           tex.minFilter = this.THREE.NearestFilter;
           tex.generateMipmaps = false;
+          if ('wrapS' in tex) { tex.wrapS = this.THREE.RepeatWrapping; tex.wrapT = this.THREE.RepeatWrapping; }
         } catch (e) { tex = null; }
       }
       const decB64 = (b64) => {
@@ -376,7 +377,9 @@ export class Player {
         const uv = new Float32Array(part.n * 2);
         for (let i = 0; i < part.n; i++) {
           pos[i * 3] = i16[i * 3] / 2048; pos[i * 3 + 1] = i16[i * 3 + 1] / 2048; pos[i * 3 + 2] = i16[i * 3 + 2] / 2048;
-          uv[i * 2] = u16[i * 2] / 65535; uv[i * 2 + 1] = u16[i * 2 + 1] / 65535;
+          // wrap UV (Tripo exporta fora de [0,1]) — clamp pegava a borda do atlas
+          let uu = u16[i * 2] / 65535, vv = u16[i * 2 + 1] / 65535;
+          uv[i * 2] = uu - Math.floor(uu); uv[i * 2 + 1] = vv - Math.floor(vv);
         }
         const geo = new this.THREE.BufferGeometry();
         geo.setAttribute('position', new this.THREE.BufferAttribute(pos, 3));
@@ -407,6 +410,7 @@ export class Player {
     if (this.armL) this.armL.position.set(...J.armL);
     if (this.armR) this.armR.position.set(...J.armR);
     if (this.head) this.head.position.set(...J.head);
+    this._aiHeadY = J.head[1];
     // pose por modelo: fecha braços abertos (A-pose) via rotação Z do pivô
     const pose = this.aiModelData.pose || { armOpen: 0, gun: [0, -0.6, 0.08] };
     this._aiArmZ = { L: pose.armOpen, R: -pose.armOpen };
@@ -530,8 +534,8 @@ export class Player {
     this.group.rotation.set(0, validAngle, 0);
     if (this.legL) this.legL.rotation.set(0, 0, 0);
     if (this.legR) this.legR.rotation.set(0, 0, 0);
-    if (this.armL) this.armL.rotation.set(0, 0, 0);
-    if (this.armR) this.armR.rotation.set(0, 0, 0);
+    if (this.armL) this.armL.rotation.set(0, 0, (this.aiActive && this._aiArmZ) ? this._aiArmZ.L : 0.05);
+    if (this.armR) this.armR.rotation.set(0, 0, (this.aiActive && this._aiArmZ) ? this._aiArmZ.R : -0.05);
     if (this.torso) this.torso.rotation.set(0, 0, 0);
     if (this.head) this.head.position.set(0, 1.62, 0);
     for (const m of this.mats) {
@@ -583,8 +587,8 @@ export class Player {
       if (input.l) this.angle += TURN * 0.8 * dt;
       if (input.r) this.angle -= TURN * 0.8 * dt;
       this.moving = false;
-      this.armR.rotation.set(-1.45, 0.18, 0);
-      this.armL.rotation.set(-1.40, -0.22, 0);
+      if (this.aiActive) { this.armR.rotation.set(-1.45, 0.18, -0.12); this.armL.rotation.set(-1.40, -0.22, 0.12); }
+      else { this.armR.rotation.set(-1.45, 0.18, 0); this.armL.rotation.set(-1.40, -0.22, 0); }
       this.legL.rotation.x = 0; this.legR.rotation.x = 0;
       this.group.rotation.y = this.angle;
       return ev;
@@ -637,8 +641,13 @@ export class Player {
       this.legR.rotation.x *= Math.max(0, 1 - dt * 10);
       this.armL.rotation.x *= Math.max(0, 1 - dt * 10);
       this.armR.rotation.x *= Math.max(0, 1 - dt * 10);
+      if (this.aiActive && this._aiArmZ) { // recompõe o fechamento (ataque/teleporte zeravam Z)
+        this.armL.rotation.z += (this._aiArmZ.L - this.armL.rotation.z) * Math.min(1, dt * 8);
+        this.armR.rotation.z += (this._aiArmZ.R - this.armR.rotation.z) * Math.min(1, dt * 8);
+      }
       this.torso.rotation.y *= Math.max(0, 1 - dt * 10);
-      this.head.position.y = 1.62 + Math.sin(performance.now() / 600) * 0.015;
+      const headBase = (this.aiActive && this._aiHeadY) ? this._aiHeadY : 1.62;
+      this.head.position.y = headBase + Math.sin(performance.now() / 600) * 0.015;
     }
     return ev;
   }
