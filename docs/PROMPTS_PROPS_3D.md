@@ -1,5 +1,16 @@
 # 🗿 PROMPTS 3D — Props & Armas (SANTA LÚCIA)
 
+## 🗺️ ROADMAP DO PRODUTOR (a ordem oficial — não inverter)
+1. **AGORA: pistola do Daniel + faca** (dele e da Dra.) → `pistola.glb`, `faca.glb`
+2. Depois: **inimigos** (3D) — Vulto, Lamento, Sombra, Alencastro
+3. Depois: **animações exclusivas por personagem** (correr, atirar, segurar faca,
+   golpes) — SÓ DEPOIS do teste de jogabilidade
+4. Produtor testa se o jogo está **jogável e zerável**
+5. **Remake dos mapas sala-por-sala (junto com o agente)** — antes disso não
+   adianta zerar; o fluxo final depende dos mapas novos
+6. Só então: playthrough final + polish de animações
+
+
 > Fluxo: gera na IA grátis (Tripo → tripo3d.ai / Hunyuan → huggingface.co/spaces/tencent/hunyuan3d-2)
 > → baixa `.glb` → sobe na pasta `modelos 3d/` do main → chama o agente.
 
@@ -48,13 +59,6 @@ background, even lighting, no ground shadow, no text, no other objects.
 `quadro.glb` (crooked old framed painting) · `estante.glb` (old wooden bookshelf) ·
 `lampada.glb` (hanging industrial lamp) · `corredor_tile.glb` (short modular
 sanatorium corridor section with doorway — EXPERIMENTAL)
-
-## 🗺️ ROTEIRO OFICIAL (definido pelo produtor)
-1. **AGORA:** pistola do Daniel (`pistola.glb`) + faca (`faca.glb`) — modelagem mínima e essencial
-2. Armas da Dra. Clara (bisturi `bisturi.glb`)
-3. **PAUSA: produtor testa se o jogo está JOGÁVEL e ZERÁVEL** — só depois segue
-4. Inimigos em 3D
-5. Animações exclusivas por personagem (correr, atirar, segurar faca, golpes etc.)
 
 ## Pendente (delegado, não esquecer)
 - [ ] Braços abertos na pose de ATAQUE do modelo IA — a mira esquece de

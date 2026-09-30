@@ -141,6 +141,7 @@ export class Particles {
 // ------------------------------- JOGADOR -------------------------------
 import { CLARA_MODEL } from './model_clara_data.js';
 import { DANIEL_MODEL } from './model_daniel_data.js';
+import { WEAPON_MODELS } from './model_weapons_data.js';
 
 export class Player {
   constructor(THREE, TEX) {
@@ -247,6 +248,10 @@ export class Player {
     const grip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.16, 0.08), darkWood);
     grip.position.set(0, -0.1, 0.02); pistol.add(grip);
     this.pistolM = pistol;
+    if (WEAPON_MODELS.pistola) { // prop IA substitui o procedural
+      pistol.add(this.buildPropMesh(WEAPON_MODELS.pistola));
+      pm.visible = false; grip.visible = false;
+    }
 
     // 2. Espingarda Cal.12
     this.shotgunM = new THREE.Group();
@@ -261,6 +266,10 @@ export class Player {
     kb.position.set(0, 0, 0.2); this.knifeM.add(kb);
     const kh = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.07, 0.12), darkWood);
     kh.position.set(0, 0, 0); this.knifeM.add(kh);
+    if (WEAPON_MODELS.faca) { // prop IA substitui o procedural
+      this.knifeM.add(this.buildPropMesh(WEAPON_MODELS.faca));
+      kb.visible = false; kh.visible = false;
+    }
 
     // 4. Revólver .38 (Clara)
     this.revolverM = new THREE.Group();
@@ -270,11 +279,19 @@ export class Player {
     revCyl.rotation.x = Math.PI / 2; revCyl.position.set(0, 0.01, 0.04); this.revolverM.add(revCyl);
     const revGrip = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.14, 0.07), darkWood);
     revGrip.position.set(0, -0.09, -0.02); this.revolverM.add(revGrip);
+    if (WEAPON_MODELS.revolver) { // prop IA (Dra. Clara)
+      this.revolverM.add(this.buildPropMesh(WEAPON_MODELS.revolver));
+      revB.visible = false; revCyl.visible = false; revGrip.visible = false;
+    }
 
     // 5. Bisturi Cirúrgico (Clara)
     this.scalpelM = new THREE.Group();
     const scB = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.03, 0.24), metalM);
     scB.position.set(0, 0, 0.12); this.scalpelM.add(scB);
+    if (WEAPON_MODELS.bisturi) { // prop IA (Dra. Clara)
+      this.scalpelM.add(this.buildPropMesh(WEAPON_MODELS.bisturi));
+      scB.visible = false;
+    }
 
     // 6. Chave Inglesa (Bento)
     this.wrenchM = new THREE.Group();
@@ -282,6 +299,10 @@ export class Player {
     wrB.position.set(0, 0, 0.22); this.wrenchM.add(wrB);
     const wrH = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.08, 0.12), lam(0x4a5058));
     wrH.position.set(0, 0.02, 0.44); this.wrenchM.add(wrH);
+    if (WEAPON_MODELS.chave_inglesa) { // prop IA (Bento)
+      this.wrenchM.add(this.buildPropMesh(WEAPON_MODELS.chave_inglesa));
+      wrB.visible = false; wrH.visible = false;
+    }
 
     // 7. Lança-Granadas
     this.grenadeM = new THREE.Group();
@@ -422,6 +443,37 @@ export class Player {
     // arma no frame local da mão (acompanha o fechamento do braço)
     if (this.gunPivot) this.gunPivot.position.set(...pose.gun);
     this.aiActive = true;
+  }
+
+  buildPropMesh(data) {
+    const bin = atob(data.geo), bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const i16 = new Int16Array(bytes.buffer, 0, data.n * 3);
+    const u16 = new Uint16Array(bytes.buffer, data.n * 6, data.n * 2);
+    const pos = new Float32Array(data.n * 3), uv = new Float32Array(data.n * 2);
+    for (let i = 0; i < data.n; i++) {
+      pos[i*3] = i16[i*3]/2048; pos[i*3+1] = i16[i*3+1]/2048; pos[i*3+2] = i16[i*3+2]/2048;
+      let uu = u16[i*2]/65535, vv = u16[i*2+1]/65535;
+      uv[i*2] = uu - Math.floor(uu); uv[i*2+1] = vv - Math.floor(vv);
+    }
+    const geo = new this.THREE.BufferGeometry();
+    geo.setAttribute('position', new this.THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('uv', new this.THREE.BufferAttribute(uv, 2));
+    geo.computeVertexNormals();
+    let mat = null;
+    if (typeof document !== 'undefined' && this.THREE.TextureLoader) {
+      try {
+        const tex = new this.THREE.TextureLoader().load(data.tex);
+        if ('colorSpace' in tex && this.THREE.SRGBColorSpace) tex.colorSpace = this.THREE.SRGBColorSpace;
+        tex.magFilter = this.THREE.NearestFilter; tex.minFilter = this.THREE.NearestFilter; tex.generateMipmaps = false;
+        mat = new this.THREE.MeshLambertMaterial({ map: tex });
+      } catch (e) { mat = null; }
+    }
+    if (!mat) mat = new this.THREE.MeshLambertMaterial({ color: data.color || 0x777777 });
+    this.mats.push(mat);
+    const mesh = new this.THREE.Mesh(geo, mat);
+    mesh.frustumCulled = false;
+    return mesh;
   }
 
   setHero(heroId, skinId = 'default') {
