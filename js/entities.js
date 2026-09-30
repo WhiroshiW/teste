@@ -248,8 +248,10 @@ export class Player {
     const grip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.16, 0.08), darkWood);
     grip.position.set(0, -0.1, 0.02); pistol.add(grip);
     this.pistolM = pistol;
-    if (WEAPON_MODELS.pistola) { // prop IA substitui o procedural
-      pistol.add(this.buildPropMesh(WEAPON_MODELS.pistola));
+    if (WEAPON_MODELS.pistola) { // prop IA substitui o procedural (escala near-camera)
+      const g = this.buildPropMesh(WEAPON_MODELS.pistola);
+      g.scale.setScalar(0.55);
+      pistol.add(g);
       pm.visible = false; grip.visible = false;
     }
 
@@ -266,8 +268,10 @@ export class Player {
     kb.position.set(0, 0, 0.2); this.knifeM.add(kb);
     const kh = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.07, 0.12), darkWood);
     kh.position.set(0, 0, 0); this.knifeM.add(kh);
-    if (WEAPON_MODELS.faca) { // prop IA substitui o procedural
-      this.knifeM.add(this.buildPropMesh(WEAPON_MODELS.faca));
+    if (WEAPON_MODELS.faca) { // prop IA substitui o procedural (escala near-camera)
+      const f = this.buildPropMesh(WEAPON_MODELS.faca);
+      f.scale.setScalar(0.7);
+      this.knifeM.add(f);
       kb.visible = false; kh.visible = false;
     }
 
@@ -280,7 +284,9 @@ export class Player {
     const revGrip = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.14, 0.07), darkWood);
     revGrip.position.set(0, -0.09, -0.02); this.revolverM.add(revGrip);
     if (WEAPON_MODELS.revolver) { // prop IA (Dra. Clara)
-      this.revolverM.add(this.buildPropMesh(WEAPON_MODELS.revolver));
+      const r = this.buildPropMesh(WEAPON_MODELS.revolver);
+      r.scale.setScalar(0.55);
+      this.revolverM.add(r);
       revB.visible = false; revCyl.visible = false; revGrip.visible = false;
     }
 
@@ -289,7 +295,9 @@ export class Player {
     const scB = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.03, 0.24), metalM);
     scB.position.set(0, 0, 0.12); this.scalpelM.add(scB);
     if (WEAPON_MODELS.bisturi) { // prop IA (Dra. Clara)
-      this.scalpelM.add(this.buildPropMesh(WEAPON_MODELS.bisturi));
+      const s = this.buildPropMesh(WEAPON_MODELS.bisturi);
+      s.scale.setScalar(0.7);
+      this.scalpelM.add(s);
       scB.visible = false;
     }
 
@@ -300,7 +308,9 @@ export class Player {
     const wrH = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.08, 0.12), lam(0x4a5058));
     wrH.position.set(0, 0.02, 0.44); this.wrenchM.add(wrH);
     if (WEAPON_MODELS.chave_inglesa) { // prop IA (Bento)
-      this.wrenchM.add(this.buildPropMesh(WEAPON_MODELS.chave_inglesa));
+      const c = this.buildPropMesh(WEAPON_MODELS.chave_inglesa);
+      c.scale.setScalar(0.6);
+      this.wrenchM.add(c);
       wrB.visible = false; wrH.visible = false;
     }
 
@@ -618,6 +628,7 @@ export class Player {
   setAim(b) {
     this.aiming = b;
     this.gunPivot.visible = b;
+    if (!b && this.gunPivot) this.gunPivot.rotation.x = 0;
   }
 
   update(dt, input, room) {
@@ -642,9 +653,10 @@ export class Player {
       if (input.l) this.angle += TURN * 0.8 * dt;
       if (input.r) this.angle -= TURN * 0.8 * dt;
       this.moving = false;
-      if (this.aiActive) { // mira compacta: braços à frente alinhados ao corpo
+      if (this.aiActive) { // mira compacta: braços à frente, arma nivelada
         this.armR.rotation.set(-1.52, -0.04, -0.05);
         this.armL.rotation.set(-1.44, 0.05, 0.05);
+        if (this.gunPivot) this.gunPivot.rotation.x = 1.45; // cano horizontal
       }
       else { this.armR.rotation.set(-1.45, 0.18, 0); this.armL.rotation.set(-1.40, -0.22, 0); }
       this.legL.rotation.x = 0; this.legR.rotation.x = 0;
