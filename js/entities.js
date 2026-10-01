@@ -463,9 +463,12 @@ export class Player {
     // lâmina/cano presos ao EIXO DO BRAÇO (ombro->palma): desce no descanso,
     // aponta pra frente na mira — a rotação do braço transporta o prop
     if (this.knifeM) {
-      const armDir = new this.THREE.Vector3(...pose.gun).normalize();
-      this.knifeM.quaternion.setFromUnitVectors(new this.THREE.Vector3(0, 0, 1), armDir);
-      this.knifeM.position.copy(armDir).multiplyScalar(-0.015); // cabo 1.5cm+ pra DENTRO do punho
+      // lâmina segue o EIXO DOS DEDOS (medido da geometria real, frame local)
+      const axis = this.aiModelData.pose.finger
+        ? new this.THREE.Vector3(...this.aiModelData.pose.finger).normalize()
+        : new this.THREE.Vector3(...pose.gun).normalize();
+      this.knifeM.quaternion.setFromUnitVectors(new this.THREE.Vector3(0, 0, 1), axis);
+      this.knifeM.position.set(...pose.gun); // origem do cabo EXATAMENTE na palma
     }
     this.aiActive = true;
   }
