@@ -470,7 +470,7 @@ export class Player {
         : new this.THREE.Vector3(...pose.gun).normalize();
       this.knifeM.quaternion.setFromUnitVectors(new this.THREE.Vector3(0, 0, 1), axis);
       this.knifeM.quaternion.multiply(new this.THREE.Quaternion().setFromAxisAngle(new this.THREE.Vector3(0, 0, 1), -0.45)); // tequinho pro lado (roll)
-      this.knifeM.position.set(0, 0, 0); // gunPivot JÁ está na palma — offset duplo levava a faca ao pé!
+      this.knifeM.position.copy(axis).multiplyScalar(-0.06); // recua no eixo: cabo no MIOLU do punho, lâmina nasce DEPOIS dos dedos
     }
     this.aiActive = true;
   }

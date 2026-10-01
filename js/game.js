@@ -54,15 +54,15 @@ export class Game {
 
     // Iluminação refinada: mais clara, legível e atmosférica
     this.ambLight = new THREE.AmbientLight(0xffffff, 0.85);
-    this.ambLight.layers.enable(1); // ilumina a camada das armas
+    this.ambLight.layers.enable(1); this.ambLight.layers.enable(2); // camadas das armas
     this.scene.add(this.ambLight);
     this.hemiLight = new THREE.HemisphereLight(0xe8f0ff, 0x33283a, 0.65);
-    this.hemiLight.layers.enable(1); // idem
+    this.hemiLight.layers.enable(1); this.hemiLight.layers.enable(2); // idem
     this.scene.add(this.hemiLight);
 
     // Lanterna com facho mais amplo e potente
     this.lantern = new THREE.PointLight(0xfffaed, 14, 22, 1.8);
-    this.lantern.layers.enable(1); // idem
+    this.lantern.layers.enable(1); this.lantern.layers.enable(2); // idem
     this.scene.add(this.lantern);
 
     this.TEX = buildTextures(THREE);
