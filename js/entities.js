@@ -381,6 +381,7 @@ export class Player {
       if (this.armL) { this.armL.position.set(-0.33, 1.42, 0); this.armL.rotation.z = 0.05; }
       if (this.armR) { this.armR.position.set(0.33, 1.42, 0); this.armR.rotation.z = -0.05; }
       if (this.gunPivot) this.gunPivot.position.set(0, -0.62, 0.05);
+      if (this.knifeM) { this.knifeM.rotation.set(1.57, 0, 0); this.knifeM.position.set(0, 0, 0); }
       if (this.head) this.head.position.set(0, 1.62, 0);
       if (this.gunPivot) this.gunPivot.position.set(0, -0.62, 0.05);
       return;
@@ -458,6 +459,13 @@ export class Player {
     if (this.armR) { this.armR.rotation.z = -restZ; this.armR.position.x = this.aiModelData.parts.armR.j[0] + 0.022; }
     // arma no frame local da mão (acompanha o fechamento do braço)
     if (this.gunPivot) this.gunPivot.position.set(...pose.gun);
+    // lâmina/cano presos ao EIXO DO BRAÇO (ombro->palma): desce no descanso,
+    // aponta pra frente na mira — a rotação do braço transporta o prop
+    if (this.knifeM) {
+      const armDir = new this.THREE.Vector3(...pose.gun).normalize();
+      this.knifeM.quaternion.setFromUnitVectors(new this.THREE.Vector3(0, 0, 1), armDir);
+      this.knifeM.position.copy(armDir).multiplyScalar(0.03);
+    }
     this.aiActive = true;
   }
 
