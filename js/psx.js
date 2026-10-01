@@ -203,14 +203,29 @@ export function createPSX(THREE, renderer) {
       renderer.render(scene, camera);
       renderer.setRenderTarget(null);
       renderer.render(postScene, postCam);
-      // passada 2: ARMAS na camada 1 -> RT 2x com nearest (estetica PS1, 2x denso)
+      // passada 2: ARMAS (camada 1) + corpo do herói como OCLUSOR invisível
+      // (depth-only) — sem isso a faca aparece ATRAVÉS do personagem
       const bgSave = scene.background;
       scene.background = null;
       const clearAlphaSave = renderer.getClearAlpha();
       renderer.setRenderTarget(rtArmas);
       renderer.setClearColor(0x000000, 0);
       camera.layers.set(1);
+      scene.traverse((o) => {
+        if (o.isMesh && o.visible && !o.userData.arma) {
+          const mats = Array.isArray(o.material) ? o.material : [o.material];
+          o.userData._cwSave = mats.map((m) => m.colorWrite);
+          mats.forEach((m) => { m.colorWrite = false; });
+        }
+      });
       renderer.render(scene, camera);
+      scene.traverse((o) => {
+        if (o.isMesh && o.userData._cwSave) {
+          const mats = Array.isArray(o.material) ? o.material : [o.material];
+          mats.forEach((m, i) => { m.colorWrite = o.userData._cwSave[i]; });
+          o.userData._cwSave = null;
+        }
+      });
       renderer.setRenderTarget(null);
       renderer.setClearColor(0x000000, clearAlphaSave);
       scene.background = bgSave;
