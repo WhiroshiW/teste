@@ -468,7 +468,7 @@ export class Player {
         ? new this.THREE.Vector3(...this.aiModelData.pose.finger).normalize()
         : new this.THREE.Vector3(...pose.gun).normalize();
       this.knifeM.quaternion.setFromUnitVectors(new this.THREE.Vector3(0, 0, 1), axis);
-      this.knifeM.position.set(...pose.gun); // origem do cabo EXATAMENTE na palma
+      this.knifeM.position.set(0, 0, 0); // gunPivot JÁ está na palma — offset duplo levava a faca ao pé!
     }
     this.aiActive = true;
   }
