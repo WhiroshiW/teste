@@ -190,15 +190,21 @@ export function createPSX(THREE, renderer) {
       renderer.render(scene, camera);
       renderer.setRenderTarget(null);
       renderer.render(postScene, postCam);
-      // passada 2 (mínima): SÓ as armas (camada 1) direto no canvas em
-      // resolução cheia — efeito PS1 leve nelas. Nada do mundo é tocado
-      // (sem colorWrite/travessias: a causa do "mapa sumido" era salvar/
-      // restaurar materiais COMPARTILHADOS duas vezes).
+      // passada 2: armas (camada 2) em resolução cheia + corpo (camada 1)
+      // como OCLUSOR via colorMask da GPU (renderer-level, ZERO toque em
+      // materiais — o bug do "mapa sumido" era salvar/restaurar materiais
+      // compartilhados; aqui nada do mundo é alterado)
       const bgSave = scene.background;
       scene.background = null;
+      const gl = renderer.getContext();
       renderer.autoClear = false;
       renderer.clearDepth();
+      gl.colorMask(false, false, false, false);  // 1a: só PROFUNDIDADE (corpo+armas)
       camera.layers.set(1);
+      camera.layers.enable(2);
+      renderer.render(scene, camera);
+      gl.colorMask(true, true, true, true);       // 2a: só armas, testando o depth do corpo
+      camera.layers.set(2);
       renderer.render(scene, camera);
       renderer.autoClear = true;
       scene.background = bgSave;

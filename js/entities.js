@@ -352,7 +352,8 @@ export class Player {
     this.hp = 100; this.maxhp = 100;
     this.speedMult = 1.0;
     this.angle = 0;
-    this.gunPivot.traverse((o) => { if (o.isMesh) o.layers.set(1); }); // armas na passada leve
+    this.gunPivot.traverse((o) => { if (o.isMesh) o.layers.set(2); }); // armas na passada leve (camada 2)
+    this.group.traverse((o) => { if (o.isMesh && !o.userData.arma) o.layers.enable(1); }); // corpo = oclusor
     this.weapon = 'knife';
     this.aiming = false;
     this.fireCd = 0;
@@ -468,6 +469,7 @@ export class Player {
         ? new this.THREE.Vector3(...this.aiModelData.pose.finger).normalize()
         : new this.THREE.Vector3(...pose.gun).normalize();
       this.knifeM.quaternion.setFromUnitVectors(new this.THREE.Vector3(0, 0, 1), axis);
+      this.knifeM.quaternion.multiply(new this.THREE.Quaternion().setFromAxisAngle(new this.THREE.Vector3(0, 0, 1), -0.45)); // tequinho pro lado (roll)
       this.knifeM.position.set(0, 0, 0); // gunPivot JÁ está na palma — offset duplo levava a faca ao pé!
     }
     this.aiActive = true;
@@ -502,7 +504,7 @@ export class Player {
     if (mat.emissive) mat.emissive.setHex(0x232833); // brilho sutil p/ a arma ler no escuro
     this.mats.push(mat);
     const mesh = new this.THREE.Mesh(geo, mat);
-    mesh.layers.set(1); // passada full-res: efeito PS1 leve só nas armas
+    mesh.layers.set(2); // passada full-res: efeito PS1 leve só nas armas
     mesh.frustumCulled = false;
     return mesh;
   }
@@ -551,6 +553,7 @@ export class Player {
       : (heroId === 'clara' && CLARA_MODEL) ? CLARA_MODEL : null;
     this.applyAIModel(!!this.aiModelData && skinId === 'default');
     this.updateHeroExtras(heroId);
+    this.group.traverse((o) => { if (o.isMesh && !o.userData.arma) o.layers.enable(1); }); // oclusor p/ peças novas
     this.faceMat.needsUpdate = true;
   }
 
