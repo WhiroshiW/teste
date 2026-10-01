@@ -190,7 +190,19 @@ export function createPSX(THREE, renderer) {
       renderer.render(scene, camera);
       renderer.setRenderTarget(null);
       renderer.render(postScene, postCam);
-      // render ÚNICO: mundo + armas juntos (profundidade normal — sem fantasmas)
+      // passada 2 (mínima): SÓ as armas (camada 1) direto no canvas em
+      // resolução cheia — efeito PS1 leve nelas. Nada do mundo é tocado
+      // (sem colorWrite/travessias: a causa do "mapa sumido" era salvar/
+      // restaurar materiais COMPARTILHADOS duas vezes).
+      const bgSave = scene.background;
+      scene.background = null;
+      renderer.autoClear = false;
+      renderer.clearDepth();
+      camera.layers.set(1);
+      renderer.render(scene, camera);
+      renderer.autoClear = true;
+      scene.background = bgSave;
+      camera.layers.set(0);
     },
     snapScene(scene) {
       scene.traverse((o) => {

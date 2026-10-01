@@ -17,7 +17,7 @@
     if (window.navigator && navigator.serviceWorker) {
       navigator.serviceWorker.getRegistrations().then(regs => Promise.all(regs.map(r => r.unregister())));
     }
-    const currentBuild = '1924_1997_v38';
+    const currentBuild = '1924_1997_v39';
     const lastBuild = localStorage.getItem('SANTA_LUCIA_VER');
     if (lastBuild !== currentBuild) {
       localStorage.setItem('SANTA_LUCIA_VER', currentBuild);
@@ -27,9 +27,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./css/style.css?v=1924_1997_v38">
+<link rel="stylesheet" href="./css/style.css?v=1924_1997_v39">
 <script type="importmap">
-{ "imports": { "three": "./vendor/three.module.min.js?v=1924_1997_v38" } }
+{ "imports": { "three": "./vendor/three.module.min.js?v=1924_1997_v39" } }
 </script>
 </head>
 <body>

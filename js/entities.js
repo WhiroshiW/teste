@@ -352,6 +352,7 @@ export class Player {
     this.hp = 100; this.maxhp = 100;
     this.speedMult = 1.0;
     this.angle = 0;
+    this.gunPivot.traverse((o) => { if (o.isMesh) o.layers.set(1); }); // armas na passada leve
     this.weapon = 'knife';
     this.aiming = false;
     this.fireCd = 0;
@@ -464,7 +465,7 @@ export class Player {
     if (this.knifeM) {
       const armDir = new this.THREE.Vector3(...pose.gun).normalize();
       this.knifeM.quaternion.setFromUnitVectors(new this.THREE.Vector3(0, 0, 1), armDir);
-      this.knifeM.position.copy(armDir).multiplyScalar(0.005); // cabo DENTRO da palma
+      this.knifeM.position.copy(armDir).multiplyScalar(-0.015); // cabo 1.5cm+ pra DENTRO do punho
     }
     this.aiActive = true;
   }
@@ -498,6 +499,7 @@ export class Player {
     if (mat.emissive) mat.emissive.setHex(0x232833); // brilho sutil p/ a arma ler no escuro
     this.mats.push(mat);
     const mesh = new this.THREE.Mesh(geo, mat);
+    mesh.layers.set(1); // passada full-res: efeito PS1 leve só nas armas
     mesh.frustumCulled = false;
     return mesh;
   }
