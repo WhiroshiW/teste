@@ -3,7 +3,16 @@
 // ============================================================
 import { ITEMS, WEAPONS, healthStatus, SHOP_ITEMS, GALLERY_MODELS, CAMPAIGNS } from './config.js';
 import { HELP_ROWS as HH } from './story.js';
+import { icon } from './icons.js';
 import { drawPortrait } from './textures.js';
+
+// Pixel arts autorais dos protagonistas (Equipe Nakamura).
+// Solte assets/portrait_daniel.png e assets/portrait_clara.png para usá-las;
+// sem os arquivos, o retrato procedural clássico é usado automaticamente.
+const PORTRAIT_ART = {
+  daniel: './assets/portrait_daniel.png',
+  clara: './assets/portrait_clara.png',
+};
 
 const NAMES = {
   daniel: 'DANIEL', lucia: 'LÚCIA', clara: 'DRA. CLARA', bento: 'BENTO (ZELADOR)',
@@ -205,9 +214,29 @@ export class UI {
 
   renderCampaignPortraits() {
     const c1 = this.$('campPortDaniel');
-    if (c1) drawPortrait(c1, 'daniel');
+    if (c1) this.applyPortraitArt(c1, 'daniel');
     const c2 = this.$('campPortClara');
-    if (c2) drawPortrait(c2, 'clara');
+    if (c2) this.applyPortraitArt(c2, 'clara');
+  }
+
+  // Retratos pixel-art autorais (assets/portrait_<quem>.png) com fallback
+  // procedural (drawPortrait) caso o arquivo não exista.
+  applyPortraitArt(canvas, who) {
+    const src = PORTRAIT_ART[who];
+    if (!src || !canvas || typeof canvas.getContext !== 'function') return false;
+    if (typeof Image === 'undefined') { drawPortrait(canvas, who); return true; } // ambiente sem DOM
+    const img = new Image();
+    img.onload = () => {
+      const x = canvas.getContext('2d');
+      if (!x) return;
+      x.imageSmoothingEnabled = false;
+      x.fillStyle = '#060608';
+      x.fillRect(0, 0, canvas.width, canvas.height);
+      x.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+    img.onerror = () => drawPortrait(canvas, who);
+    img.src = src;
+    return true;
   }
 
   // ==================== TÍTULO (LAYOUT IDÊNTICO À IMAGEM DE REFERÊNCIA) ====================
@@ -239,8 +268,9 @@ export class UI {
     if (!gl || typeof gl.createShader !== 'function' || typeof gl.viewport !== 'function') return; // Fallback gracioso automático para o background CSS 2D
 
     const resize = () => {
-      cvs.width = (typeof window !== 'undefined' && window.innerWidth) || 1280;
-      cvs.height = (typeof window !== 'undefined' && window.innerHeight) || 720;
+      const dpr = Math.min((typeof window !== 'undefined' && window.devicePixelRatio) || 1, 2);
+      cvs.width = Math.round(((typeof window !== 'undefined' && window.innerWidth) || 1280) * dpr);
+      cvs.height = Math.round(((typeof window !== 'undefined' && window.innerHeight) || 720) * dpr);
       gl.viewport(0, 0, cvs.width, cvs.height);
     };
     resize();
@@ -445,8 +475,13 @@ export class UI {
     if (!ctx) return;
 
     const resize = () => {
-      cvs.width = (typeof window !== 'undefined' && window.innerWidth) || 800;
-      cvs.height = (typeof window !== 'undefined' && window.innerHeight) || 600;
+      const dpr = Math.min((typeof window !== 'undefined' && window.devicePixelRatio) || 1, 2);
+      cvs._cssW = (typeof window !== 'undefined' && window.innerWidth) || 800;
+      cvs._cssH = (typeof window !== 'undefined' && window.innerHeight) || 600;
+      cvs._dpr = dpr;
+      cvs.width = Math.round(cvs._cssW * dpr);
+      cvs.height = Math.round(cvs._cssH * dpr);
+      if (ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize();
     if (typeof window !== 'undefined' && window.addEventListener) {
@@ -466,8 +501,8 @@ export class UI {
       for (let i = 0; i < layer.count; i++) {
         drops.push({
           layer: layerIdx,
-          x: Math.random() * (cvs.width + 300) - 150,
-          y: Math.random() * cvs.height,
+          x: Math.random() * ((cvs._cssW || cvs.width) + 300) - 150,
+          y: Math.random() * (cvs._cssH || cvs.height),
           len: layer.lenMin + Math.random() * (layer.lenMax - layer.lenMin),
           spd: layer.spdMin + Math.random() * (layer.spdMax - layer.spdMin),
           alpha: layer.alpha * (0.8 + Math.random() * 0.4),
@@ -489,7 +524,7 @@ export class UI {
     const loop = () => {
       if (!this.el.title || (this.el.title.classList && this.el.title.classList.contains('hidden'))) return;
       animTime += 0.016;
-      ctx.clearRect(0, 0, cvs.width, cvs.height);
+      ctx.clearRect(0, 0, (cvs._cssW || cvs.width), (cvs._cssH || cvs.height));
 
       // Leve brisa orgânica para a direita (alinhada com a tempestade de fundo)
       const baseWind = 1.2 + Math.sin(animTime * 0.4) * 0.4;
@@ -512,11 +547,11 @@ export class UI {
           d.y += d.spd;
 
           // Ao atingir o chão molhado e calçamento
-          if (d.y > cvs.height) {
+          if (d.y > (cvs._cssH || cvs.height)) {
             if (d.layer >= 1 && splashes.length < maxSplashes && Math.random() < 0.28) {
               splashes.push({
                 x: d.x,
-                y: cvs.height - 4 - Math.random() * (cvs.height * 0.28),
+                y: (cvs._cssH || cvs.height) - 4 - Math.random() * ((cvs._cssH || cvs.height) * 0.28),
                 radius: 1.5 + Math.random() * 3.5,
                 maxRadius: 4.0 + Math.random() * 5.0,
                 alpha: (d.layer === 2 ? 0.35 : 0.2),
@@ -524,7 +559,7 @@ export class UI {
               });
             }
             d.y = -d.len - Math.random() * 20;
-            d.x = Math.random() * (cvs.width + 300) - 150;
+            d.x = Math.random() * ((cvs._cssW || cvs.width) + 300) - 150;
           }
         }
 
@@ -559,11 +594,11 @@ export class UI {
       }
 
       // 3. Névoa sutil de umidade no rodapé
-      const mistGrad = ctx.createLinearGradient(0, cvs.height - 180, 0, cvs.height);
+      const mistGrad = ctx.createLinearGradient(0, (cvs._cssH || cvs.height) - 180, 0, (cvs._cssH || cvs.height));
       mistGrad.addColorStop(0, 'rgba(8, 12, 18, 0)');
       mistGrad.addColorStop(1, 'rgba(12, 18, 28, 0.16)');
       ctx.fillStyle = mistGrad;
-      ctx.fillRect(0, cvs.height - 180, cvs.width, 180);
+      ctx.fillRect(0, (cvs._cssH || cvs.height) - 180, (cvs._cssW || cvs.width), 180);
 
       // 4. Relâmpagos ocasionais integrados
       const now = Date.now();
@@ -666,8 +701,33 @@ export class UI {
   }
 
   // ==================== SELEÇÃO DE CAMPANHA ====================
-  showCampaignSelect() { this.show(this.el.campaignSelect); }
-  hideCampaignSelect() { this.hide(this.el.campaignSelect); }
+  showCampaignSelect() {
+    this.campSelIdx = 0;
+    this.renderCampSelection();
+    this.show(this.el.campaignSelect);
+    this.startScreenParallaxAndFX('campaignSelect', 'campWeatherCanvas', 'shop');
+  }
+  hideCampaignSelect() {
+    this.hide(this.el.campaignSelect);
+    this.stopScreenParallaxAndFX('campaignSelect');
+  }
+  renderCampSelection() {
+    const cards = [this.el.campDaniel, this.el.campClara];
+    cards.forEach((c, i) => { if (c) c.classList.toggle('sel', i === this.campSelIdx); });
+  }
+  campNav(d) {
+    this.campSelIdx = (this.campSelIdx + d + 2) % 2;
+    this.audio.sfx('uiMove');
+    this.renderCampSelection();
+  }
+  campConfirm() {
+    this.audio.sfx('uiSelect');
+    const id = this.campSelIdx === 0 ? 'daniel' : 'clara';
+    this.transitionTo(() => {
+      this.hideAllOverlays();
+      this.game.startCampaign(id);
+    });
+  }
 
   // ==================== PARALLAX 3D E AMBIENTE CLIMÁTICO (TELAS GÓTICAS) ====================
   initScreenParallaxListeners() {
@@ -689,8 +749,14 @@ export class UI {
       Object.keys(this._activeScreenEffects).forEach((screenId) => {
         const item = this._activeScreenEffects[screenId];
         if (item && item.canvas) {
-          item.canvas.width = window.innerWidth || 1280;
-          item.canvas.height = window.innerHeight || 720;
+          const cv = item.canvas;
+          cv._dpr = Math.min(window.devicePixelRatio || 1, 2);
+          cv._cssW = window.innerWidth || 1280;
+          cv._cssH = window.innerHeight || 720;
+          cv.width = Math.round(cv._cssW * cv._dpr);
+          cv.height = Math.round(cv._cssH * cv._dpr);
+          const c2 = cv.getContext && cv.getContext('2d');
+          if (c2 && c2.setTransform) c2.setTransform(cv._dpr, 0, 0, cv._dpr, 0, 0);
         }
       });
     });
@@ -706,10 +772,14 @@ export class UI {
     const canvas = this.$(canvasId);
     if (!screenEl || !canvas || typeof canvas.getContext !== 'function') return;
 
-    canvas.width = window.innerWidth || 1280;
-    canvas.height = window.innerHeight || 720;
+    canvas._dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas._cssW = window.innerWidth || 1280;
+    canvas._cssH = window.innerHeight || 720;
+    canvas.width = Math.round(canvas._cssW * canvas._dpr);
+    canvas.height = Math.round(canvas._cssH * canvas._dpr);
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    if (ctx.setTransform && canvas._dpr) ctx.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
 
     const fxData = {
       canvas,
@@ -725,8 +795,8 @@ export class UI {
       // 1. Painel Elétrico: poeira industrial suspensa e faíscas de alta tensão
       for (let i = 0; i < 45; i++) {
         fxData.particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
+          x: Math.random() * (canvas._cssW || canvas.width),
+          y: Math.random() * (canvas._cssH || canvas.height),
           radius: 0.8 + Math.random() * 1.8,
           alpha: 0.15 + Math.random() * 0.45,
           baseAlpha: 0.15 + Math.random() * 0.45,
@@ -741,8 +811,8 @@ export class UI {
       // 2. Escadaria do Sanatório: névoa gótica e chuva oblíqua da janela tempestuosa
       for (let i = 0; i < 65; i++) {
         fxData.particles.push({
-          x: Math.random() * (canvas.width + 200) - 100,
-          y: Math.random() * canvas.height,
+          x: Math.random() * ((canvas._cssW || canvas.width) + 200) - 100,
+          y: Math.random() * (canvas._cssH || canvas.height),
           len: 12 + Math.random() * 22,
           spd: 14 + Math.random() * 18,
           alpha: 0.14 + Math.random() * 0.28,
@@ -753,8 +823,8 @@ export class UI {
       fxData.fogMotes = [];
       for (let i = 0; i < 18; i++) {
         fxData.fogMotes.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
+          x: Math.random() * (canvas._cssW || canvas.width),
+          y: Math.random() * (canvas._cssH || canvas.height),
           radius: 20 + Math.random() * 45,
           alpha: 0.03 + Math.random() * 0.06,
           spd: 0.1 + Math.random() * 0.25,
@@ -764,8 +834,8 @@ export class UI {
       // 3. Mesa de Investigação & Estante de Curiosidades: brasas quentes da vela e halo dourado
       for (let i = 0; i < 40; i++) {
         fxData.particles.push({
-          x: canvas.width * 0.4 + (Math.random() - 0.5) * canvas.width * 0.7,
-          y: canvas.height * 0.3 + Math.random() * canvas.height * 0.7,
+          x: (canvas._cssW || canvas.width) * 0.4 + (Math.random() - 0.5) * (canvas._cssW || canvas.width) * 0.7,
+          y: (canvas._cssH || canvas.height) * 0.3 + Math.random() * (canvas._cssH || canvas.height) * 0.7,
           radius: 1.0 + Math.random() * 2.2,
           alpha: 0.2 + Math.random() * 0.6,
           baseAlpha: 0.2 + Math.random() * 0.6,
@@ -781,8 +851,8 @@ export class UI {
       // 4. Menu Carregar e Salvar: Chuva na janela (esquerda), vela e brasas (direita), poeira ambiente
       for (let i = 0; i < 45; i++) {
         fxData.particles.push({
-          x: Math.random() * (canvas.width * 0.40),
-          y: Math.random() * canvas.height,
+          x: Math.random() * ((canvas._cssW || canvas.width) * 0.40),
+          y: Math.random() * (canvas._cssH || canvas.height),
           len: 12 + Math.random() * 20,
           spd: 12 + Math.random() * 16,
           alpha: 0.15 + Math.random() * 0.3,
@@ -793,8 +863,8 @@ export class UI {
       fxData.candleEmbers = [];
       for (let i = 0; i < 28; i++) {
         fxData.candleEmbers.push({
-          x: canvas.width * 0.81 + (Math.random() - 0.5) * 80,
-          y: canvas.height * 0.60 + Math.random() * (canvas.height * 0.35),
+          x: (canvas._cssW || canvas.width) * 0.81 + (Math.random() - 0.5) * 80,
+          y: (canvas._cssH || canvas.height) * 0.60 + Math.random() * ((canvas._cssH || canvas.height) * 0.35),
           radius: 0.8 + Math.random() * 1.8,
           alpha: 0.2 + Math.random() * 0.6,
           baseAlpha: 0.2 + Math.random() * 0.6,
@@ -807,8 +877,8 @@ export class UI {
       fxData.dustMotes = [];
       for (let i = 0; i < 30; i++) {
         fxData.dustMotes.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
+          x: Math.random() * (canvas._cssW || canvas.width),
+          y: Math.random() * (canvas._cssH || canvas.height),
           radius: 0.7 + Math.random() * 1.3,
           alpha: 0.08 + Math.random() * 0.22,
           baseAlpha: 0.08 + Math.random() * 0.22,
@@ -1063,7 +1133,7 @@ export class UI {
     if (this._activeScreenEffects && this._activeScreenEffects[screenId]) {
       const fx = this._activeScreenEffects[screenId];
       if (fx && fx.ctx && fx.canvas) {
-        fx.ctx.clearRect(0, 0, fx.canvas.width, fx.canvas.height);
+        fx.ctx.clearRect(0, 0, (fx.canvas._cssW || fx.canvas.width), (fx.canvas._cssH || fx.canvas.height));
       }
       delete this._activeScreenEffects[screenId];
     }
@@ -1080,7 +1150,7 @@ export class UI {
       Object.keys(this._activeScreenEffects).forEach((k) => {
         const fx = this._activeScreenEffects[k];
         if (fx && fx.ctx && fx.canvas) {
-          fx.ctx.clearRect(0, 0, fx.canvas.width, fx.canvas.height);
+          fx.ctx.clearRect(0, 0, (fx.canvas._cssW || fx.canvas.width), (fx.canvas._cssH || fx.canvas.height));
         }
       });
       this._activeScreenEffects = {};
@@ -1188,7 +1258,7 @@ export class UI {
           <line x1="18" y1="23" x2="18" y2="26" stroke="#a6b2c2" stroke-width="1.2"/>
         </svg>`;
       }
-      return `<span style="font-size:20px;">${fallback || '⭐'}</span>`;
+      return icon(fallback || 'star', 'lg');
     };
 
     filtered.forEach((it) => {
@@ -1615,7 +1685,7 @@ export class UI {
     });
     click('optTestSpark', () => {
       this.audio.sfx('spark');
-      this.toast('⚡ TESTE DO PAINEL ELÉTRICO: CIRCUITO NOMINAL DE 220V ESTABILIZADO.', 3);
+      this.toast(icon('bolt') + ' TESTE DO PAINEL ELÉTRICO: CIRCUITO NOMINAL DE 220V ESTABILIZADO.', 3);
       const pilot = document.querySelector('.pilotLight');
       if (pilot) {
         pilot.style.background = '#ffd700';
@@ -1677,6 +1747,10 @@ export class UI {
       });
     }
 
+    // Clique no fundo escurecido da pausa = continuar
+    const pScrim = this.$('pauseScrim');
+    if (pScrim) pScrim.addEventListener('click', () => this.game.pauseAction('resume'));
+
     // Seleção de campanha
     click('btnSelectDaniel', () => {
       this.audio.sfx('uiSelect');
@@ -1692,6 +1766,19 @@ export class UI {
         this.game.startCampaign('clara');
       });
     });
+    // Cards de campanha: clique confirma, hover seleciona (estilo mockup)
+    const campCards = [this.$('campDaniel'), this.$('campClara')];
+    campCards.forEach((card, i) => {
+      if (!card) return;
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.campBtn')) return; // o botão tem o próprio handler
+        this.campSelIdx = i;
+        this.campConfirm();
+      });
+      card.addEventListener('mouseenter', () => {
+        if (this.campSelIdx !== i) { this.campSelIdx = i; this.renderCampSelection(); }
+      });
+    });
 
     // Modos extras com verificação de bloqueio
     click('btnPlayMercenaries', () => {
@@ -1701,7 +1788,7 @@ export class UI {
           this.hideExtraModes();
           this.showShop(this.game.points, this.game.unlocks);
         });
-        this.toast('🔒 Adquira o Modo Mercenários na Loja por 1.000 PTS!', 3.5);
+        this.toast(icon('lock') + ' Adquira o Modo Mercenários na Loja por 1.000 PTS!', 3.5);
         return;
       }
       this.audio.sfx('uiSelect');
@@ -1718,7 +1805,7 @@ export class UI {
           this.hideExtraModes();
           this.showShop(this.game.points, this.game.unlocks);
         });
-        this.toast('🔒 Adquira o Modo Sobrevivente na Loja por 1.000 PTS!', 3.5);
+        this.toast(icon('lock') + ' Adquira o Modo Sobrevivente na Loja por 1.000 PTS!', 3.5);
         return;
       }
       this.audio.sfx('uiSelect');
@@ -1735,7 +1822,7 @@ export class UI {
           this.hideExtraModes();
           this.showShop(this.game.points, this.game.unlocks);
         });
-        this.toast('🔒 Adquira o Turno do Bento na Loja por 1.200 PTS!', 3.5);
+        this.toast(icon('lock') + ' Adquira o Turno do Bento na Loja por 1.200 PTS!', 3.5);
         return;
       }
       this.audio.sfx('uiSelect');
@@ -1875,11 +1962,11 @@ export class UI {
       s.className = 'hpStatus ' + st.cls;
     }
   }
-  ammo(weaponName, ammoStr, icon = '🔫', visible = true) {
+  ammo(weaponName, ammoStr, iconToken = 'handgun', visible = true) {
     if (!this.el.ammoBox) return;
     this.el.ammoBox.classList.toggle('hidden', !visible);
     if (this.el.ammoWeaponName) this.el.ammoWeaponName.textContent = weaponName ? weaponName.toUpperCase() : '';
-    if (this.el.ammoIcon) this.el.ammoIcon.textContent = icon;
+    if (this.el.ammoIcon) this.el.ammoIcon.innerHTML = icon(iconToken);
     if (this.el.ammoText) this.el.ammoText.textContent = ammoStr;
   }
   prompt(txt) {
@@ -1904,7 +1991,7 @@ export class UI {
     if (this.el.extraTimer) this.el.extraTimer.textContent = timerStr;
     if (this.el.extraScore) this.el.extraScore.textContent = (scoreVal || 0).toLocaleString();
     if (this.el.extraCombo) {
-      this.el.extraCombo.textContent = comboVal > 1 ? `COMBO x${comboVal} 🔥` : '';
+      this.el.extraCombo.innerHTML = comboVal > 1 ? `COMBO x${comboVal} ${icon('fire')}` : '';
     }
   }
   toast(txt, dur = 3) {
@@ -1953,7 +2040,7 @@ export class UI {
   showBanner(itemId, qty) {
     const it = ITEMS[itemId];
     if (!it) return;
-    this.el.bannerIcon.textContent = it.icon;
+    this.el.bannerIcon.innerHTML = icon(it.icon);
     this.el.bannerName.textContent = (qty > 1 ? qty + 'x ' : '') + it.name;
     this.el.bannerDesc.textContent = it.desc;
     this.el.banner.classList.toggle('key', it.type === 'key' || it.type === 'weapon');
@@ -1979,7 +2066,7 @@ export class UI {
     this.dlg.t = 0;
     this.el.dlgName.textContent = NAMES[line.who] || line.who.toUpperCase();
     this.el.dlgText.textContent = '';
-    drawPortrait(this.el.dlgPortrait, line.who);
+    if (!this.applyPortraitArt(this.el.dlgPortrait, line.who)) drawPortrait(this.el.dlgPortrait, line.who);
     if (this.audio && this.audio.speakSubtitle) {
       this.audio.speakSubtitle(line.text, line.who);
     }
@@ -2101,9 +2188,9 @@ export class UI {
       const isComb = this.combineSource === i;
       slot.className = 'invCell' + (isSel ? ' sel' : '') + (isComb ? ' combining' : '') + (it ? (it.equipped ? ' equipped' : '') : ' empty');
       if (it) {
-        const itemCfg = ITEMS[it.item] || { name: it.item, icon: '📦' };
+        const itemCfg = ITEMS[it.item] || { name: it.item, icon: 'box' };
         const num = it.qty > 1 ? `<span class="invQty">${it.qty}</span>` : '';
-        slot.innerHTML = `<span class="invIcon">${itemCfg.icon}</span>${num}`;
+        slot.innerHTML = `<span class="invIcon">${icon(itemCfg.icon)}</span>${num}`;
       } else {
         slot.innerHTML = '<span class="invIcon" style="opacity:0.25">◻</span>';
       }
@@ -2153,7 +2240,7 @@ export class UI {
     this.el.invObjective.textContent = this.game.currentObjective();
 
     if (this.el.invCamSwitch) {
-      this.el.invCamSwitch.textContent = `📷 CÂMERA: ${this.game.camMode === 'chase' ? '3ª PESSOA' : 'FIXA PS1'}`;
+      this.el.invCamSwitch.innerHTML = `${icon('camera')} CÂMERA: ${this.game.camMode === 'chase' ? '3ª PESSOA' : 'FIXA PS1'}`;
     }
   }
 
@@ -2167,8 +2254,8 @@ export class UI {
       this.invCmds = [];
       return;
     }
-    const cfg = ITEMS[it.item] || { name: it.item, icon: '📦', desc: '', type: 'item' };
-    this.el.invIcon.textContent = cfg.icon;
+    const cfg = ITEMS[it.item] || { name: it.item, icon: 'box', desc: '', type: 'item' };
+    this.el.invIcon.innerHTML = icon(cfg.icon);
     this.el.invName.textContent = cfg.name + (it.qty > 1 ? ` (x${it.qty})` : '') + (it.equipped ? ' [EQUIPADA]' : '');
     this.el.invDesc.textContent = cfg.desc;
 
@@ -2253,7 +2340,7 @@ export class UI {
       this.combineSource = this.invSel;
       this.invMode = 'grid';
       this.audio.sfx('uiSelect');
-      this.toast('⚙️ Selecione o segundo item para combinar.', 3);
+      this.toast(icon('gear') + ' Selecione o segundo item para combinar.', 3);
       this.renderInventory();
     } else if (cmd === 'EXAMINAR') {
       this.game.examineItem(it);
@@ -2477,7 +2564,7 @@ export class UI {
       }
 
       if (modalTitle) modalTitle.textContent = 'DATILOGRAFAR PRONTUÁRIO';
-      const overwriteNote = !slot.empty ? `<br><span style="color:#ff8888;font-size:11px;">⚠️ ATENÇÃO: Isso irá sobrescrever o registro "${slot.title}"!</span>` : '';
+      const overwriteNote = !slot.empty ? `<br><span style="color:#ff8888;font-size:11px;"><svg class="ic"><use href="#i-alert"></use></svg> ATENÇÃO: Isso irá sobrescrever o registro "${slot.title}"!</span>` : '';
       const ribbonNote = hasInfInk ? '<br><span style="color:#6ee688;font-size:11px;">Fita de Tinta Infinita Ativa.</span>' : '<br><span style="color:#cad8ec;font-size:11px;">Consome 1 Fita de Tinta da sua maleta.</span>';
       if (modalMsg) modalMsg.innerHTML = `Deseja registrar o seu prontuário no <b>Slot ${numStr}</b>?${overwriteNote}${ribbonNote}`;
       if (btnYes) btnYes.textContent = '► SIM (DATILOGRAFAR)';
@@ -2495,7 +2582,7 @@ export class UI {
           this.hideSaveBox();
           if (this.game) {
             this.game.state = 'play';
-            this.toast(`💾 Prontuário arquivado com sucesso no Slot ${numStr}.`, 4);
+            this.toast(`${icon('ribbon')} Prontuário arquivado com sucesso no Slot ${numStr}.`, 4);
           }
         }, 550);
       };
@@ -2541,8 +2628,8 @@ export class UI {
     m.innerHTML = '';
     this.pauseItems.forEach((act, i) => {
       const d = document.createElement('div');
-      d.className = 'menuItem' + (i === this.menuIdx.pause ? ' sel' : '');
-      d.textContent = (i === this.menuIdx.pause ? '▶ ' : '　') + labels[act];
+      d.className = 'pauseItem' + (i === this.menuIdx.pause ? ' sel' : '');
+      d.innerHTML = `<span class="pArrow">►</span><span class="pLabel">${labels[act]}</span>`;
       d.onclick = () => this.game.pauseAction(act);
       d.onmouseenter = () => {
         if (this.menuIdx.pause !== i) { this.menuIdx.pause = i; this.audio.sfx('uiMove'); this.renderPause(); }

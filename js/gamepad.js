@@ -1,3 +1,4 @@
+import { icon } from './icons.js';
 // ============================================================
 // SANTA LÚCIA - Módulo de Suporte a Controles (Gamepad API)
 // Suporte Nativo: PlayStation 4 (DualShock 4) & Xbox (One/Series/360)
@@ -28,7 +29,7 @@ export class GamepadManager {
       this.connected = true;
       this.identifyController(e.gamepad);
       const typeLabel = this.controllerType === 'ps4' ? 'DualShock 4 (PlayStation)' : 'Xbox Controller';
-      this.game.ui.toast(`🎮 CONTROLE CONECTADO: ${typeLabel}`, 3.5);
+      this.game.ui.toast(`${icon('gamepad')} CONTROLE CONECTADO: ${typeLabel}`, 3.5);
       if (this.game.audio) this.game.audio.sfx('uiSelect');
       this.vibrate(0.3, 0.5, 220);
       this.updateUIControllerHints();
@@ -38,7 +39,7 @@ export class GamepadManager {
       if (e.gamepad.index === this.padIndex) {
         this.connected = false;
         this.padIndex = -1;
-        this.game.ui.toast('⚠️ CONTROLE DESCONECTADO', 3);
+        this.game.ui.toast(icon('alert') + ' CONTROLE DESCONECTADO', 3);
         this.updateUIControllerHints();
       }
     });
@@ -112,6 +113,17 @@ export class GamepadManager {
 
     // ==================== 1. TELA DE TÍTULO ====================
     if (st === 'title') {
+      // Seleção de campanha aberta: esquerda/direita alternam heróis
+      if (!this.game.ui.el.campaignSelect.classList.contains('hidden')) {
+        const left = btns[14] || axes[0] < -0.4;
+        const right = btns[15] || axes[0] > 0.4;
+        if (this.debounceNav <= 0) {
+          if (left) { this.game.ui.campNav(-1); this.debounceNav = 0.22; }
+          else if (right) { this.game.ui.campNav(1); this.debounceNav = 0.22; }
+        }
+        if (justPressed(0)) this.game.ui.campConfirm();
+        return;
+      }
       const up = btns[12] || axes[1] < -0.4;
       const down = btns[13] || axes[1] > 0.4;
       if (this.debounceNav <= 0) {

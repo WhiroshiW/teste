@@ -138,6 +138,8 @@ export function createPSX(THREE, renderer) {
   quad.frustumCulled = false;
   postScene.add(quad);
 
+
+
   let shakeAmp = 0;
   let aspect = 16 / 9;
   let high = false;
@@ -149,7 +151,7 @@ export function createPSX(THREE, renderer) {
   }
 
   function snapMaterial(mat) {
-    if (!mat || mat.userData.psxSnapped) return;
+    if (!mat || mat.userData.psxSnapped || mat.userData.noPsx) return;
     mat.userData.psxSnapped = true;
     mat.onBeforeCompile = (shader) => {
       shader.vertexShader = shader.vertexShader.replace(
@@ -182,10 +184,31 @@ export function createPSX(THREE, renderer) {
       } else {
         uniforms.uShake.value.set(0, 0);
       }
+      // passada 1: mundo PS1 (RT baixa-res + dither) — camada 0
       renderer.setRenderTarget(rt);
+      camera.layers.set(0);
       renderer.render(scene, camera);
       renderer.setRenderTarget(null);
       renderer.render(postScene, postCam);
+      // passada 2: armas (camada 2) em resolução cheia + corpo (camada 1)
+      // como OCLUSOR via colorMask da GPU (renderer-level, ZERO toque em
+      // materiais — o bug do "mapa sumido" era salvar/restaurar materiais
+      // compartilhados; aqui nada do mundo é alterado)
+      const bgSave = scene.background;
+      scene.background = null;
+      const gl = renderer.getContext();
+      renderer.autoClear = false;
+      renderer.clearDepth();
+      gl.colorMask(false, false, false, false);  // 1a: só PROFUNDIDADE (corpo+armas)
+      camera.layers.set(1);
+      camera.layers.enable(2);
+      renderer.render(scene, camera);
+      gl.colorMask(true, true, true, true);       // 2a: só armas, testando o depth do corpo
+      camera.layers.set(2);
+      renderer.render(scene, camera);
+      renderer.autoClear = true;
+      scene.background = bgSave;
+      camera.layers.set(0);
     },
     snapScene(scene) {
       scene.traverse((o) => {
