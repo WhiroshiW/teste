@@ -465,12 +465,10 @@ export class Player {
     // aponta pra frente na mira — a rotação do braço transporta o prop
     if (this.knifeM) {
       // lâmina segue o EIXO DOS DEDOS (medido da geometria real, frame local)
-      const axis = this.aiModelData.pose.finger
-        ? new this.THREE.Vector3(...this.aiModelData.pose.finger).normalize()
-        : new this.THREE.Vector3(...pose.gun).normalize();
-      this.knifeM.quaternion.setFromUnitVectors(new this.THREE.Vector3(0, 0, 1), axis);
-      this.knifeM.quaternion.multiply(new this.THREE.Quaternion().setFromAxisAngle(new this.THREE.Vector3(0, 0, 1), -0.45)); // tequinho pro lado (roll)
-      this.knifeM.position.copy(axis).multiplyScalar(-0.06); // recua no eixo: cabo no MIOLU do punho, lâmina nasce DEPOIS dos dedos
+      // faca DE PÉ na mão fechada (ref. do produtor): cabo na palma,
+      // lâmina pra CIMA; a rotação Z de descanso não tumba o +Y (fica ereta)
+      this.knifeM.position.set(0, -0.085, 0); // cabo abaixo da palma (calibrado no render visual)
+      this.knifeM.rotation.set(-1.57, 0, -0.45);
     }
     this.aiActive = true;
   }
@@ -681,7 +679,8 @@ export class Player {
       if (this.aiActive) { // mira compacta: braços à frente, arma nivelada
         this.armR.rotation.set(-1.52, -0.04, -0.05);
         this.armL.rotation.set(-1.44, 0.05, 0.05);
-        if (this.gunPivot) this.gunPivot.rotation.x = 0; // sem compensação: braço erguido já aponta cano/lâmina pra frente (seguem o eixo dos dedos)
+        if (this.gunPivot) this.gunPivot.rotation.x = 0.92; // nivela o cano da pistola
+        if (this.knifeM) this.knifeM.rotation.set(-0.05, 0, -0.45); // faca continua DE PÉ no mundo
       }
       else { this.armR.rotation.set(-1.45, 0.18, 0); this.armL.rotation.set(-1.40, -0.22, 0); }
       this.legL.rotation.x = 0; this.legR.rotation.x = 0;
