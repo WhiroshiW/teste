@@ -1,146 +1,101 @@
 #!/usr/bin/env python3
-"""
-Calibrador VISUAL do encaixe de armas (SANTA LÚCIA).
-Renderiza o personagem + arma com as MESMAS transforms do runtime
-(three.js Euler XYZ, mesma hierarquia) em PNG — o agente OLHA a imagem
-e ajusta os ângulos antes de commitar. Fim do ciclo às cegas.
-
-Uso: python3 tools/render_player.py [--pitch A] [--roll A] [--back Z] [--out x.png]
-"""
-import json, base64, struct, math, sys, os
+"""Rasterizador offline do Player (mesmos dados que o jogo desenha).
+Uso: python3 tools/render_player.py            # renderiza idle + aim em /tmp"""
+import json, base64, io, math
+import numpy as np
 from PIL import Image
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-argd = sys.argv[1:]
-def arg(k, d):
-    return float(argd[argd.index(k)+1]) if k in argd else d
-PITCH = arg('--pitch', -1.57)   # knifeM rotation.x
-ROLL  = arg('--roll', -0.45)    # knifeM rotation.z
-BACK  = arg('--back', 0.0)      # knifeM position deslocamento no eixo dos dedos
-OUT   = argd[argd.index('--out')+1] if '--out' in argd else '/tmp/calib.png'
+DUMP = json.load(open('/tmp/player_render.json'))
+W, H = 480, 270   # 1.5x do RT do jogo (320x180) p/ leitura
+TEXCACHE = {}
 
-D = json.load(open('/tmp/daniel.json'))
-WJ = json.load(open('/tmp/weapons.json'))
+def tex_for(m, dump):
+    if m['tag'] == 'knife_prop':
+        if 'knife' not in TEXCACHE:
+            b = base64.b64decode(dump['knifeTex'].split(',', 1)[1])
+            TEXCACHE['knife'] = np.asarray(Image.open(io.BytesIO(b)).convert('RGB'), dtype=np.uint8)
+        return TEXCACHE['knife']
+    if m['texPath']:
+        key = m['texPath']
+        if key not in TEXCACHE:
+            TEXCACHE[key] = np.asarray(Image.open(key).convert('RGB'), dtype=np.uint8)
+        return TEXCACHE[key]
+    return None
 
-def norm(a):
-    l = math.sqrt(sum(x*x for x in a))
-    if l < 1e-9: return None
-    return [x/l for x in a]
-def sub(a,b): return [a[i]-b[i] for i in range(3)]
-def dot(a,b): return sum(x*y for x,y in zip(a,b))
-def cross(a,b): return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]
+COLORS = {'proc': (90, 96, 108)}
 
-# Euler XYZ (three.js): v' = Rx * Ry * Rz * v
-def euler(p, rx, ry, rz):
-    cx,sx,cy,sy,cz,sz = math.cos(rx),math.sin(rx),math.cos(ry),math.sin(ry),math.cos(rz),math.sin(rz)
-    x,y,z = p
-    x,y = x*cz-y*sz, x*sz+y*cz          # Rz
-    x,z = x*cy+z*sy, -x*sy+z*cy         # Ry
-    y,z = y*cx-z*sx, y*sx+z*cx          # Rx
-    return (x,y,z)
+def render(state, out):
+    tris = []  # (v0,v1,v2, uv0,uv1,uv2, tex, color)
+    for m in state['meshes']:
+        w = np.array(m['world'], dtype=np.float64).reshape(-1, 3)
+        tex = tex_for(m, state)
+        base = COLORS.get(m['tag'], (140, 100, 90))
+        if m['idx']:
+            idx = np.array(m['idx'], dtype=np.int64)
+        else:
+            idx = np.arange(m['count'], dtype=np.int64)
+        uv = np.array(m['uvs'], dtype=np.float64).reshape(-1, 2) if m['uvs'] else None
+        for t in range(0, len(idx) - 2, 3):
+            i0, i1, i2 = idx[t], idx[t+1], idx[t+2]
+            tuv = None if uv is None else (uv[i0], uv[i1], uv[i2])
+            tris.append((w[i0], w[i1], w[i2], tuv, tex, base))
+    cam = np.array([1.9, 1.9, -1.9])
+    tgt = np.array([0.15, 1.15, 0.05])
+    fw = tgt - cam; fw /= np.linalg.norm(fw)
+    rt = np.cross(fw, [0.0, 1.0, 0.0]); rt /= np.linalg.norm(rt)
+    up = np.cross(rt, fw)
+    img = np.zeros((H, W, 3), dtype=np.uint8)
+    zbuf = np.full((H, W), 1e9)
+    for (p0, p1, p2, tuv, tex, base) in tris:
+        pts = [p0, p1, p2]
+        prj = []
+        ok = True
+        for p in pts:
+            d = p - cam
+            z = float(d @ fw)
+            if z < 0.05: ok = False; break
+            prj.append((float(d @ rt) / z, float(d @ up) / z, z))
+        if not ok: continue
+        xs = [pr[0] for pr in prj]; ys = [pr[1] for pr in prj]; zs = [pr[2] for pr in prj]
+        n = np.cross(p1 - p0, p2 - p0)
+        ln = np.linalg.norm(n)
+        if ln < 1e-12: continue
+        n /= ln
+        L = np.array([0.35, 0.8, 0.45]); L /= np.linalg.norm(L)
+        shade = 0.45 + 0.6 * max(0.0, float(n @ L))
+        x0 = max(0, int((min(xs) / (max(xs) - min(xs) + 1e-9)) * 0 + (min(xs) * 0.9 + 0.5) * W))
+        # mapeamento simples: x∈[-0.8,0.8] y∈[-0.45,0.45]
+        def px(x, y):
+            ix = int((x * 0.9 + 0.5) * W); iy = int((0.5 - y * 1.6) * H)
+            return ix, iy
+        P = [px(pr[0], pr[1]) for pr in prj]
+        minx = max(0, min(p[0] for p in P) - 1); maxx = min(W - 1, max(p[0] for p in P) + 1)
+        miny = max(0, min(p[1] for p in P) - 1); maxy = min(H - 1, max(p[1] for p in P) + 1)
+        if minx > maxx or miny > maxy: continue
+        ax, ay = P[0]; bx, by = P[1]; cx, cy = P[2]
+        den = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy)
+        if abs(den) < 1e-12: continue
+        for yy in range(miny, maxy + 1):
+            for xx in range(minx, maxx + 1):
+                l0 = ((by - cy) * (xx + 0.5 - cx) + (cx - bx) * (yy + 0.5 - cy)) / den
+                l1 = ((cy - ay) * (xx + 0.5 - cx) + (ax - cx) * (yy + 0.5 - cy)) / den
+                l2 = 1 - l0 - l1
+                if l0 < -0.001 or l1 < -0.001 or l2 < -0.001: continue
+                z = l0 * zs[0] + l1 * zs[1] + l2 * zs[2]
+                if z >= zbuf[yy, xx]: continue
+                zbuf[yy, xx] = z
+                if tex is not None and tuv:
+                    u = l0 * tuv[0][0] + l1 * tuv[1][0] + l2 * tuv[2][0]
+                    v = l0 * tuv[0][1] + l1 * tuv[1][1] + l2 * tuv[2][1]
+                    th, tw = tex.shape[:2]
+                    ix = min(tw - 1, max(0, int(u * tw)))
+                    iy = min(th - 1, max(0, int((1 - v) * th)))
+                    c = tex[iy, ix]
+                else:
+                    c = np.array(base, dtype=np.uint8)
+                img[yy, xx] = np.clip(c.astype(np.float64) * shade, 0, 255).astype(np.uint8)
+    Image.fromarray(img).resize((W * 2, H * 2), Image.NEAREST).save(out)
+    print('OK', out)
 
-# ── mundo do braço direito: Rz(restZ aplicado) + j
-part = D['parts']['armR']; j = part['j']
-restApplied = -max(0.14, (D['pose']['armOpen'] or 0)*0.62)  # _aiArmZ.R
-jx,jy,jz = j
-ca,sa = math.cos(restApplied), math.sin(restApplied)
-def armWorld(p):
-    x = p[0]*ca - p[1]*sa + jx
-    y = p[0]*sa + p[1]*ca + jy
-    z = p[2] + jz
-    return (x,y,z)
-
-def part_verts(name, worldfn):
-    b = base64.b64decode(D['parts'][name]['p']); n = D['parts'][name]['n']
-    i16 = struct.unpack_from(f'<{n*3}h', b, 0)
-    return [worldfn((i16[i*3]/2048, i16[i*3+1]/2048, i16[i*3+2]/2048)) for i in range(n)]
-
-def part_tris(name, worldfn, color):
-    V = part_verts(name, worldfn)
-    tris = []
-    for t in range(0, len(V), 3):
-        tris.append((V[t], V[t+1], V[t+2], color))
-    return tris
-
-# offsets mundiais das peças (frame do personagem)
-OFF = {'torso': (0,0,0), 'legL': (-0.099, 0.9828, 0), 'legR': (0.099, 0.9828, 0)}
-HEADJ = D['parts']['head']['j']
-OFF['head'] = (HEADJ[0], HEADJ[1], HEADJ[2])
-COLORS = {'torso': (0.17,0.21,0.30), 'head': (0.84,0.71,0.60),
-          'legL': (0.23,0.23,0.25), 'legR': (0.23,0.23,0.25),
-          'armL': (0.16,0.20,0.32), 'armR': (0.19,0.24,0.36)}
-
-tris = []
-for nm in ['torso','head','legL','legR']:
-    tris += part_tris(nm, lambda p, o=OFF[nm]: (p[0]+o[0], p[1]+o[1], p[2]+o[2]), COLORS[nm])
-tris += part_tris('armR', armWorld, COLORS['armR'])
-jL = D['parts']['armL']['j']
-ca2,sa2 = math.cos(max(0.14,(D['pose']['armOpen'] or 0)*0.62)), math.sin(max(0.14,(D['pose']['armOpen'] or 0)*0.62))
-tris += part_tris('armL', lambda p: (p[0]*ca2-p[1]*sa2+jL[0], p[0]*sa2+p[1]*ca2+jL[1], p[2]+jL[2]), COLORS['armL'])
-
-# ── faca: gunPivot na palma (frame do braço) -> mundo; knifeM euler; geo local
-b = base64.b64decode(WJ['faca']['geo']); n = WJ['faca']['n']
-i16 = struct.unpack_from(f'<{n*3}h', b, 0)
-KV = [(i16[i*3]/2048, i16[i*3+1]/2048, i16[i*3+2]/2048) for i in range(n)]
-gp = D['pose']['gun']
-gpW = armWorld(gp)
-KN = []
-for p in KV:
-    q = euler(p, PITCH, 0, ROLL)
-    q = (q[0], q[1]+BACK, q[2])  # BACK = desloca no Y local (desce o cabo)
-    w = armWorld((q[0]+gp[0], q[1]+gp[1], q[2]+gp[2]))
-    KN.append((w, p))  # mundo + local (pra cor da lâmina)
-
-# ── rasterização com z-buffer
-if '--close' in argd:
-    # close-up na palma: câmera rente, mira na mão direita
-    gpw = armWorld(D['pose']['gun'])
-    cam = (gpw[0]+1.05, gpw[1]+0.55, gpw[2]-1.05)
-    tgt = gpw
-else:
-    cam = (1.9, 1.85, -1.95); tgt = (0.12, 1.02, 0.0)
-fw = norm(sub(tgt, cam)); rt = norm(cross(fw, [0,1,0])); up = cross(rt, fw)
-W,H,K = 520, 470, 1.15
-img = [[(0.10,0.10,0.12)]*W for _ in range(H)]
-zbuf = [[1e9]*W for _ in range(H)]
-def prj(p):
-    d = sub(p, cam); z = dot(d, fw)
-    return (int((dot(d,rt)/z*K+0.5)*W), int((0.5-dot(d,up)/z*K)*H), z)
-LIGHT = norm([0.4, 0.85, 0.5])
-def fill(a3):
-    (A,B,C,col) = a3
-    n = norm(cross(sub(B,A), sub(C,A)))
-    if n is None: return
-    ax,ay,az = prj(A); bx,by,bz = prj(B); cx,cy,cz2 = prj(C)
-    if dot(n, sub(cam, A)) < 0: n = [-x for x in n]
-    lum = 0.42 + 0.58*max(0.0, dot(n, LIGHT))
-    shade = tuple(min(1.0, c*lum) for c in col)
-    minx,maxx = max(0,min(ax,bx,cx)), min(W-1,max(ax,bx,cx))
-    miny,maxy = max(0,min(ay,by,cy)), min(H-1,max(ay,by,cy))
-    if minx>maxx or miny>maxy: return
-    d00 = (bx-ax)*(cy-ay)-(cx-ax)*(by-ay)
-    if abs(d00) < 1e-9: return
-    for py in range(miny, maxy+1):
-        for px in range(minx, maxx+1):
-            w1 = ((px-ax)*(cy-ay)-(cx-ax)*(py-ay))/d00
-            w2 = ((by-ay)*(px-ax)-(bx-ax)*(py-ay))/d00
-            if w1 < -0.001 or w2 < -0.001 or w1+w2 > 1.001: continue
-            z = az + w1*(bz-az) + w2*(cz2-az)
-            if z < zbuf[py][px]:
-                zbuf[py][px] = z; img[py][px] = shade
-
-for t in tris: fill(t)
-# faca por cima (com z-buffer próprio da lista já projetada)
-for i in range(0, len(KN), 3):
-    A,la = KN[i]; B,lb = KN[i+1]; C,lc = KN[i+2]
-    blade = (la[2] > 0.12) and (lb[2] > 0.12) and (lc[2] > 0.12)
-    fill((A,B,C, (0.74,0.78,0.84) if blade else (0.30,0.24,0.19)))
-
-out = Image.new('RGB', (W,H))
-px = out.load()
-for y in range(H):
-    for x in range(W):
-        r,g,b2 = img[y][x]
-        px[x,y] = (int(r*255), int(g*255), int(b2*255))
-out.save(OUT)
-print(f"OK {OUT} | knifeM euler=({PITCH:.2f},0,{ROLL:.2f}) | gun={D['pose']['gun']}")
+for st in DUMP:
+    render(st, f"/tmp/player_{st['mode']}.png")
