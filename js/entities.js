@@ -273,7 +273,7 @@ export class Player {
     this.knifeM.position.set(0, -0.02, 0.04);  // desce no descanso e aponta pra frente na mira sozinha
     if (WEAPON_MODELS.faca) { // prop IA substitui o procedural (escala near-camera)
       const f = this.buildPropMesh(WEAPON_MODELS.faca);
-      f.scale.setScalar(1.05);
+      f.scale.setScalar(1.35); // 30% maior (pedido do produtor)
       this.knifeM.add(f);
       kb.visible = false; kh.visible = false;
     }
@@ -680,7 +680,7 @@ export class Player {
         this.armR.rotation.set(-1.52, -0.04, -0.05);
         this.armL.rotation.set(-1.44, 0.05, 0.05);
         if (this.gunPivot) this.gunPivot.rotation.x = 0.92; // nivela o cano da pistola
-        if (this.knifeM) this.knifeM.rotation.set(-0.05, 0, -0.45); // faca continua DE PÉ no mundo
+        if (this.knifeM) this.knifeM.rotation.set(3.77, 0, -0.45); // DE PÉ na mira (solver c/ gunPivot 0.92: y=1.0)
       }
       else { this.armR.rotation.set(-1.45, 0.18, 0); this.armL.rotation.set(-1.40, -0.22, 0); }
       this.legL.rotation.x = 0; this.legR.rotation.x = 0;

@@ -23,6 +23,8 @@ function dumpState(mode) {
     p.setAim(true);
     p.armR.rotation.set(-1.52, -0.04, -0.05);
     p.armL.rotation.set(-1.44, 0.05, 0.05);
+    p.gunPivot.rotation.x = 0.92;
+    p.knifeM.rotation.set(3.77, 0, -0.45);
   } else {
     p.setAim(false);
   }
