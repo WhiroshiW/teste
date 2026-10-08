@@ -103,6 +103,7 @@ CAMS = {
   'back':   ([0.25, 1.35, -2.3], [0.2, 0.95, 0.0]),
   'palm':   ([1.6, 0.9, 0.9],    [0.35, 0.8, 0.05]),
   'walk':   ([-1.1, 1.6, -1.3],  [0.3, 0.9, 0.0]),
+  'game':   ([2.2, 2.5, 2.0],    [0.2, 0.85, 0.0]), # ~câmera de gameplay (canto alto, 33 graus)
 }
 _cam, _tgt = CAMS[ANG]
 CAM_OVERRIDE = (np.array(_cam), np.array(_tgt))

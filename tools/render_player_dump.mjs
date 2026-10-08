@@ -31,7 +31,15 @@ function dumpState(mode) {
   if (mode === 'swing') { // pico do swing do ANDAR — caso que tombava a faca
     p.armR.rotation.x = 0.5; p.armL.rotation.x = -0.5;
   }
-  if (p.updateKnifeWorldUp) p.updateKnifeWorldUp(); // mesma compensação do jogo
+  // virada: sufixo 90 = +90 graus (direita), m90 = -90 (esquerda) — mapa explícito
+  const turn = { idle90: 1, aim90: 1, swing90: 1, aimm90: -1 }[mode];
+  if (turn) p.group.rotation.y = turn * Math.PI / 2;
+  if (mode.startsWith('aim')) { p.setAim(true); // estados aim* miram DE VERDADE
+    p.armR.rotation.set(-1.52, -0.04, -0.05); p.armL.rotation.set(-1.44, 0.05, 0.05);
+    if (p.gunPivot) p.gunPivot.rotation.x = 0.92;
+    if (p.knifeM) p.knifeM.rotation.set(3.77, 0, -0.45);
+  }
+  if (p.updateKnifeWorldUp) p.updateKnifeWorldUp(mode.startsWith('aim') ? 0 : 0.21); // mesmo lean do jogo
   p.group.updateMatrixWorld(true);
   const vis = (o) => { for (let q = o; q && q !== p.group; q = q.parent) if (!q.visible) return false; return true; };
   const meshes = [];
@@ -60,7 +68,7 @@ function dumpState(mode) {
   if (WEAPON_MODELS.faca) out.knifeTex = WEAPON_MODELS.faca.tex;
   return out;
 }
-const modes = process.argv[2] === 'aim' ? ['aim','swing'] : process.argv[2] === 'both' ? ['idle','aim','swing'] : ['idle','swing'];
+const modes = process.argv[2] === 'aim' ? ['aim','aim90','aimm90'] : process.argv[2] === 'both' ? ['idle','idle90','aim','aim90','aimm90','swing','swing90'] : ['idle','idle90'];
 const result = modes.map(dumpState);
 fs.writeFileSync('/tmp/player_render.json', JSON.stringify(result));
 console.log('dump ok:', result.map(r => `${r.mode}:${r.meshes.length} meshes`).join(' '));
