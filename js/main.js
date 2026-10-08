@@ -2,7 +2,7 @@
 // SANTA LÚCIA - Equipe Nakamura - Boot
 // ============================================================
 import * as THREE from '../vendor/three.module.min.js';
-import { Game } from './game.js';
+import { Game } from './game.js?v=1924_1997_v51';
 
 function showErr(msg) {
   const e = document.getElementById('err');

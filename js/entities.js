@@ -2,7 +2,7 @@
 // SANTA LÚCIA - Equipe Nakamura - Entidades: colisão, partículas, jogador, inimigos, NPCs
 // Modelos low-poly construídos com primitivas (estilo PS1 autêntico).
 // ============================================================
-import { WEAPONS, ENEMIES, CAMPAIGNS } from './config.js';
+import { WEAPONS, ENEMIES, CAMPAIGNS } from './config.js?v=1924_1997_v51';
 
 // Colisão círculo x lista de AABBs {x0,z0,x1,z1}. Ajusta p in-place.
 export function collideCircle(p, r, solids) {
@@ -139,9 +139,9 @@ export class Particles {
 }
 
 // ------------------------------- JOGADOR -------------------------------
-import { CLARA_MODEL } from './model_clara_data.js';
-import { DANIEL_MODEL } from './model_daniel_data.js';
-import { WEAPON_MODELS } from './model_weapons_data.js';
+import { CLARA_MODEL } from './model_clara_data.js?v=1924_1997_v51';
+import { DANIEL_MODEL } from './model_daniel_data.js?v=1924_1997_v51';
+import { WEAPON_MODELS } from './model_weapons_data.js?v=1924_1997_v51';
 
 export class Player {
   constructor(THREE, TEX) {

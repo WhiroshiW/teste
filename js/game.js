@@ -8,19 +8,19 @@ import {
   ITEMS, WEAPONS, ENEMIES, CAMPAIGNS, SHOP_ITEMS, GALLERY_MODELS,
   rankFor, rankForMercenaries, fmtTime, healthStatus,
   SAVE_KEY, POINTS_KEY, UNLOCKS_KEY, HISCORES_KEY, OPTS_KEY
-} from './config.js';
-import { icon } from './icons.js';
-import { buildTextures } from './textures.js';
-import { buildRoom, ROOM_IDS, makePickupMesh } from './world.js';
-import { Player, Enemy, NPC, TimeTotem, Particles, collideCircle, pointInSolids } from './entities.js';
-import { AudioSys } from './audio.js';
-import { createPSX } from './psx.js';
-import { UI } from './ui.js';
-import { GamepadManager } from './gamepad.js';
+} from './config.js?v=1924_1997_v51';
+import { icon } from './icons.js?v=1924_1997_v51';
+import { buildTextures } from './textures.js?v=1924_1997_v51';
+import { buildRoom, ROOM_IDS, makePickupMesh } from './world.js?v=1924_1997_v51';
+import { Player, Enemy, NPC, TimeTotem, Particles, collideCircle, pointInSolids } from './entities.js?v=1924_1997_v51';
+import { AudioSys } from './audio.js?v=1924_1997_v51';
+import { createPSX } from './psx.js?v=1924_1997_v51';
+import { UI } from './ui.js?v=1924_1997_v51';
+import { GamepadManager } from './gamepad.js?v=1924_1997_v51';
 import {
   INTRO, INTRO_CLARA, INTRO_BENTO, D, OBJECTIVES,
   END_GOOD, END_NORMAL, END_CLARA_GOOD, END_CLARA_NORMAL, END_BENTO
-} from './story.js';
+} from './story.js?v=1924_1997_v51';
 
 export class Game {
   constructor(THREE, container) {
