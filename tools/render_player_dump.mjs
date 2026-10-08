@@ -29,9 +29,10 @@ function dumpState(mode) {
     p.setAim(false);
   }
   p.group.updateMatrixWorld(true);
+  const vis = (o) => { for (let q = o; q && q !== p.group; q = q.parent) if (!q.visible) return false; return true; };
   const meshes = [];
   p.group.traverse((o) => {
-    if (!o.isMesh || !o.visible) return;
+    if (!o.isMesh || !o.visible || !vis(o)) return; // respeita pais ocultos (setWeapon esconde grupos)
     const g = o.geometry;
     const pos = g.attributes.position;
     if (!pos) return;
