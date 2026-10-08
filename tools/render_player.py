@@ -39,8 +39,7 @@ def render(state, out):
             i0, i1, i2 = idx[t], idx[t+1], idx[t+2]
             tuv = None if uv is None else (uv[i0], uv[i1], uv[i2])
             tris.append((w[i0], w[i1], w[i2], tuv, tex, base))
-    cam = np.array([0.25, 1.35, 2.3])
-    tgt = np.array([0.2, 0.95, 0.0])
+    cam, tgt = CAM_OVERRIDE
     fw = tgt - cam; fw /= np.linalg.norm(fw)
     rt = np.cross(fw, [0.0, 1.0, 0.0]); rt /= np.linalg.norm(rt)
     up = np.cross(rt, fw)
@@ -97,5 +96,15 @@ def render(state, out):
     Image.fromarray(img).resize((W * 2, H * 2), Image.NEAREST).save(out)
     print('OK', out)
 
+import sys
+ANG = sys.argv[1] if len(sys.argv) > 1 else 'front'
+CAMS = {
+  'front':  ([0.25, 1.35, 2.3],  [0.2, 0.95, 0.0]),
+  'back':   ([0.25, 1.35, -2.3], [0.2, 0.95, 0.0]),
+  'palm':   ([1.6, 0.9, 0.9],    [0.35, 0.8, 0.05]),
+  'walk':   ([-1.1, 1.6, -1.3],  [0.3, 0.9, 0.0]),
+}
+_cam, _tgt = CAMS[ANG]
+CAM_OVERRIDE = (np.array(_cam), np.array(_tgt))
 for st in DUMP:
-    render(st, f"/tmp/player_{st['mode']}.png")
+    render(st, f"/tmp/player_{st['mode']}_{ANG}.png")

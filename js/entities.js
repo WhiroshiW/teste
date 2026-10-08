@@ -467,8 +467,10 @@ export class Player {
       // lâmina segue o EIXO DOS DEDOS (medido da geometria real, frame local)
       // faca DE PÉ na mão fechada (ref. do produtor): cabo na palma,
       // lâmina pra CIMA; a rotação Z de descanso não tumba o +Y (fica ereta)
-      this.knifeM.position.set(-0.03, 0, 0); // 3cm pro corpo: centraliza o cabo no punho (vista frontal)
-      this.knifeM.rotation.set(-1.57, 0, -0.45);
+      this.knifeM.position.set(-0.03, 0, 0);
+      // Y=-0.49 cancela EXATAMENTE o tombamento do braço de descanso
+      // (derivado: tan(phi)=-tan(restZ)) -> lâmina VERTICAL no mundo; Z=-0.45 = roll do flat
+      this.knifeM.rotation.set(-1.57, -0.49, -0.45);
     }
     this.aiActive = true;
   }
