@@ -5,7 +5,7 @@
 // (#iconSprite) e são referenciados via <use href="#i-NOME">.
 //
 // Uso nos menus/toasts/HUD (sempre via innerHTML):
-//   import { icon } from './icons.js?v=1924_1997_v51';
+//   import { icon } from './icons.js?v=1924_1997_v52';
 //   el.innerHTML = `${icon('key')} Chave Pequena`;
 // ============================================================
 
