@@ -5,7 +5,7 @@
 // P3 (3º Andar & Terraço Heliponto) e Extras (Subsolo & Culto).
 // Modelos 3D autênticos estilo PS1 (Resident Evil / Silent Hill).
 // ============================================================
-import { pointInSolids } from './entities.js?v=1924_1997_v54';
+import { pointInSolids } from './entities.js?v=1924_1997_v55';
 
 // ==================== HELPERS MATERIAIS E PRIMITIVAS ====================
 function tm(THREE, tex, rx = 1, ry = 1, color = 0xffffff, emissive = 0x000000) {
