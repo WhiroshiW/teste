@@ -2,12 +2,12 @@
 // SANTA LÚCIA - Equipe Nakamura - Boot
 // ============================================================
 import * as THREE from '../vendor/three.module.min.js';
-import { Game } from './game.js?v=1924_1997_v53';
+import { Game } from './game.js?v=1924_1997_v54';
 
 // CARIMBO DE BUILD: versão visível DENTRO do jogo (canto inferior) e no
 // título da aba, vinda SEMPRE deste módulo (que carrega com timestamp
 // fresco) — identifica a versão real rodando mesmo com HTML velho em cache.
-const BUILD = 'v53';
+const BUILD = 'v54';
 if (typeof document !== 'undefined') {
   document.title = 'SANTA LÚCIA ' + BUILD;
   window.__BUILD = BUILD;
@@ -15,6 +15,12 @@ if (typeof document !== 'undefined') {
   badge.textContent = BUILD;
   badge.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:4px;z-index:999998;font:10px monospace;color:#9fe8a0;opacity:.55;text-shadow:0 1px 2px #000;pointer-events:none;';
   (document.body || document.documentElement).appendChild(badge);
+  setInterval(() => {
+    const d = window.__dbgFaca;
+    badge.textContent = d
+      ? BUILD + ' · faca ' + d.ang.toFixed(0) + '° aim' + d.aim + ' arm(' + d.ax + ',' + d.az + ') gun' + d.gx
+      : BUILD;
+  }, 200);
   console.log('%cSANTA LÚCIA ' + BUILD, 'color:#0f0;font-weight:bold');
 }
 

@@ -1,10 +1,10 @@
 // ============================================================
 // SANTA LÚCIA - Equipe Nakamura - Interface: telas, HUD, inventário, diálogos, loja, extras
 // ============================================================
-import { ITEMS, WEAPONS, healthStatus, SHOP_ITEMS, GALLERY_MODELS, CAMPAIGNS } from './config.js?v=1924_1997_v53';
-import { HELP_ROWS as HH } from './story.js?v=1924_1997_v53';
-import { icon } from './icons.js?v=1924_1997_v53';
-import { drawPortrait } from './textures.js?v=1924_1997_v53';
+import { ITEMS, WEAPONS, healthStatus, SHOP_ITEMS, GALLERY_MODELS, CAMPAIGNS } from './config.js?v=1924_1997_v54';
+import { HELP_ROWS as HH } from './story.js?v=1924_1997_v54';
+import { icon } from './icons.js?v=1924_1997_v54';
+import { drawPortrait } from './textures.js?v=1924_1997_v54';
 
 // Pixel arts autorais dos protagonistas (Equipe Nakamura).
 // Solte assets/portrait_daniel.png e assets/portrait_clara.png para usá-las;

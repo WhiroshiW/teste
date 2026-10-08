@@ -8,19 +8,19 @@ import {
   ITEMS, WEAPONS, ENEMIES, CAMPAIGNS, SHOP_ITEMS, GALLERY_MODELS,
   rankFor, rankForMercenaries, fmtTime, healthStatus,
   SAVE_KEY, POINTS_KEY, UNLOCKS_KEY, HISCORES_KEY, OPTS_KEY
-} from './config.js?v=1924_1997_v53';
-import { icon } from './icons.js?v=1924_1997_v53';
-import { buildTextures } from './textures.js?v=1924_1997_v53';
-import { buildRoom, ROOM_IDS, makePickupMesh } from './world.js?v=1924_1997_v53';
-import { Player, Enemy, NPC, TimeTotem, Particles, collideCircle, pointInSolids } from './entities.js?v=1924_1997_v53';
-import { AudioSys } from './audio.js?v=1924_1997_v53';
-import { createPSX } from './psx.js?v=1924_1997_v53';
-import { UI } from './ui.js?v=1924_1997_v53';
-import { GamepadManager } from './gamepad.js?v=1924_1997_v53';
+} from './config.js?v=1924_1997_v54';
+import { icon } from './icons.js?v=1924_1997_v54';
+import { buildTextures } from './textures.js?v=1924_1997_v54';
+import { buildRoom, ROOM_IDS, makePickupMesh } from './world.js?v=1924_1997_v54';
+import { Player, Enemy, NPC, TimeTotem, Particles, collideCircle, pointInSolids } from './entities.js?v=1924_1997_v54';
+import { AudioSys } from './audio.js?v=1924_1997_v54';
+import { createPSX } from './psx.js?v=1924_1997_v54';
+import { UI } from './ui.js?v=1924_1997_v54';
+import { GamepadManager } from './gamepad.js?v=1924_1997_v54';
 import {
   INTRO, INTRO_CLARA, INTRO_BENTO, D, OBJECTIVES,
   END_GOOD, END_NORMAL, END_CLARA_GOOD, END_CLARA_NORMAL, END_BENTO
-} from './story.js?v=1924_1997_v53';
+} from './story.js?v=1924_1997_v54';
 
 export class Game {
   constructor(THREE, container) {
@@ -2488,6 +2488,18 @@ export class Game {
     this.ui.crosshair(aiming);
 
     const ev = p.update(dt, this.moveInput(), this.room);
+    // DEBUG FACa: ângulo real da lâmina no mundo, visível no rodapé (badge do main.js)
+    if (typeof window !== 'undefined' && p.knifeM && p.knifeM.visible) {
+      if (!p._dbgV) p._dbgV = new THREE.Vector3();
+      p.knifeM.updateWorldMatrix(true, false);
+      p._dbgV.set(0, 0, 1).transformDirection(p.knifeM.matrixWorld);
+      window.__dbgFaca = {
+        ang: Math.acos(Math.max(-1, Math.min(1, p._dbgV.y))) * 180 / Math.PI,
+        aim: p.aiming ? 1 : 0,
+        ax: +p.armR.rotation.x.toFixed(2), az: +p.armR.rotation.z.toFixed(2),
+        gx: +p.gunPivot.rotation.x.toFixed(2),
+      };
+    }
     if (ev.step) this.audio.sfx(ev.run ? 'stepRun' : 'step');
 
     // Inimigos
