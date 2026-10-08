@@ -28,6 +28,10 @@ function dumpState(mode) {
   } else {
     p.setAim(false);
   }
+  if (mode === 'swing') { // pico do swing do ANDAR — caso que tombava a faca
+    p.armR.rotation.x = 0.5; p.armL.rotation.x = -0.5;
+  }
+  if (p.updateKnifeWorldUp) p.updateKnifeWorldUp(); // mesma compensação do jogo
   p.group.updateMatrixWorld(true);
   const vis = (o) => { for (let q = o; q && q !== p.group; q = q.parent) if (!q.visible) return false; return true; };
   const meshes = [];
@@ -56,7 +60,7 @@ function dumpState(mode) {
   if (WEAPON_MODELS.faca) out.knifeTex = WEAPON_MODELS.faca.tex;
   return out;
 }
-const modes = process.argv[2] === 'aim' ? ['aim'] : process.argv[2] === 'both' ? ['idle','aim'] : ['idle'];
+const modes = process.argv[2] === 'aim' ? ['aim','swing'] : process.argv[2] === 'both' ? ['idle','aim','swing'] : ['idle','swing'];
 const result = modes.map(dumpState);
 fs.writeFileSync('/tmp/player_render.json', JSON.stringify(result));
 console.log('dump ok:', result.map(r => `${r.mode}:${r.meshes.length} meshes`).join(' '));

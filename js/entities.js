@@ -682,7 +682,8 @@ export class Player {
         this.armR.rotation.set(-1.52, -0.04, -0.05);
         this.armL.rotation.set(-1.44, 0.05, 0.05);
         if (this.gunPivot) this.gunPivot.rotation.x = 0.92; // nivela o cano da pistola
-        if (this.knifeM) this.knifeM.rotation.set(3.77, 0, -0.45); // DE PÉ na mira (solver c/ gunPivot 0.92: y=1.0)
+        if (this.knifeM) this.knifeM.rotation.set(3.77, 0, -0.45); // fallback; o updateKnifeWorldUp abaixo corrige por frame
+        this.updateKnifeWorldUp();
       }
       else { this.armR.rotation.set(-1.45, 0.18, 0); this.armL.rotation.set(-1.40, -0.22, 0); }
       this.legL.rotation.x = 0; this.legR.rotation.x = 0;
@@ -745,7 +746,23 @@ export class Player {
       const headBase = (this.aiActive && this._aiHeadY) ? this._aiHeadY : 1.62;
       this.head.position.y = headBase + Math.sin(performance.now() / 600) * 0.015;
     }
+    this.updateKnifeWorldUp(); // lâmina vertical no mundo em idle E andar
     return ev;
+  }
+
+  // FACA DE PÉ EM TODA ANIMAÇÃO: em vez de ângulos estáticos por estado
+  // (o swing do andar tombava a lâmina), compensa POR FRAME a rotação da
+  // cadeia do braço (idle/walk/mira) forçando a lâmina VERTICAL no mundo.
+  updateKnifeWorldUp() {
+    if (!this.knifeM || !this.knifeM.visible || !this.knifeM.parent) return;
+    const pv = new this.THREE.Vector3(), pq = new this.THREE.Quaternion(), ps = new this.THREE.Vector3();
+    this.knifeM.parent.updateWorldMatrix(true, false);
+    this.knifeM.parent.matrixWorld.decompose(pv, pq, ps);
+    pq.invert(); // paiMundo^-1
+    // alvo no MUNDO: lâmina (+Z local) -> +Y (de pé, ref. do produtor/foto do chef);
+    // flat virado p/ +X (mesmo look do idle validado no render multi-ângulo)
+    const mundo = new this.THREE.Quaternion().setFromAxisAngle(new this.THREE.Vector3(1, 0, 0), -Math.PI / 2);
+    this.knifeM.quaternion.copy(pq).multiply(mundo);
   }
 
   damage(n) {
