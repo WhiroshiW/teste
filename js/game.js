@@ -8,18 +8,19 @@ import {
   ITEMS, WEAPONS, ENEMIES, CAMPAIGNS, SHOP_ITEMS, GALLERY_MODELS,
   rankFor, rankForMercenaries, fmtTime, healthStatus,
   SAVE_KEY, POINTS_KEY, UNLOCKS_KEY, HISCORES_KEY, OPTS_KEY
-} from './config.js';
-import { buildTextures } from './textures.js';
-import { buildRoom, ROOM_IDS, makePickupMesh } from './world.js';
-import { Player, Enemy, NPC, TimeTotem, Particles, collideCircle, pointInSolids } from './entities.js';
-import { AudioSys } from './audio.js';
-import { createPSX } from './psx.js';
-import { UI } from './ui.js';
-import { GamepadManager } from './gamepad.js';
+} from './config.js?v=1924_1997_v55';
+import { icon } from './icons.js?v=1924_1997_v55';
+import { buildTextures } from './textures.js?v=1924_1997_v55';
+import { buildRoom, ROOM_IDS, makePickupMesh } from './world.js?v=1924_1997_v55';
+import { Player, Enemy, NPC, TimeTotem, Particles, collideCircle, pointInSolids } from './entities.js?v=1924_1997_v55';
+import { AudioSys } from './audio.js?v=1924_1997_v55';
+import { createPSX } from './psx.js?v=1924_1997_v55';
+import { UI } from './ui.js?v=1924_1997_v55';
+import { GamepadManager } from './gamepad.js?v=1924_1997_v55';
 import {
   INTRO, INTRO_CLARA, INTRO_BENTO, D, OBJECTIVES,
   END_GOOD, END_NORMAL, END_CLARA_GOOD, END_CLARA_NORMAL, END_BENTO
-} from './story.js';
+} from './story.js?v=1924_1997_v55';
 
 export class Game {
   constructor(THREE, container) {
@@ -40,7 +41,7 @@ export class Game {
         };
       }
     }
-    this.renderer.setPixelRatio(1);
+    this.renderer.setPixelRatio(Math.min((typeof window !== 'undefined' && window.devicePixelRatio) || 1, 2));
     const initW = container.clientWidth || window.innerWidth || 320;
     const initH = container.clientHeight || window.innerHeight || 240;
     this.renderer.setSize(initW, initH, false);
@@ -53,12 +54,15 @@ export class Game {
 
     // Iluminação refinada: mais clara, legível e atmosférica
     this.ambLight = new THREE.AmbientLight(0xffffff, 0.85);
+    this.ambLight.layers.enable(1); this.ambLight.layers.enable(2); // camadas das armas
     this.scene.add(this.ambLight);
     this.hemiLight = new THREE.HemisphereLight(0xe8f0ff, 0x33283a, 0.65);
+    this.hemiLight.layers.enable(1); this.hemiLight.layers.enable(2); // idem
     this.scene.add(this.hemiLight);
 
     // Lanterna com facho mais amplo e potente
     this.lantern = new THREE.PointLight(0xfffaed, 14, 22, 1.8);
+    this.lantern.layers.enable(1); this.lantern.layers.enable(2); // idem
     this.scene.add(this.lantern);
 
     this.TEX = buildTextures(THREE);
@@ -170,7 +174,7 @@ export class Game {
     localStorage.setItem(POINTS_KEY, String(this.points));
     if (this.ui.el.titlePointsVal) this.ui.el.titlePointsVal.textContent = this.points.toLocaleString();
     if (this.ui.el.shopPointsVal) this.ui.el.shopPointsVal.textContent = this.points.toLocaleString();
-    if (reason) this.ui.toast(`⭐ +${n} PONTOS: ${reason}`, 3.5);
+    if (reason) this.ui.toast(`${icon('star')} +${n} PONTOS: ${reason}`, 3.5);
   }
 
   buyShopItem(item) {
@@ -215,11 +219,11 @@ export class Game {
     this.opts.cam = this.camMode;
     this.saveOpts();
     this.audio.sfx('uiSelect');
-    const msg = this.camMode === 'chase' ? '📷 CÂMERA: 3ª PESSOA (LIVRE)' : '📷 CÂMERA: FIXA (PS1 CLÁSSICO)';
+    const msg = this.camMode === 'chase' ? `${icon('camera')} CÂMERA: 3ª PESSOA (LIVRE)` : `${icon('camera')} CÂMERA: FIXA (PS1 CLÁSSICO)`;
     this.ui.toast(msg, 2.5);
     if (this.ui.el.optCam) this.ui.el.optCam.value = this.camMode;
     if (this.ui.el.invCamSwitch) {
-      this.ui.el.invCamSwitch.textContent = `📷 CÂMERA: ${this.camMode === 'chase' ? '3ª PESSOA' : 'FIXA PS1'}`;
+      this.ui.el.invCamSwitch.innerHTML = `${icon('camera')} CÂMERA: ${this.camMode === 'chase' ? '3ª PESSOA' : 'FIXA PS1'}`;
     }
   }
 
@@ -395,6 +399,12 @@ export class Game {
         if (!this.ui.el.modelViewer.classList.contains('hidden')) {
           this.ui.transitionTo(() => { this.ui.hideGallery(); this.ui.showShop(this.points, this.unlocks); }); return;
         }
+      }
+      if (!this.ui.el.campaignSelect.classList.contains('hidden')) {
+        if (code === 'KeyA' || code === 'ArrowLeft') this.ui.campNav(-1);
+        else if (code === 'KeyD' || code === 'ArrowRight') this.ui.campNav(1);
+        else if (code === 'Enter' || code === 'Space' || code === 'KeyE') this.ui.campConfirm();
+        return;
       }
       if (code === 'KeyW' || code === 'ArrowUp') this.ui.titleNav(-1);
       else if (code === 'KeyS' || code === 'ArrowDown') this.ui.titleNav(1);
@@ -909,7 +919,7 @@ export class Game {
   startCampaign(campId) {
     if (campId === 'bento' && !this.unlocks.extra_bento) {
       this.audio.sfx('dryfire');
-      this.ui.toast('🔒 Turno do Bento bloqueado! Compre na Loja de Pontos por 1.200 PTS.', 3.5);
+      this.ui.toast(icon('lock') + ' Turno do Bento bloqueado! Compre na Loja de Pontos por 1.200 PTS.', 3.5);
       return;
     }
 
@@ -969,7 +979,7 @@ export class Game {
   startMercenaries() {
     if (!this.unlocks.extra_mercenaries) {
       this.audio.sfx('dryfire');
-      this.ui.toast('🔒 Modo Mercenários bloqueado! Compre na Loja de Pontos por 1.000 PTS.', 3.5);
+      this.ui.toast(icon('lock') + ' Modo Mercenários bloqueado! Compre na Loja de Pontos por 1.000 PTS.', 3.5);
       return;
     }
 
@@ -1018,7 +1028,7 @@ export class Game {
   startSurvivor() {
     if (!this.unlocks.extra_survivor) {
       this.audio.sfx('dryfire');
-      this.ui.toast('🔒 Modo Sobrevivente bloqueado! Compre na Loja de Pontos por 1.000 PTS.', 3.5);
+      this.ui.toast(icon('lock') + ' Modo Sobrevivente bloqueado! Compre na Loja de Pontos por 1.000 PTS.', 3.5);
       return;
     }
 
@@ -1049,7 +1059,7 @@ export class Game {
     this.audio.ambient('floresta');
 
     this.spawnSurvivorWave();
-    this.ui.toast(`🛡️ SOBREVIVENTE: ONDA ${this.survivorWave}!`, 4);
+    this.ui.toast(`${icon('shield')} SOBREVIVENTE: ONDA ${this.survivorWave}!`, 4);
   }
 
   spawnSurvivorWave() {
@@ -1398,7 +1408,7 @@ export class Game {
       this.removeItem(it.item, 1);
       this.audio.sfx('heal');
       this.ui.hp(this.player.hp);
-      this.ui.toast(`❤ Vida recuperada (+${cfg.power})`, 2.5);
+      this.ui.toast(`${icon('heart')} Vida recuperada (+${cfg.power})`, 2.5);
     }
   }
 
@@ -1413,7 +1423,7 @@ export class Game {
 
   examineItem(it) {
     const cfg = ITEMS[it.item];
-    this.ui.toast(`${cfg.icon} ${cfg.name}: ${cfg.desc}`, 4.5);
+    this.ui.toast(`${icon(cfg.icon)} ${cfg.name}: ${cfg.desc}`, 4.5);
   }
 
   combineItems(srcIdx, destIdx) {
@@ -1430,7 +1440,7 @@ export class Game {
       if (dDef.ammo === src.item) {
         this.equipWeapon(dest);
         this.audio.sfx('pickupKey');
-        this.ui.toast(`⚙️ ${dDef.name} recarregada com ${sDef.name}!`, 3.5);
+        this.ui.toast(`${icon('gear')} ${dDef.name} recarregada com ${sDef.name}!`, 3.5);
         this.updateAmmoHud();
         return;
       }
@@ -1438,7 +1448,7 @@ export class Game {
       if (sDef.ammo === dest.item) {
         this.equipWeapon(src);
         this.audio.sfx('pickupKey');
-        this.ui.toast(`⚙️ ${sDef.name} recarregada com ${dDef.name}!`, 3.5);
+        this.ui.toast(`${icon('gear')} ${sDef.name} recarregada com ${dDef.name}!`, 3.5);
         this.updateAmmoHud();
         return;
       }
@@ -1449,7 +1459,7 @@ export class Game {
       dest.qty += src.qty;
       this.inv.splice(srcIdx, 1);
       this.audio.sfx('pickup');
-      this.ui.toast(`📦 Doses de ${dDef.name} agrupadas no mesmo frasco (x${dest.qty}).`, 3);
+      this.ui.toast(`${icon('box')} Doses de ${dDef.name} agrupadas no mesmo frasco (x${dest.qty}).`, 3);
       return;
     }
 
@@ -1465,10 +1475,10 @@ export class Game {
       return;
     }
     if (!def.ammo) {
-      this.ui.ammo(w.name, 'BRANCA', def.icon || '🔪', true);
+      this.ui.ammo(w.name, 'BRANCA', def.icon || 'knife', true);
     } else {
       const c = this.infiniteAmmo ? '∞' : this.countItem(def.ammo);
-      this.ui.ammo(w.name, `${c} / ${this.infiniteAmmo ? '∞' : c}`, def.icon || '🔫', true);
+      this.ui.ammo(w.name, `${c} / ${this.infiniteAmmo ? '∞' : c}`, def.icon || 'handgun', true);
     }
   }
 
@@ -1638,7 +1648,7 @@ export class Game {
     setTimeout(() => {
       this.ui.hideSaveBox();
       this.state = 'play';
-      this.ui.toast(`💾 Prontuário arquivado com sucesso no Sanatório. (${this.saves} registros)`, 4);
+      this.ui.toast(`${icon('ribbon')} Prontuário arquivado com sucesso no Sanatório. (${this.saves} registros)`, 4);
     }, 650);
   }
 
@@ -1936,7 +1946,7 @@ export class Game {
           this.audio.sfx('memorial');
           say(D.armario, () => {
             this.showBanner('crank');
-            this.ui.toast('💠 +1 FRAGMENTO DE MEMÓRIA (2/4)', 4);
+            this.ui.toast(icon('shard') + ' +1 FRAGMENTO DE MEMÓRIA (2/4)', 4);
           });
           this.checkObjective();
         } else say(D.armario_after);
@@ -2066,7 +2076,7 @@ export class Game {
     if (p.item === 'forest_key') this.flags.hasForestKey = true;
 
     this.audio.sfx(itDef && itDef.type === 'key' ? 'pickupKey' : 'pickup');
-    this.ui.toast(`Coletou: ${itDef ? itDef.icon : ''} ${itDef ? itDef.name : p.item}${p.qty > 1 ? ` x${p.qty}` : ''}`, 2.5);
+    this.ui.toast(`Coletou: ${itDef ? icon(itDef.icon) : ''} ${itDef ? itDef.name : p.item}${p.qty > 1 ? ` x${p.qty}` : ''}`, 2.5);
     this.updateAmmoHud();
     this.checkObjective();
   }
@@ -2368,7 +2378,7 @@ export class Game {
       const bonus = c.ref.smash();
       this.mercTimer += bonus;
       this.audio.sfx('totem');
-      this.ui.toast(`💎 +${bonus} SEGUNDOS!`, 2.5);
+      this.ui.toast(`${icon('gem')} +${bonus} SEGUNDOS!`, 2.5);
     } else if (c.kind === 'pickup') {
       this.pickupAt(c.ref);
     } else if (c.kind === 'door') {
@@ -2478,6 +2488,18 @@ export class Game {
     this.ui.crosshair(aiming);
 
     const ev = p.update(dt, this.moveInput(), this.room);
+    // DEBUG FACa: ângulo real da lâmina no mundo, visível no rodapé (badge do main.js)
+    if (typeof window !== 'undefined' && p.knifeM && p.knifeM.visible) {
+      if (!p._dbgV) p._dbgV = new p.THREE.Vector3(); // game.js não importa THREE direto
+      p.knifeM.updateWorldMatrix(true, false);
+      p._dbgV.set(0, 0, 1).transformDirection(p.knifeM.matrixWorld);
+      window.__dbgFaca = {
+        ang: Math.acos(Math.max(-1, Math.min(1, p._dbgV.y))) * 180 / Math.PI,
+        aim: p.aiming ? 1 : 0,
+        ax: +p.armR.rotation.x.toFixed(2), az: +p.armR.rotation.z.toFixed(2),
+        gx: +p.gunPivot.rotation.x.toFixed(2),
+      };
+    }
     if (ev.step) this.audio.sfx(ev.run ? 'stepRun' : 'step');
 
     // Inimigos
@@ -2559,7 +2581,7 @@ export class Game {
     else if (c.kind === 'pickup') {
       const it = ITEMS[c.ref.item];
       const extra = c.ref.item === 'page' ? ` (Pág. ${this.flags.pages.filter(Boolean).length + 1}/8)` : c.ref.qty > 1 ? ` x${c.ref.qty}` : '';
-      this.ui.prompt(`<b>E</b> — Pegar ${it.icon} ${it.name}${extra}`);
+      this.ui.prompt(`<b>E</b> — Pegar ${icon(it.icon)} ${it.name}${extra}`);
     }
 
     // Barra de chefe
@@ -2615,7 +2637,7 @@ export class Game {
       this.addItem(this.currentCampaign === 'clara' ? 'ammo38' : 'ammo9', 15);
       this.updateAmmoHud();
 
-      this.ui.toast(`🎉 ONDA ${this.survivorWave - 1} CONCLUÍDA! (+${bonus} Pts • Recursos Reabastecidos)`, 3.5);
+      this.ui.toast(`${icon('sparkle')} ONDA ${this.survivorWave - 1} CONCLUÍDA! (+${bonus} Pts • Recursos Reabastecidos)`, 3.5);
       setTimeout(() => this.spawnSurvivorWave(), 3000);
     }
   }

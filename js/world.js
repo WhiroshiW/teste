@@ -5,7 +5,7 @@
 // P3 (3º Andar & Terraço Heliponto) e Extras (Subsolo & Culto).
 // Modelos 3D autênticos estilo PS1 (Resident Evil / Silent Hill).
 // ============================================================
-import { pointInSolids } from './entities.js';
+import { pointInSolids } from './entities.js?v=1924_1997_v55';
 
 // ==================== HELPERS MATERIAIS E PRIMITIVAS ====================
 function tm(THREE, tex, rx = 1, ry = 1, color = 0xffffff, emissive = 0x000000) {
@@ -46,6 +46,7 @@ function solid(room, x0, z0, x1, z1, tag = null) {
 
 function pointLight(THREE, room, color, intensity, distance, x, y, z, flicker = null) {
   const l = new THREE.PointLight(color, intensity, distance);
+  l.layers.enable(1); l.layers.enable(2); // luz ilumina as camadas das armas
   l.position.set(x, y, z);
   room.group.add(l);
   if (flicker) {
