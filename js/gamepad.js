@@ -1,4 +1,4 @@
-import { icon } from './icons.js?v=1924_1997_v52';
+import { icon } from './icons.js?v=1924_1997_v53';
 // ============================================================
 // SANTA LÚCIA - Módulo de Suporte a Controles (Gamepad API)
 // Suporte Nativo: PlayStation 4 (DualShock 4) & Xbox (One/Series/360)

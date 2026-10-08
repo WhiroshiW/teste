@@ -39,7 +39,7 @@ function dumpState(mode) {
     if (p.gunPivot) p.gunPivot.rotation.x = 0.92;
     if (p.knifeM) p.knifeM.rotation.set(3.77, 0, -0.45);
   }
-  if (p.updateKnifeWorldUp) p.updateKnifeWorldUp(mode.startsWith('aim') ? 0 : 0.21); // mesmo lean do jogo
+  if (p.updateKnifeWorldUp) p.updateKnifeWorldUp(0); // mesmo lean do jogo
   p.group.updateMatrixWorld(true);
   const vis = (o) => { for (let q = o; q && q !== p.group; q = q.parent) if (!q.visible) return false; return true; };
   const meshes = [];

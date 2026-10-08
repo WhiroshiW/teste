@@ -2,7 +2,7 @@
 // SANTA LÚCIA - Equipe Nakamura - Entidades: colisão, partículas, jogador, inimigos, NPCs
 // Modelos low-poly construídos com primitivas (estilo PS1 autêntico).
 // ============================================================
-import { WEAPONS, ENEMIES, CAMPAIGNS } from './config.js?v=1924_1997_v52';
+import { WEAPONS, ENEMIES, CAMPAIGNS } from './config.js?v=1924_1997_v53';
 
 // Colisão círculo x lista de AABBs {x0,z0,x1,z1}. Ajusta p in-place.
 export function collideCircle(p, r, solids) {
@@ -139,9 +139,9 @@ export class Particles {
 }
 
 // ------------------------------- JOGADOR -------------------------------
-import { CLARA_MODEL } from './model_clara_data.js?v=1924_1997_v52';
-import { DANIEL_MODEL } from './model_daniel_data.js?v=1924_1997_v52';
-import { WEAPON_MODELS } from './model_weapons_data.js?v=1924_1997_v52';
+import { CLARA_MODEL } from './model_clara_data.js?v=1924_1997_v53';
+import { DANIEL_MODEL } from './model_daniel_data.js?v=1924_1997_v53';
+import { WEAPON_MODELS } from './model_weapons_data.js?v=1924_1997_v53';
 
 export class Player {
   constructor(THREE, TEX) {
@@ -753,7 +753,7 @@ export class Player {
   // FACA DE PÉ EM TODA ANIMAÇÃO: em vez de ângulos estáticos por estado
   // (o swing do andar tombava a lâmina), compensa POR FRAME a rotação da
   // cadeia do braço (idle/walk/mira) forçando a lâmina VERTICAL no mundo.
-  updateKnifeWorldUp(lean = 0.21) {
+  updateKnifeWorldUp(lean = 0) {
     if (!this.knifeM || !this.knifeM.visible || !this.knifeM.parent) return;
     const pv = new this.THREE.Vector3(), pq = new this.THREE.Quaternion(), ps = new this.THREE.Vector3();
     this.knifeM.parent.updateWorldMatrix(true, false);
@@ -769,8 +769,9 @@ export class Player {
     const mundo = new this.THREE.Quaternion().setFromAxisAngle(new this.THREE.Vector3(1, 0, 0), -Math.PI / 2);
     // lean ~12° em torno do eixo frontal do corpo: tira a lâmina de cima da manga
     // (dist. lâmina↔manga era 0.001) sem destravar o cabo do punho; 0 na mira (aprovada)
-    const fora = new this.THREE.Quaternion().setFromAxisAngle(new this.THREE.Vector3(0, 0, 1), -lean);
-    this.knifeM.quaternion.copy(pq).multiply(fora).multiply(mundo);
+    const fora = lean ? new this.THREE.Quaternion().setFromAxisAngle(new this.THREE.Vector3(0, 0, 1), -lean) : null;
+    this.knifeM.quaternion.copy(pq).multiply(mundo);
+    if (fora) this.knifeM.quaternion.multiply(fora);
   }
 
   damage(n) {
