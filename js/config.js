@@ -20,52 +20,52 @@ export const CFG = {
 // ------------------------------- ITENS -------------------------------
 export const ITEMS = {
   // Armas
-  knife:    { name: 'Faca Enferrujada', type: 'weapon', icon: '🔪', desc: 'Faca velha de cozinha. Fraca, mas rápida e nunca acaba.' },
-  scalpel:  { name: 'Bisturi Cirúrgico', type: 'weapon', icon: '🗡️', desc: 'Instrumento médico de precisão da Dra. Clara. Corte certeiro.' },
-  wrench:   { name: 'Chave Inglesa', type: 'weapon', icon: '🔧', desc: 'Ferramenta pesada do zelador Bento. Pancada contundente.' },
-  pistol:   { name: 'Pistola M9', type: 'weapon', ammo: 'ammo9', icon: '🔫', desc: 'Pistola 9mm da segurança do sanatório. Confiável.' },
-  revolver: { name: 'Revólver .38', type: 'weapon', ammo: 'ammo38', icon: '🎯', desc: 'Revólver clássico da Dra. Clara. Alto impacto e precisão.' },
-  shotgun:  { name: 'Espingarda Cal.12', type: 'weapon', ammo: 'shell', icon: '💥', desc: 'Espingarda calibre 12. Devastadora à queima-roupa.' },
-  grenade_launcher: { name: 'Lança-Granadas', type: 'weapon', ammo: 'grenade_rounds', icon: '💣', desc: 'Arma pesada militar. Causa explosão de alto raio.' },
-  magnum:   { name: 'Magnum .44 "Julgamento"', type: 'weapon', ammo: 'magnum_ammo', icon: '⭐', desc: 'Arma secreta lendária. Poder descomunal capaz de abater quase tudo com 1 tiro.' },
+  knife:    { name: 'Faca Enferrujada', type: 'weapon', icon: 'knife', desc: 'Faca velha de cozinha. Fraca, mas rápida e nunca acaba.' },
+  scalpel:  { name: 'Bisturi Cirúrgico', type: 'weapon', icon: 'scalpel', desc: 'Instrumento médico de precisão da Dra. Clara. Corte certeiro.' },
+  wrench:   { name: 'Chave Inglesa', type: 'weapon', icon: 'wrench', desc: 'Ferramenta pesada do zelador Bento. Pancada contundente.' },
+  pistol:   { name: 'Pistola M9', type: 'weapon', ammo: 'ammo9', icon: 'handgun', desc: 'Pistola 9mm da segurança do sanatório. Confiável.' },
+  revolver: { name: 'Revólver .38', type: 'weapon', ammo: 'ammo38', icon: 'revolver', desc: 'Revólver clássico da Dra. Clara. Alto impacto e precisão.' },
+  shotgun:  { name: 'Espingarda Cal.12', type: 'weapon', ammo: 'shell', icon: 'shotgun', desc: 'Espingarda calibre 12. Devastadora à queima-roupa.' },
+  grenade_launcher: { name: 'Lança-Granadas', type: 'weapon', ammo: 'grenade_rounds', icon: 'launcher', desc: 'Arma pesada militar. Causa explosão de alto raio.' },
+  magnum:   { name: 'Magnum .44 "Julgamento"', type: 'weapon', ammo: 'magnum_ammo', icon: 'magnum', desc: 'Arma secreta lendária. Poder descomunal capaz de abater quase tudo com 1 tiro.' },
 
   // Munições
-  ammo9:    { name: 'Balas 9mm', type: 'ammo', icon: '🔸', desc: 'Caixa de munição 9mm para pistola.' },
-  ammo38:   { name: 'Balas .38', type: 'ammo', icon: '🔹', desc: 'Munição calibre .38 para revólver.' },
-  shell:    { name: 'Cartuchos Cal.12', type: 'ammo', icon: '🟥', desc: 'Cartuchos de chumbo grosso para espingarda.' },
-  grenade_rounds: { name: 'Granadas', type: 'ammo', icon: '🧨', desc: 'Projéteis explosivos pesados.' },
-  magnum_ammo:    { name: 'Balas Magnum .44', type: 'ammo', icon: '🌟', desc: 'Munição perfurante pesada para a Magnum.' },
+  ammo9:    { name: 'Balas 9mm', type: 'ammo', icon: 'ammo9', desc: 'Caixa de munição 9mm para pistola.' },
+  ammo38:   { name: 'Balas .38', type: 'ammo', icon: 'ammo9', desc: 'Munição calibre .38 para revólver.' },
+  shell:    { name: 'Cartuchos Cal.12', type: 'ammo', icon: 'shell', desc: 'Cartuchos de chumbo grosso para espingarda.' },
+  grenade_rounds: { name: 'Granadas', type: 'ammo', icon: 'grenade', desc: 'Projéteis explosivos pesados.' },
+  magnum_ammo:    { name: 'Balas Magnum .44', type: 'ammo', icon: 'ammo9', desc: 'Munição perfurante pesada para a Magnum.' },
 
   // Cura e utilitários
-  pills:      { name: 'Comprimidos', type: 'heal', power: 50, icon: '💊', desc: 'Analgésicos fortes. Restaura parte da vida.' },
-  lightflask: { name: 'Frasco de Luz', type: 'heal', power: 999, icon: '🧪', desc: 'Um frasco com essência pura de luz. Restaura toda a vida.' },
-  antidote:   { name: 'Soro Restaurador', type: 'heal', power: 75, icon: '💉', desc: 'Fórmula médica desenvolvida por Clara para estabilizar sinais vitais.' },
-  ribbon:     { name: 'Fita de Tinta', type: 'ribbon', icon: '🎀', desc: 'Fita para o diário/máquina de escrever. Permite registrar o progresso.' },
+  pills:      { name: 'Comprimidos', type: 'heal', power: 50, icon: 'pills', desc: 'Analgésicos fortes. Restaura parte da vida.' },
+  lightflask: { name: 'Frasco de Luz', type: 'heal', power: 999, icon: 'flask', desc: 'Um frasco com essência pura de luz. Restaura toda a vida.' },
+  antidote:   { name: 'Soro Restaurador', type: 'heal', power: 75, icon: 'syringe', desc: 'Fórmula médica desenvolvida por Clara para estabilizar sinais vitais.' },
+  ribbon:     { name: 'Fita de Tinta', type: 'ribbon', icon: 'ribbon', desc: 'Fita para o diário/máquina de escrever. Permite registrar o progresso.' },
 
   // Chaves e quebra-cabeças
-  smallkey:   { name: 'Chave Pequena', type: 'key', icon: '🗝️', desc: 'Uma chave pequena de gaveta do quarto 3.' },
-  rustkey:    { name: 'Chave Enferrujada', type: 'key', icon: '🔑', desc: 'Chave velha do consultório do Dr. Alencastro.' },
-  basekey:    { name: 'Chave do Porão', type: 'key', icon: '🗝️', desc: 'Chave pesada que dá acesso às caldeiras subterrâneas.' },
-  fuse:       { name: 'Fusível 30A', type: 'key', icon: '🔌', desc: 'Fusível industrial para o quadro de força do elevador.' },
-  crank:      { name: 'Manivela de Ferro', type: 'key', icon: '⚙️', desc: 'Manivela para registros de drenagem do porão.' },
-  frag:       { name: 'Fragmento de Memória', type: 'key', icon: '💠', desc: 'Caco brilhante de lembrança de Lúcia. O memorial exige 4.' },
-  page:       { name: 'Página do Diário', type: 'page', icon: '📄', desc: 'Uma página arrancada de um diário pessoal.' },
+  smallkey:   { name: 'Chave Pequena', type: 'key', icon: 'key', desc: 'Uma chave pequena de gaveta do quarto 3.' },
+  rustkey:    { name: 'Chave Enferrujada', type: 'key', icon: 'key-master', desc: 'Chave velha do consultório do Dr. Alencastro.' },
+  basekey:    { name: 'Chave do Porão', type: 'key', icon: 'key-master', desc: 'Chave pesada que dá acesso às caldeiras subterrâneas.' },
+  fuse:       { name: 'Fusível 30A', type: 'key', icon: 'fuse', desc: 'Fusível industrial para o quadro de força do elevador.' },
+  crank:      { name: 'Manivela de Ferro', type: 'key', icon: 'crank', desc: 'Manivela para registros de drenagem do porão.' },
+  frag:       { name: 'Fragmento de Memória', type: 'key', icon: 'shard', desc: 'Caco brilhante de lembrança de Lúcia. O memorial exige 4.' },
+  page:       { name: 'Página do Diário', type: 'page', icon: 'page', desc: 'Uma página arrancada de um diário pessoal.' },
 
   // Itens novos da Campanha B e extras
-  forest_key: { name: 'Chave do Portão de Ferro', type: 'key', icon: '🗝️', desc: 'Chave gótica que abre o portão dos jardins e da floresta.' },
-  clara_card: { name: 'Cartão da Dra. Clara', type: 'key', icon: '💳', desc: 'Cartão magnético médico de acesso aos arquivos confidenciais.' },
-  bento_key:  { name: 'Chave Mestra de Bento', type: 'key', icon: '🔑', desc: 'Chaveiro com a chave mestra que abre as saídas de emergência.' },
-  chapel_key: { name: 'Chave da Capela', type: 'key', icon: '🗝️', desc: 'Chave com entalhes de uma cruz gótica.' },
-  lucia_locket: { name: 'Medalhão de Lúcia', type: 'key', icon: '📿', desc: 'Um pequeno medalhão com a foto de infância dos irmãos Daniel e Lúcia.' },
-  alencastro_dossier: { name: 'Dossiê Alencastro', type: 'key', icon: '📁', desc: 'Documentos provando os experimentos ilegais com a escuridão da mente.' },
+  forest_key: { name: 'Chave do Portão de Ferro', type: 'key', icon: 'key-ornate', desc: 'Chave gótica que abre o portão dos jardins e da floresta.' },
+  clara_card: { name: 'Cartão da Dra. Clara', type: 'key', icon: 'keycard', desc: 'Cartão magnético médico de acesso aos arquivos confidenciais.' },
+  bento_key:  { name: 'Chave Mestra de Bento', type: 'key', icon: 'key-master', desc: 'Chaveiro com a chave mestra que abre as saídas de emergência.' },
+  chapel_key: { name: 'Chave da Capela', type: 'key', icon: 'key-cross', desc: 'Chave com entalhes de uma cruz gótica.' },
+  lucia_locket: { name: 'Medalhão de Lúcia', type: 'key', icon: 'locket', desc: 'Um pequeno medalhão com a foto de infância dos irmãos Daniel e Lúcia.' },
+  alencastro_dossier: { name: 'Dossiê Alencastro', type: 'key', icon: 'folder', desc: 'Documentos provando os experimentos ilegais com a escuridão da mente.' },
 
   // Itens da nova planta remasterizada (Estufa, Heliponto, Culto, Canil)
-  greenhouse_key: { name: 'Chave da Estufa', type: 'key', icon: '🗝️', desc: 'Chave de latão com relevos botânicos que abre a estufa ao sul.' },
-  herbicide: { name: 'Composto Herbicida', type: 'key', icon: '🧪', desc: 'Solução química que dissolve as videiras carnívoras da estufa.' },
-  mezanino_emblem: { name: 'Emblema do Mezanino', type: 'key', icon: '🛡️', desc: 'Brasão de bronze do sanatório que destranca a escadaria do 2º Andar.' },
-  terrace_key: { name: 'Cartão do Heliponto', type: 'key', icon: '💳', desc: 'Cartão de acesso de segurança para a cobertura e heliponto.' },
-  cult_symbol: { name: 'Talismã do Culto', type: 'key', icon: '🔮', desc: 'Símbolo em pedra negra recuperado do Altar de sacrifícios.' },
-  crowbar: { name: 'Pé de Cabra', type: 'weapon', icon: '🦯', desc: 'Pé de cabra de ferro de Bento. Excelente alavanca e arma de impacto.' },
+  greenhouse_key: { name: 'Chave da Estufa', type: 'key', icon: 'key-ornate', desc: 'Chave de latão com relevos botânicos que abre a estufa ao sul.' },
+  herbicide: { name: 'Composto Herbicida', type: 'key', icon: 'flask', desc: 'Solução química que dissolve as videiras carnívoras da estufa.' },
+  mezanino_emblem: { name: 'Emblema do Mezanino', type: 'key', icon: 'crest', desc: 'Brasão de bronze do sanatório que destranca a escadaria do 2º Andar.' },
+  terrace_key: { name: 'Cartão do Heliponto', type: 'key', icon: 'keycard', desc: 'Cartão de acesso de segurança para a cobertura e heliponto.' },
+  cult_symbol: { name: 'Talismã do Culto', type: 'key', icon: 'talisman', desc: 'Símbolo em pedra negra recuperado do Altar de sacrifícios.' },
+  crowbar: { name: 'Pé de Cabra', type: 'weapon', icon: 'crowbar', desc: 'Pé de cabra de ferro de Bento. Excelente alavanca e arma de impacto.' },
 };
 
 // ------------------------------- ARMAS -------------------------------
@@ -122,7 +122,7 @@ export const ENEMIES = {
     notice: 99, scale: 2.1, eye: 0xff3b30, stagger: 0.0, boss: true, points: 1000,
   },
   alencastro: {
-    name: 'DR. ALENCASTRO', hp: 800, dmg: 36, speed: 2.05, range: 2.3, cooldown: 1.4,
+    name: 'DR. ALENCASTRO', hp: 520, dmg: 36, speed: 1.5, range: 2.3, cooldown: 1.4,
     notice: 99, scale: 1.95, eye: 0x9944ff, stagger: 0.0, boss: true, points: 1200,
   },
 };
@@ -156,9 +156,9 @@ export const CAMPAIGNS = {
     hp: 90,
     speed: 1.08, // Clara é mais ágil
     startRoom: 'floresta',
-    startX: 0,
-    startZ: 14,
-    startRot: 0,
+    startX: 2,
+    startZ: 4,
+    startRot: Math.PI,
     startItems: [
       { item: 'scalpel', qty: 1 },
       { item: 'revolver', qty: 1 },
@@ -175,10 +175,10 @@ export const CAMPAIGNS = {
     portrait: 'bento',
     hp: 110,
     speed: 0.92,
-    startRoom: 'porao',
-    startX: 4,
-    startZ: -3.5,
-    startRot: Math.PI / 2,
+    startRoom: 'casa_zelador',
+    startX: 0,
+    startZ: 1.5,
+    startRot: Math.PI,
     startItems: [
       { item: 'wrench', qty: 1 },
       { item: 'pistol', qty: 1 },
@@ -197,7 +197,7 @@ export const SHOP_ITEMS = [
     name: 'KIT DE PRIMEIROS SOCORROS',
     cost: 500,
     desc: 'Restaura 50% da sua vida.',
-    icon: 'medkit',
+    icon: 'syringe',
     category: 'upgrades',
   },
   {
@@ -205,7 +205,7 @@ export const SHOP_ITEMS = [
     name: 'MUNIÇÃO EXTRA',
     cost: 750,
     desc: '+30% de munição para a arma equipada.',
-    icon: 'ammo',
+    icon: 'ammo9',
     category: 'upgrades',
   },
   {
@@ -221,7 +221,7 @@ export const SHOP_ITEMS = [
     name: 'AUMENTO DE ENERGIA',
     cost: 600,
     desc: 'Recupera 25% de energia.',
-    icon: 'energy',
+    icon: 'bolt',
     category: 'upgrades',
   },
   {
@@ -229,7 +229,7 @@ export const SHOP_ITEMS = [
     name: 'REVIVER',
     cost: 1500,
     desc: 'Te traz de volta uma vez no modo história.',
-    icon: 'revive',
+    icon: 'sparkle',
     category: 'upgrades',
   },
 
@@ -239,7 +239,7 @@ export const SHOP_ITEMS = [
     name: 'Modo Extra: The Mercenaries',
     cost: 1000,
     desc: 'Combate contra o relógio no sanatório com ranking S, totens de tempo e combos.',
-    icon: '⏱️',
+    icon: 'timer',
     category: 'modes',
   },
   {
@@ -247,7 +247,7 @@ export const SHOP_ITEMS = [
     name: 'Modo Extra: Sobrevivente',
     cost: 1000,
     desc: 'Sobrevivência infinita sob chuva pesada na floresta contra ondas crescentes.',
-    icon: '🛡️',
+    icon: 'shield',
     category: 'modes',
   },
   {
@@ -255,7 +255,7 @@ export const SHOP_ITEMS = [
     name: 'Campanha Extra: O Turno da Noite',
     cost: 1200,
     desc: 'Jogue como o Zelador Bento no porão escuro com chave inglesa na noite do colapso.',
-    icon: '🗝️',
+    icon: 'key-ornate',
     category: 'modes',
   },
 
@@ -265,7 +265,7 @@ export const SHOP_ITEMS = [
     name: 'Munição Infinita',
     cost: 2500,
     desc: 'Ative nas opções: todas as armas disparam sem consumir cartuchos.',
-    icon: '♾️',
+    icon: 'infinity',
     category: 'weapons',
   },
   {
@@ -273,7 +273,7 @@ export const SHOP_ITEMS = [
     name: 'Magnum .44 "Julgamento"',
     cost: 2000,
     desc: 'Desbloqueia a lendária Magnum .44 no baú de itens em qualquer campanha.',
-    icon: '⭐',
+    icon: 'magnum',
     category: 'weapons',
   },
   {
@@ -281,7 +281,7 @@ export const SHOP_ITEMS = [
     name: 'Lança-Granadas Tático',
     cost: 1800,
     desc: 'Arma com alto poder destrutivo em área, disponível no baú.',
-    icon: '💣',
+    icon: 'launcher',
     category: 'weapons',
   },
   {
@@ -289,7 +289,7 @@ export const SHOP_ITEMS = [
     name: 'Traje Tático: Daniel',
     cost: 800,
     desc: 'Visual alternativo com jaqueta militar reforçada para Daniel.',
-    icon: '🥋',
+    icon: 'outfit',
     category: 'weapons',
   },
   {
@@ -297,7 +297,7 @@ export const SHOP_ITEMS = [
     name: 'Traje Investigador: Clara',
     cost: 800,
     desc: 'Roupa especial de investigação tática com coldre duplo para Clara.',
-    icon: '🧥',
+    icon: 'outfit',
     category: 'weapons',
   },
   {
@@ -305,7 +305,7 @@ export const SHOP_ITEMS = [
     name: 'Galeria 3D dos Modelos',
     cost: 500,
     desc: 'Inspecione em 360° todos os modelos 3D dos heróis e monstros com fichas.',
-    icon: '🗿',
+    icon: 'bust',
     category: 'weapons',
   },
   {
@@ -313,7 +313,7 @@ export const SHOP_ITEMS = [
     name: 'Filtro Vintage VHS & Sépia',
     cost: 600,
     desc: 'Desbloqueia filtros retrô estilo fita VHS e cinema clássico nas opções.',
-    icon: '📼',
+    icon: 'vhs',
     category: 'weapons',
   },
   {
@@ -321,7 +321,7 @@ export const SHOP_ITEMS = [
     name: 'Fita de Tinta Infinita',
     cost: 700,
     desc: 'Permite salvar o progresso no diário quantas vezes quiser sem gastar fitas.',
-    icon: '🎀',
+    icon: 'ribbon',
     category: 'weapons',
   },
 ];

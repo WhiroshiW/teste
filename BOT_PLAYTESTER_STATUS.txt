@@ -1,0 +1,415 @@
+================================================================
+BOT PLAYTESTER v3 — STATUS DA SESSÃO 14/out (congelado p/ continuar amanhã)
+================================================================
+Como rodar (da RAIZ teste/):   node tools/bot_play.mjs daniel|clara|bento [maxMin]
+Log de salas p/ radar:         docs/refs/_debug/eyes_daniel.jsonl
+                               node tools/eyes_radar.py daniel  (gera PNGs)
+
+----------------------------------------------------------------
+1. ONDE ESTÁ (medidor da sessão)
+----------------------------------------------------------------
+Última run 12min (daniel): 6/20 salas, 1/4 frags, 1 morte, senha 1402 ✓,
+cofre ✓, save ✓, recarrega pós-morte ✓.
+Última run 75min (antes do fix da água): 8/20 salas, 2/4 frags, 0 mortes,
+crank na mão — o bot JA FOI: quarto→corredor→quarto2→saguão→cemitério→
+porão→mezanino→enfermaria.
+Regras canônicas respeitadas: sem roteiro, lê HUD/senha/textos, A* próprio,
+zero know-how de progressão.
+
+----------------------------------------------------------------
+2. FIXES NOVOS DESTA SESSÃO (todos na tree, entram no bump v74)
+----------------------------------------------------------------
+a) **js/world.js — BUG DE PROGRESSÃO Nº10 (jogo, não bot)**: o porão tinha
+   `solid(R, -7.5, -5.5, 7.5, 5.5, 'water')` = água cobrindo A SALA INTEIRA.
+   Player real ficaria preso do mesmo jeito. Corrigido p/ faixa norte só:
+   `solid(R, -7.5, 2.5, 7.5, 5.5, 'water')  // água funda SÓ na escada do subsolo`
+   (o `filter(tag!=='water')` da válvula continua funcionando).
+b) tools/bot_play.mjs — anti-flip-flop porao↔mezanino: se o objetivo manda
+   pra sala onde já estou sem progresso, suprime o objetivo até o texto do
+   HUD mudar (expira em 150s). FUNCIONOU: porão → enfermaria com rustkey.
+c) Saída de estagnação agora GIRA as portas (`_exitRot % saidas.length`)
+   em vez de sempre pegar a mais próxima.
+d) WATCHDOG GLOBAL 150s na mesma sala: limpa deadTargets/actTried/pkTried/
+   navTarget/goalSuppress/wander e re-pensa. Re-arma a cada 100s.
+e) SAVEBOX TRAVADA pós-morte (o continueGame não fechava a savebox por
+   ~200s): agora ESC de emergência após 2s (`⚠️ savebox não fecha`).
+f) Telemetria de navegação (🛰️ a cada 15s): nav/eu/path/hp/dead/cand.
+   + log 🚪·E com dist/pos ao apertar E em porta. TEMPORÁRIOS — tirar
+   antes do commit final limpo.
+
+----------------------------------------------------------------
+3. BUG ABERTO (diagnosticado ATÉ O FIM, falta aplicar o fix)
+----------------------------------------------------------------
+SINTOMA: pós-morte+continueGame, o bot volta ao saguão, escolhe a porta do
+porão (porta 6, tem basekey, poraoOpen ainda não setado no save) e fica
+ETERNAMENTE parado em (-7.7,-2.3) sem apertar E. Sem logs. Roda inteira perdida.
+
+EVIDÊNCIA (telemetria 🛰️):
+  nav door@(-7.7,-2.3) eu=(-7.66,-2.29) path=1wp@0 hp=100 dead=0
+  cand=door:Subir ao Mezanino (2 d=1.00   ← CANDIDATO É A PORTA VIZINHA!
+CAUSA-RAIZ PROVADA:
+  - Portas vizinhas no saguão: mezanino @(-6.8,-2.8) r=1.4 (idx 4, TRANCADA
+    até pé-de-cabra) e porão @(-8.2,-2.5) r=1.3 (idx 6).
+  - O HOP de objetivo cria navTarget com mira PUXADA 0.55 pro centro:
+    (-7.7,-2.3). Esse ponto fica a 0.99 da mezanino (DENTRO do raio 1.4)
+    e a 0.54 do porão.
+  - game.currentCandidate() checa portas EM ORDEM do array → mezanino (idx 4)
+    ganha sempre. Ela está trancada e o bot já registrou o "trancada"
+    (mem.sig === flagsSig()) → o bloco da porta não aperta E de novo e não
+    loga NADA → silêncio eterno. O navigate segura o player no aim travado.
+  - PRÉ-morte funcionou porque o alvo veio do pickTarget com a coordenada
+    REAL da porta (-8.2,-2.5) → player chegou a d=0.01 → E abriu.
+FIX PROPOSTO (amanhã, primeiro passo):
+  No hop de objetivo (nextHopTo/hop creation), mirar a PORTA REAL (d.x,d.z)
+  SEM puxar 0.55. O navigate JÁ TEM fallback: se A* até a porta falhar
+  (porta em cima da parede), ele puxa 1.3m sozinho e mantém o alvo vivo.
+  O pull preventivo é redundante e é o que cria o ponto ambíguo entre as
+  duas portas. Depois: run 12min pra confirmar que o porão abre pós-morte,
+  e rodar 30/75min pra ver se a cadeia anda (válvula+crank → subsolo → frags).
+  CUIDADO: não regredir o caso "porta na parede" (fallback 1.3m cobre).
+  OBS: gatilho de E em porta precisa dist < d.r (1.3 da porão): com mira
+  real o A* já levou o player a 0.01m pré-morte, então ok.
+
+----------------------------------------------------------------
+4. CHECKLIST DO QUE FALTA (encomenda 14/out — bot aprovado quando:)
+----------------------------------------------------------------
+[ ] Aplicar fix do hop (item 3) + confirmar em 12min
+[ ] Run 90min daniel limpa (sem travar; want: válvula c/ crank → subsolo
+    → frag 3 crate → 4 frags → fusebox → elevador → memorial → boss → terraço)
+[ ] Runs clara e bento até zerar (clara: forest_key chão / cofre 1402 /
+    monólito+locket / capela / boss porão; bento: porão→bento_key→comporta /
+    kennel→forest_key / floresta→gate_final)
+[ ] Zerar as 3 = "perfeito" segundo as regras canônicas
+[ ] OLHOS: com o bot rodando limpo, rodar eyes_radar.py nas 3 campanhas e
+    INSPECIONAR visual (render/spawns/criação das coisas) — must-have
+[ ] Atos órfãos RESTANTES (gameplay sem efeito, auditar depois):
+    negatoscope_view, fireplace, herbicide_table, plant_roots, bento_bed,
+    bento_bench, rail_view
+[ ] VERIFICAR visual do portal do terraço @(0,-4.0) gated bossDead
+[ ] Tirar telemetria 🛰️ e log 🚪·E (temporários)
+[ ] Bump v74: BUILD 'v74' em main.js:14 + sed 1924_1997_v73→v74 em
+    index.html e js/*.js + rodar as 9 suítes (linear_flow 112 asserts)
+[ ] Atualizar MAPA_DO_PROJETO.txt + commit final
+[ ] Push só em NOVA sessão de coding. Merge MANUAL pelo usuário — NUNCA mergear.
+
+----------------------------------------------------------------
+5. GANHOS DE MECÂNICA DO BOT QUE NÃO PODEM REGREDIR
+----------------------------------------------------------------
+- A* próprio (gridFor cache id#solids.length, R=0.38, CS=0.25, 8-dirs,
+  LOS suavização c/ skip de waypoint 0.62; fallback alvo puxado 1.3m).
+- Portas NUNCA entram em deadTargets. Estagnação 120s → sai por porta
+  destrancada (girando) e volta depois. BLOQUEADO só sem saída.
+- Save: _savedThisBox + saveCdUntil 300s (anti-vício). Gameover:
+  hasSave ? continueGame : restart. ESC de emergência na savebox.
+- Yield do mainLoop = setTimeout(r,1) — setImmediate STARVA os timers do jogo.
+- pressERaw() nas interações (throttle de tecla engole E).
+- Leitura de objetivo do HUD: parseGoalRoom (tabela regex) + nextHopTo (BFS
+  no grafo lido das portas) + supressão de objetivo estagnado (anti-flop).
+- Watchdog 150s: mundo mudou → limpa memória e re-pensa.
+- Aprendizado de senha: regex ddmm/4dígitos no texto "ouvido" (1402 ✓).
+
+================================================================
+APPEND 14/out TARDE (sessão 2 — lote de fixes do medo/dash/save)
+================================================================
+RESOLVIDO NESTE LOTE (todos validados em runs):
+- [3] FIX DO HOP aplicado (mira porta real) → ping-pong do porão MORREU.
+- 🐛 NOVO BUG DE JOGO evitado: porão inteiro alagado era sólido 'water'
+  (player real preso) → água só na faixa norte (world.js :1120).
+- SISTEMA DE MEDO completo: memória de dano por inimigo (dmgMem), pânico
+  por dano recente (>25 em 5s) ou grandão colado, fuga pela porta, medo
+  da sala com prazo 420×1.5^n (teto 900, desconto 300 se houve progresso),
+  portas de sala temida no último pool (fearPool), objetivo suprimido.
+- 🤚 Perseguição sem progresso 8s = desisto do bicho por 45s (sombras da
+  floresta não prendem mais o run inteiro).
+- Mochila cheia não vira loop mudo (guard no E de pickup) + watchdog
+  subiu no tick (nenhum ramo o maiá mais em silêncio).
+- 🏃 DASH comprometido: desarmado contra grandão = corre pro que interessa
+  (act com vantagem de 3m, weapon/ammo pickup), SEM combate no meio; porta
+  como alvo é preservada; pânico compromete com a porta pra onde corria.
+- 🧰 Troca de arma contra grandão (GL/shotgun se tiver munição); kite
+  aprendido 3.4m p/ quem já me bateu forte; cura até 85 com grandão na área.
+- VÁLVULA DO PORÃO: ABRE (valve=1 provado em telemetria) via dash —
+  "🔍 Girar a grande válvula vermelha de drenagem" dispara.
+- CAPELA: 4 grenade_rounds conquistados via dash (provado no inventário).
+- 💾 Disciplina de save (progresso não salvo → detour pra máquina) —
+  IMPLEMENTADA mas a última run REGREDIU (14/20 vs 17/20): REVER amanhã.
+
+MEDIDOR DA SESSÃO 2 (runs 90min daniel, RNG varia muito):
+- RECORDE 17/20 salas (era 8!), 0-2 mortes, 25-35 aberturas de porta,
+  até 58 itens coletados. 2/4 frags (teddy+armário) — cripta e crate
+  seguem bloqueadas pela parede dos brutamontes do porão.
+- Plataforma atual: 14-17 salas. Aprovado = zerar as 3 campanhas.
+
+ALAVANCAS DE AMANHÃ (nessa ordem):
+1. ROTA ALTERNATIVA POR CIMA DO MEDO: nextHopTo BFS com custo +∞ em sala
+   temida → saguão→MEZANINO(crowbar)→porão: spawn @(0,4.2) fica a 1.2m da
+   porta do subsolo (0,5.4) — ZERO corrida contra carrasco. É o unlock
+   elegante p/ subsolo→culto→cult_symbol→cripta→SHOTGUN(95)→porão limpo.
+2. Revisar detour de save (só pós-progresso GRANDE: valveOpen/frag/boss;
+   hoje pode estar gymando o run em viagens ao saguão).
+3. Porão pós-shotgun: GL (5.5,3.5) + 4 rounds da capela → heavyArmed →
+   kite 3.4 + 160 aoe mata carrasco(320)=2 tiros e aberracao(180)=2.
+4. Boss/memorial/terraço ainda não testados pelo bot (cadeia final).
+5. clara e bento: rodar 90min cada depois que daniel passar do porão.
+6. OLHOS/radar + tirar telemetria 🛰️/🚪·E + bump v74 + 9 suítes + MAPA.
+
+TELEMETRIA ATUAL (temporária): 🛰️ a cada 15s com
+nav/eu/hp/valve/frags/inv/cand — NÃO comitar assim; limpar antes do bump.
+Logs de medo: 😱(pânico) 😨(medo ativo) 🏃(dash) 🤚(desisto de perseguir)
+🧰(troca arma) 💉(cura) — manter, são a "personalidade" do bot.
+
+================================================================
+Gerado em 14/out — sessão arena/01a0e942-teste. Continuar do item 3.
+
+================================================================
+FASE 1 DA PLANTA NOVA — SESSÃO 14/OUT (noite) — ESTADO EXATO
+================================================================
+O QUE ESTÁ SÓLIDO (testado por run):
+- Bot estável: runs 12–90min SEM crash. Morte carrega save e não
+  perde a sanidade (traumas resetam, mapa permanece).
+- CADEIA DA CLARA OK: locket → monólito → chapelSignal → selo da
+  catedral → ENTREI CATEDRAL → cutscene + boss alencastro (spawn
+  0,-5.5, hp700/speed1.5) ativa e acerta (-36 com dmg gate d<2.2).
+- SAVE CHAIN CONERTADA (a grande descoberta do dia): a máquina de
+  escrever exige FITA DE TINTA (ribbon) — canônico. O bot só tinha
+  3 saves possíveis e depois ficava sem; havia também um freeze:
+  detour de save bloqueado por actTried. Hoje: +5 ribbons semeadas
+  (saguão 4.6,2.6; experimentos -1.5,3.5; casa_zelador 2.5,2.5;
+  corredor_n -6.5,2.5; estacionamento 3.0,3.0) + detour exige fita
+  + detour bypassa actTried + savebox grava e desarma tudo.
+  Resultado: 5 saves em 60min, sem vício nem freeze.
+
+BOT BRAIN (patches do dia, todos no bot_play.mjs):
+- histerese de porta: recém-saída custa x50 (acabou o ping-pong de
+  re-entrar na sala que saiu).
+- parseGoalRoom remapeado pra PLANTA NOVA (catedral/monólito/
+  experimentos/estacionamento/passagem/casa/corredor_n/...).
+- crash `sig is not defined` no hop: resolvido (sigH local).
+- anti-flip-flop do objetivo SÓ dentro da sala-alvo.
+- BFS de rotas em 2 passadas: 1ª ignora portas trancadas (sala atual
+  via doorLockedInfo; outras via doorMem global sala:idx); 2ª aceita
+  trancadas como último recurso.
+- detour de save usa progressSig() (só progresso real: frags/válvula/
+  cofre/secreta/hallNorth/plantas/chapel/locket/memorial/boss) e não
+  qualquer flag trivial.
+- 🧭 log de objetivo a cada 45s + 🔀 diff de prog (temporários).
+
+O ÚNICO BLOQUEIO RESTANTE (clara 60min = 12 salas, 1 visita catedral):
+- Depois do 1º encontro com o boss (foge de medo), ela NÃO REVISITA a
+  catedral: ping-pong hall<->cemitério no fim do run. Suspeita forte:
+  o hop do cemitério manda pra porta da FLORESTA (rota livre via
+  casa->passagem) mas a navegação/A* ou o pickTarget (usadas w1)
+  devolve pro hall. O roomDoors dela TEM a rota (12 salas). Próximo
+  passo: logar o hop escolhido no cemitério + o fallback do navigate
+  pra achar quem vence (hop x pickTarget).
+- ROTEIRO: correr clara 90–120min pós-fix; o boss cai com revolver
+  (90hp bot, shells na catedral já posicionadas). Depois Bento smoke
+  (casa_zelador) e act pós-bossDead "atravesse a LUZ no altar".
+
+LIMPEZA ANTES DO COMMIT "PERFEITO": tirar 🛰️/🚪·E/🧭/🔀/📝 spam
+(manter 😱😨🏃🤚🧰💉💾💀 e relatório), denominador "salas X/13" (L1
+real = 13, o /20 é do mapa velho).
+
+================================================================
+Gerado em 14/out (noite) — sessão arena/01a0e942-teste. Continuar
+do item "O ÚNICO BLOQUEIO RESTANTE".
+
+================================================================
+FASE 2/3 DA PLANTA — SESSÃO 14/out (madrugada) — L2+L3 PRONTOS
+================================================================
+MAPA COMPLETO (20 salas — o /20 do relatório voltou a ser verdade):
+- L2: hall2 (hub c/ painéis do elevador), enfermaria (SAVE, sala
+  limpa, ribbon), escritorio2 (lore/quadro 1994), fornalhas (3
+  válvulas + ESCOPOTA na entrada + frag3).
+- L3: corredor3 (arquivo morto, painel descer), escritorio_sup
+  (CARTÃO DO HELIPONTO + frag4 + page), telhado (heliponto c/ H,
+  helicóptero, diário de bordo = SAVE, farol vermelho, 1 cao).
+- CONEXÕES (regra: sem caminhos extras): escada corredor_n<->hall2
+  (sempre aberta); elevador P1 precisa FUSÍVEL (quadro do hall),
+  P2->P3 precisa valveOpen (poço destravado pelas válvulas);
+  porta de serviço do telhado lê terrace_key. SÓ elevador sobe pro L3.
+- BOSS FINAL: VULTO spawna no heliponto (0,-4) pra daniel/bento,
+  hp700/dmg32/speed2.15, cutscene própria ("SEM... SAÍDA...").
+  bossDead -> helicóptero -> startEnding (END_BENTO/END_NORMAL/GOOD).
+- FINAL DA CLARA FECHADO: altar_capela com bossDead ->
+  D.altar_luz -> startEnding (a luz no altar existe de verdade!).
+
+BOT (grandes fixes desta sessão):
+- BFS conhece o ELEVADOR (arestas virtuais hall2<->corredor3) e
+  aceita metas nunca visitadas (o guard roomDoors.has(goal) matava
+  a rota pro desconhecido).
+- POUSO: chegou perto de pickup/act, vira o corpo antes do E (cand
+  exige estar de frente; ele ficava EM CIMA da escopota de costas).
+- MATELAR-E: sem cache 'full' no pickup (1 press recusada enterrava
+  a escopota pra sempre).
+- MOCHILA: armas até 3 ignoram o cap 12 (chaves transbordam o
+  limite e travavam armas; RE: arma não é miolo de bolsa).
+- REGRAS DO BOSS: com boss vivo no telhado NÃO existe pânico/fuga
+  (encurralado luta) + cura desesperada <45hp no meio do fogo.
+- parseGoalRoom: L2/L3 mapeados (ordem importa: SUPERVISOR antes de
+  HELIPONTO — "CARTÃO DO HELIPONTO" é do supervisor!).
+
+PRÓXIMOS (nessa ordem):
+1. daniel X vulto: ele CHEGA e LUTA (5 mortes brigando) mas não
+   derruba os 700hp em 90min — mesma régua da Clara X alencastro:
+   tunar kite/ammo/posições. Shells: fornalhas 6+6, telhado 8 (20).
+2. clara X alencastro (pendente da sessão passada): re-visita da
+   catedral pós-medo (ping-pong hall<->cemitério).
+3. daniel ainda pode zerar sem ver a catedral (cutscene do encontro
+   fica opcional) — decisão futura: amarrar valveOpen a um passo na
+   catedral SEM quebrar zerabilidade.
+4. Itens DUPLICANDO no death-load (terrace_key x2) — save/load não
+   persiste takenPickups (é o que permite re-farmar shells; avaliar).
+5. "⚠️ savebox não fecha — Escape" ainda acontece (raro).
+6. OLHOS/radar das salas novas + limpar telemetria 🛰️/🧭/🔀.
+
+================================================================
+Gerado em 14/out (madrugada) — sessão arena/01a0e942-teste.
+
+
+================================================================
+BOT AUDITOR DE DESIGN (14/out) — tools/audit_world.mjs
+================================================================
+Ferramenta nova: NÃO joga — constrói as 20 salas com THREE real
+headless e audita: navegação (grid 0.25m), portas (vão ≥0.9m,
+recíproca, chegada no volume certo), pickups dentro de mesh,
+spawns em sólido/ilha, salas de save limpas, luzes/cams, boss
+(dist da entrada + área de kite) e cadeia de progressão por
+campanha (com arestas do elevador). Saída: AUDITORIA_MUNDO.txt.
+
+Placar da 1ª auditoria: 4 críticos, 7 altos, 4 médios. TODOS consertados:
+1. boss alencastro NASCE DENTRO do altar (0,-5.5) -> (0,-3.0) centro da nave
+2. escopota/shells da catedral DENTRO da mesh do banco -> faixa leste (9.7,1.7/1.0)
+3. chegada da porta hall2->fornalhas no lado ERRADO (4,5.2)->(4,-5.2) [teleporte pela metade!]
+4. fita do estacionamento dentro da picape -> (2.2,3.0)
+5. sombras nascendo em lápide (cemitério) e árvore (floresta) -> reposicionadas
+6. act stairs do saguão era lore do MAPA VELHO (subida é pelo corredor_n) -> removido
+7. saguão e telhado eram salas de save COM inimigos -> limpos (regra canônica)
+8. 6 salas grandes subiluminadas/c/ poucas cams -> +luz +cam
+Auditor re-rodado: 0 críticos, 0 altos, 0 médios, 24 baixos (estéticos
+canônicos de "examinar o móvel" — são o design, ficam).
+Bots re-smoke (clara/daniel 8min): saudáveis. v75 -> v76.
+
+
+================================================================
+AUDITORIA EM 3 PASSADAS (14/out) — grau crescente de visão
+================================================================
+PASSADA 1 (gameplay, já existia): 0C/0A/0M.
+PASSADA 2 (MALHA × COLISÃO — nova, nível 2):
+  - sólido sem mesh = colisão invisível; móvel grande sem sólido =
+    atravessável; móvel enterrado/atravessando parede; móveis
+    sobrepostos (sem empilhamento vertical legítimo).
+  Achados REAIS e consertados:
+  1) ARMÁRIO do quarto enterrado 0.25m na parede leste -> flush
+     (mesh 3.7, solid 3.0..4.5, act clock em frente)
+  2) ESTANTE do quarto2 enterrada 0.35m (furava até pra fora) -> flush
+  3) CAUDA do helicóptero atravessava o parapeito sul do telhado
+     -> compactada (boom 5.9, rotor 6.95)
+  4) COFRE confidencial: porta afundava 4.5cm no corpo (z-fighting)
+     -> butt joint; maçanetas/moedas realinhadas
+PASSADA 3 (MICROMETRIA — nova, nível 3):
+  - largura de passagem porta↔porta (WIDEST PATH maximin, regra
+    >=0.9m), câmera com visão bloqueada (ciente de ALTURA: parede
+    bloqueia sempre, móvel só abaixo de 1m), teto/piso, densidade.
+  - falsos-positivos calibrados: recesso de porta não é gargalo
+    (auditado no vão), floresta/estacionamento são EXTERNAS (sem
+    teto por design).
+FINAL: 0 críticos, 0 altos, 0 médios nos 3 níveis (24 baixos
+estéticos = design canônico). Bots re-smoke ok. v76 -> v77.
+Rodar sempre que mexer no mapa: node tools/audit_world.mjs 3
+
+
+================================================================
+🏆 SESSÃO DAS CAÇADAS (14/out) — TODAS AS 3 CAMPANHAS ZERAM
+================================================================
+CLARA: ZERADA em 17min (alencastro morto com revólver, luz no altar)
+DANIEL: ZERADO em 49min, 0 mortes, 17/20 salas (VULTO morto com
+  escopota, helicóptero)
+BENTO: ZERADO em 15min (portão de ferro, "O Último Turno")
+
+BUGS DE JOGO consertados nesta sessão:
+1. pk.uid NUNCA era atribuído (undefined) -> takenPickups quebrava no
+   save/load (itens RENASCIAM; terrace_key x2) -> uid estável sala:idx
+2. MONÓLITO só dava chapelSignal pra CLARA — DANIEL NUNCA abria a
+   catedral (ficava preso no objetivo do medalhão) -> agora os irmãos
+   dois têm o vínculo (texto próprio pro Daniel)
+3. BOSS alencastro 700->520 (régua do bot: 1 ciclo bom = ~480 de dano;
+   munição da Clara não comportava 700)
+
+BUGS DO BOT consertados:
+4. Cofre: 1 senha errada e nunca mais voltava (actTried congelava) ->
+   retry enquanto houver código não testado; cofre ABERTO nunca mais
+5. Martelo-E: pickup que não cabe (chaves transbordam cap 12) prendia
+   o tick pra sempre -> canCarry() no sweep e no cand
+6. Porta única banida do deadTargets = estátua eterna -> porta JAMAIS
+   se bane; ♻️ limpa deadTargets também
+7. d<2.2 escondia o dano de BOSS (alcance 2.3-2.6) -> gate por range
+   do inimigo (+0.6); 🧰 agora equipa revolver/magnum/pistol também
+8. heavyArmed: revólver COM munição conta (dash não manda mais a Clara
+   examinar estátua no meio da briga com o boss)
+9. Regra do boss: SEM pânico com boss vivo na sala + cura <45hp no
+   fogo + FINISHER (bossDead -> direto na luz/helicóptero)
+10. Medo não cancela mais objetivo de BOSS (atrasava, nunca travava)
+11. BFS: aresta do elevador com sala do meio desconhecida -> objetivo
+    L3 vira "subir ao 3º" (o painel é conhecimento honesto); botões de
+    elevador se apertam de novo quando são o alvo de navegação
+12. Objetivo "CATEDRAL SELADA" não vira mais destino (vai no que é
+    acionável: experimentos/fusível/fragmento)
+
+LIMPEZA: telemetria 🛰️/🚪·E/🧭-objetivo/🔀/🐞 REMOVIDA. Mantidos os
+logs de personalidade: 😱😨🏃🤚🧰💉💾💀🏁♻️➡️🔒❓🐞-sem-caminho.
+v77 -> v78.
+
+PRÓXIMOS: itens duplicando NO MUNDO pós-load persistem? (uid novo
+conserta o roundtrip — validar 1 morte+load); refinar exploração do
+Daniel (17/20 -> 20/20); OLHOS/radar das salas novas; 9 GLB aguardam
+re-upload do usuário.
+
+
+================================================================
+BOT DE LAYOUT (14/out) — tools/review_layout.mjs · NOTA 94/100
+================================================================
+Crítico de level design (não joga, não olha colisão — pra isso é o
+audit_world): julga FLUXO e SENTIDO dos layouts.
+- acesso vertical (regra: 1 escada L1<->L2, 1 elevador L2<->L3, nada mais)
+- circuitos por andar (ciclos = voltas inteligentes de RE; andar em
+  árvore = backtracking ruim) — L1 tem o circuitão do pátio ✓
+- ORIENTAÇÃO GEOGRÁFICA (sai pelo norte = chega pelo sul): achou
+  6 TELEPORTES: casa/passagem, passagem/corredor_n e
+  fornalhas/hall2 — TODOS consertados (geografia coerente: a
+  passagem é um corredor longo com a casa num cabo e a recepção
+  técnica no outro; as fornalhas ficam ao norte do hall do 2º)
+- rótulos de porta que citam sala errada (nenhum achado ✓)
+- proporções por função (arena 3-4x quarto ✓, corredor magro,
+  save aconchegante)
+- SUPPLY LINE: cura/munição na arena e vizinhas (catedral tem 2
+  antidotes ✓, telhado tem pills+antidote ✓ — o achado inicial era
+  bug do próprio revisor: distância 0 é falsy!)
+- câmeras de corredor olhando ao longo (não atravessado)
+- grafo: becos, hubs, distância início->final e save->boss em saltos
+
+Geografia consertada (v79): portas da passagem trocadas de cabo,
+chegadas realinhadas, vão da fornalhas movido pra face S. Bots
+re-smoke ok (clara 4, daniel 5, bento 5 salas em 8min).
+Rodar: node tools/review_layout.mjs (saída: LAYOUT_REVIEW.txt)
+
+## v80 — régua de ouro pós-bot-de-UI
+- Clara: ZERADO, 16min, 0 mortes, 9/20 salas.
+- Bento: ZERADO, 15min, 0 mortes, 6/20 salas.
+- Daniel: ZERADO, 56min, 1 MORTE (variância do VULTO) — recovery de save testado de
+  verdade pela 1ª vez: 🧭 resgate re-pegou terrace_key e fechou. 17/20 salas.
+- audit_ui 100/100 · review_layout 94/100 · audit_world 0/0/0 · olhos 32 radares OK.
+
+## v80+ — ESTRESSE TOTAL (14/out, pós-bot-de-UI): 9 runs no dia
+- Onda 1 (3× simultâneos, orçamento 180min): Clara ZERADO 14min/0m · Bento ZERADO
+  13min/0m · Daniel ZERADO 45min/0m. Auditores verdes (UI 100 · layout 94 · mundo 0/0/0).
+- Onda 2 (6× SIMULTÂNEOS, 2 de cada): Clara A/B ZERADO 14min/0m+0m · Bento A/B ZERADO
+  13min/0m+0m · Daniel A ZERADO 44min/0m · Daniel B ZERADO 53min/1m — de novo pro VULTO,
+  🧭 resgate re-pegou terrace_key e fechou (2º recovery de sucesso).
+- BALANÇO DO DIA: 9/9 ZERADOS, 2 mortes (ambas boss, ambas recuperadas), 0 bugs novos.
+  Rugas de bot (não são bugs de jogo): act do portão de ferro exige 2 tentativas
+  (err=0.21 vs raio de interação); Daniel às vezes queima ~4min no telhado com ♻️/🧭
+  enquanto o boss vive (nav não desiste da luta — correto, só barulhento).
+
+## v81 — régua pós-móveis: Clara ZERADO 15min/0m · Bento ZERADO 14min/0m ·
+Daniel ZERADO 55min/1m (VULTO, 🧭 resgate OK). Auditores: UI 100 · layout 94 · mundo 0/0/0.

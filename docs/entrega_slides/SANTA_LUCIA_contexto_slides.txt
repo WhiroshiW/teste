@@ -1,0 +1,181 @@
+================================================================
+  SANTA LÚCIA
+  Survival Horror Psicológico · Estética PS1
+  Equipe Nakamura — material para os slides
+================================================================
+
+TAGLINE
+"Antes de temer o que está lá fora, duvide do que está vendo dentro."
+
+----------------------------------------------------------------
+1. VISÃO GERAL
+----------------------------------------------------------------
+Gênero: survival horror psicológico em terceira pessoa.
+Estética: retrô PS1 (baixa resolução, texturas pixeladas, scanlines,
+atmosfera granulada — o terror do acaso e da sombra).
+
+Inspirado nos RESIDENT EVIL clássicos (exploração de sanatório,
+inventário, recursos escassos, economizar cada bala) com uma pitada
+de SILENT HILL (o horror nasce da mente do protagonista — os
+monstros espelham a psique de quem os vê).
+
+Setting: o SANATÓRIO SANTA LÚCIA, na Serra da Mantiqueira.
+Abandonado, demolido há dez anos... e ainda assim, aceso na
+tempestade, lá está ele.
+
+Diferencial: o terror é EMOCIONAL. O monstro de fora é a guerra
+que o personagem trava por dentro — luto, culpa, depressão.
+
+----------------------------------------------------------------
+2. A HISTÓRIA (PREMISSA)
+----------------------------------------------------------------
+Uma noite de tempestade, DANIEL SILVA acorda no Sanatório Santa
+Lúcia — o lugar onde foi interno na adolescência e onde perdeu a
+irmã mais nova, LÚCIA.
+
+Ele sabe que o sanatório não existe mais. Foi demolido há dez
+anos. Mas ali está ele, de novo. E uma voz que só ele ouve diz:
+
+  "Daniel... me encontra... antes que a luz apague de vez..."
+
+Para escapar, Daniel precisa reunir os 4 FRAGMENTOS DE MEMÓRIA
+espalhados pelo complexo e acender o memorial. Cada fragmento é
+uma página da história dele e da Lúcia — e do que o DR. ALENCASTRO
+fazia com os pacientes nas caldeiras.
+
+A chuva não parava naquela noite. Como não parava dentro de mim.
+Dizem que a depressão é um quarto escuro onde a gente se tranca
+por dentro. O meu quarto tinha o nome do lugar onde tudo começou.
+
+----------------------------------------------------------------
+3. PERSONAGENS E CAMPANHAS (3 jogáveis)
+----------------------------------------------------------------
+DANIEL SILVA — Campanha A: "O Luto e a Busca"
+  O irmão mais velho. Retorna ao sanatório após receber uma carta
+  misteriosa com a caligrafia da Lúcia. Faca, poucas pílulas e
+  determinação. Tema: depressão e luto. Começa no quarto antigo.
+
+DRA. CLARA MENDES — Campanha B: "A Investigação Médica"
+  Psiquiatra residente que tentou impedir as experiências do Dr.
+  Alencastro. Chega pela floresta sob a tempestade para expor a
+  verdade e resgatar sobreviventes: recolhe prontuários e fitas de
+  áudio e confronta o corpo mutado de Alencastro nas caldeiras.
+  Tema: ética médica e coragem institucional.
+
+ZELADOR BENTO — Modo Extra: "O Turno da Noite"
+  O velho zelador leal das caldeiras. Na noite em que o
+  laboratório ruiu, religa o gerador com as próprias mãos e tranca
+  o portão da floresta — custe o que custar — para que nenhuma
+  aberração alcance a cidade adormecida.
+  Tema: sacrifício silencioso.
+
+DR. ALENCASTRO — O VILÃO
+  Médico do sanatório que sintetizava compostos pesados a partir
+  de essências de plantas para "tratar" a dor dos internos —
+  extirpando-a, custasse a humanidade deles. Sua forma mutada é o
+  chefão final da campanha da Clara.
+
+LÚCIA — A irmã
+  Presença que atravessa o jogo inteiro: a voz nos corredores, o
+  diário em fragmentos, a fita que dá nome ao sistema de save. Não
+  é fantasma nem monstro: é a memória que Daniel ainda não aprendeu
+  a carregar.
+
+----------------------------------------------------------------
+4. FINAIS (5 no total)
+----------------------------------------------------------------
+DANIEL — FINAL "ACEITAÇÃO" (bom)
+  Ao ler todas as páginas da memória, Daniel aceita o luto:
+  "A tristeza não some para sempre, mano. Mas ela passa. E você
+  fica." Desperta no hospital, de verdade desta vez. Pediu ajuda.
+  E melhorou. Devagar. Mas melhorou.
+
+DANIEL — FINAL "MEIO CAMINHO" (normal)
+  Atravessa, mas partes de si ficaram no escuro do sanatório.
+  "Um dia, volte para buscá-las." Ele está aprendendo a prometer
+  de novo.
+
+CLARA — FINAL "REDENÇÃO MÉDICA" (bom)
+  Alencastro se desfaz em cinzas sobre as engrenagens. Clara
+  entrega o dossiê ao Ministério Público: o complexo é demolido e
+  no lugar nasce uma fundação de acolhimento psicológico.
+
+CLARA — FINAL "FUGA NA MADRUGADA" (normal)
+  Escapa com vida das caldeiras em chamas, mas o peso do que viu
+  naquela noite a acompanhará para sempre.
+
+BENTO — FINAL "O ÚLTIMO TURNO"
+  O cadeado fecha. Nenhuma criatura sai dali. "Bom descanso,
+  meninos e meninas... O tio Bento vigiou o último turno." O
+  sacrifício de um homem simples salvou a cidade adormecida.
+
+----------------------------------------------------------------
+5. MECÂNICAS DE JOGO
+----------------------------------------------------------------
+- Exploração estilo RE clássico: sanatório em planta ramificada
+  (quartos, capela, estufa, cemitério, canil, porão, caldeiras,
+  mezanino), chaves e atalhos que reabrem caminhos.
+- Sobrevivência com recursos escassos: munição limitada, cura rara
+  (pílulas, antídoto) — cada tiro é uma decisão.
+- Inventário de survival horror com itens-chave (fita da Lúcia,
+  chave mestra do Bento, dossiês da Clara).
+- Sistema de SAVE = FITA DA LÚCIA (checkpoint no gravador).
+- Diário em fragmentos: páginas da Lúcia espalhadas contam a
+  história e revelam os 4 Fragmentos de Memória.
+- Combate tenso: faca (rápida, sem munição), pistola, revólver 38,
+  escopeta. Alguns inimigos é melhor EVITAR do que enfrentar.
+- 3 campanhas jogáveis com ponto de partida, arsenal e finais
+  diferentes.
+- HUD estilo RE remaster: ECG de vida (FINE/CAUTION/DANGER).
+- Animações de combate no estilo RE4 (corte rápido estilo Leon),
+  rig com juntas (cotovelo/joelho) e poses de mira clássicas.
+
+----------------------------------------------------------------
+6. REFERÊNCIAS DE LINGUAGEM
+----------------------------------------------------------------
+RESIDENT EVIL (clássicos + remakes): câmera, inventário, economia
+  de recursos, plantas de mansão/sanatório.
+SILENT HILL: névoa, distorção da realidade, monstros como símbolos
+  da psique. A realidade cede; a mente ganha forma.
+HORROR PS1 (Clock Tower, Parasite Eve): texturas sujas, modelos
+  angulosos, o silêncio que incomoda mais que o susto.
+
+NARRATIVA QUE QUEBRA A PERCEPÇÃO:
+  01 DESCONFIAR — o protagonista não confia no que vê.
+  02 CONTRADIZER — pistas contraditórias no cenário.
+  03 RELER — revelações que obrigam a reler o que já foi jogado.
+
+----------------------------------------------------------------
+7. SUGESTÃO DE ESTRUTURA PARA OS SLIDES
+----------------------------------------------------------------
+1. CAPA — logo SANTA LÚCIA + tagline (img: capa_santa_lucia.jpg)
+2. VISÃO GERAL — gênero, estética PS1, diferencial emocional
+3. HISTÓRIA — premissa do Daniel + os 4 Fragmentos (img: promo)
+4. PERSONAGENS — Daniel, Clara, Bento (img: daniel_frente.jpg)
+5. O VILÃO — Dr. Alencastro e as caldeiras
+6. GAMEPLAY/MECÂNICAS — sobrevivência, inventário, saves
+   (img: promo_exploracao.jpg + promo_combate.jpg)
+7. ANIMAÇÃO E COMBATE — estilo RE4 (img: ataque_faca_3_frames.jpg)
+8. FINAIS — 5 finais, escolhas importam
+9. REFERÊNCIAS — RE + Silent Hill + PS1 horror
+10. PRÓXIMOS PASSOS — teste jogável, mapas finais, playthrough
+
+----------------------------------------------------------------
+8. IMAGENS DISPONÍVEIS (prints reais do jogo)
+----------------------------------------------------------------
+capa_santa_lucia.jpg ............ capa oficial com o logo
+promo_exploracao.jpg ............ gameplay + HUD de ECG
+promo_combate.jpg ............... corte estilo RE4 em ação
+ataque_faca_3_frames.jpg ........ animação do corte em 3 quadros
+daniel_frente.jpg ............... modelo do Daniel (frente)
+mira_combate.jpg ................ pose de mira
+gameplay_camera_jogo.jpg ........ ângulo de câmera do jogo
+
+As imagens de RE/Silent Hill podem ficar como REFERÊNCIA de
+linguagem (sempre marcando "referência") — as oficiais do nosso
+jogo são as da lista acima.
+
+================================================================
+  SANTA LÚCIA — Equipe Nakamura
+  "A tristeza não some para sempre. Mas ela passa. E você fica."
+================================================================

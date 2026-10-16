@@ -181,10 +181,15 @@ for (const id of ROOM_IDS) {
     ok(covered, `${id}: canto (${cx},${cz}) sem câmera`);
   }
 }
-// itens críticos existem?
+// itens críticos existem? (V2: shotgun/fuse são recompensas de act — cripta/quadro)
 const allPickups = ROOM_IDS.flatMap((id) => rooms[id].pickups.map((p) => p.item + (p.page !== null && p.page !== undefined ? p.page : '')));
-for (const need of ['shotgun', 'fuse', 'ammo9', 'shell', 'pills', 'lightflask', 'ribbon']) {
+for (const need of ['ammo9', 'shell', 'pills', 'lightflask', 'ribbon', 'greenhouse_key', 'crowbar', 'cult_symbol', 'alencastro_dossier', 'forest_key']) {
   ok(allPickups.includes(need), 'item crítico ausente nos mapas: ' + need);
+}
+// acts críticos da espiral V2 existem nos mapas?
+const allActs = ROOM_IDS.flatMap((id) => rooms[id].interacts.map((i) => i.act));
+for (const need of ['armario', 'painting', 'cripta', 'director_safe', 'kennel_search', 'monolith', 'gate_final', 'maca_enf', 'safe']) {
+  ok(allActs.includes(need), 'act crítico ausente nos mapas: ' + need);
 }
 const pages = ROOM_IDS.flatMap((id) => rooms[id].pickups.filter((p) => p.item === 'page').map((p) => p.page)).sort();
 ok(JSON.stringify(pages) === JSON.stringify([0, 1, 2, 3, 4, 5, 6, 7]), 'páginas do diário incompletas: ' + JSON.stringify(pages));

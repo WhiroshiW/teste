@@ -217,6 +217,9 @@ export class AudioSys {
       case 'step':
         this.noise({ t: 0.09, v: 0.12, fc: 300 + Math.random() * 200 });
         break;
+      case 'stairStep': // quatro pisadas subindo, eco de poço
+        for (let i = 0; i < 4; i++) this.noise({ t: 0.12, v: 0.14, fc: 220 + i * 40, at: i * 0.45 });
+        break;
       case 'stepRun':
         this.noise({ t: 0.08, v: 0.16, fc: 500 });
         break;

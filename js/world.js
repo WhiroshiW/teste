@@ -5,7 +5,7 @@
 // P3 (3º Andar & Terraço Heliponto) e Extras (Subsolo & Culto).
 // Modelos 3D autênticos estilo PS1 (Resident Evil / Silent Hill).
 // ============================================================
-import { pointInSolids } from './entities.js';
+import { pointInSolids } from './entities.js?v=1924_1997_v94';
 
 // ==================== HELPERS MATERIAIS E PRIMITIVAS ====================
 function tm(THREE, tex, rx = 1, ry = 1, color = 0xffffff, emissive = 0x000000) {
@@ -46,6 +46,7 @@ function solid(room, x0, z0, x1, z1, tag = null) {
 
 function pointLight(THREE, room, color, intensity, distance, x, y, z, flicker = null) {
   const l = new THREE.PointLight(color, intensity, distance);
+  l.layers.enable(1); l.layers.enable(2); // luz ilumina as camadas das armas
   l.position.set(x, y, z);
   room.group.add(l);
   if (flicker) {
@@ -134,18 +135,18 @@ function doorVisual(THREE, room, side, at, d, w, tex, frameColor = 0x241a12) {
   if (side === 'N' || side === 'S') {
     const z = side === 'N' ? -d / 2 : d / 2;
     const face = side === 'N' ? 0.26 : -0.26;
-    box(THREE, g, 0.18, 2.4, 0.45, fm, at - 0.88, 1.2, z);
-    box(THREE, g, 0.18, 2.4, 0.45, fm, at + 0.88, 1.2, z);
-    box(THREE, g, 1.94, 0.18, 0.45, fm, at, 2.4, z);
-    plane(THREE, g, 1.58, 2.3, dm, at, 1.15, z + face, 0, side === 'N' ? 0 : Math.PI);
+    box(THREE, g, 0.16, 2.5, 0.45, fm, at - 0.92, 1.25, z);
+    box(THREE, g, 0.16, 2.5, 0.45, fm, at + 0.92, 1.25, z);
+    box(THREE, g, 2.0, 0.16, 0.45, fm, at, 2.5, z);
+    plane(THREE, g, 1.84, 2.5, dm, at, 1.25, z + face, 0, side === 'N' ? 0 : Math.PI);
     box(THREE, g, 0.08, 0.12, 0.14, brassM, at + (side === 'N' ? 0.6 : -0.6), 1.05, z + face * 1.1);
   } else {
     const x = side === 'W' ? -w / 2 : w / 2;
     const face = side === 'W' ? 0.26 : -0.26;
-    box(THREE, g, 0.45, 2.4, 0.18, fm, x, 1.2, at - 0.88);
-    box(THREE, g, 0.45, 2.4, 0.18, fm, x, 1.2, at + 0.88);
-    box(THREE, g, 0.45, 0.18, 1.94, fm, x, 2.4, at);
-    plane(THREE, g, 1.58, 2.3, dm, x + face, 1.15, at, 0, side === 'W' ? Math.PI / 2 : -Math.PI / 2);
+    box(THREE, g, 0.45, 2.5, 0.16, fm, x, 1.25, at - 0.92);
+    box(THREE, g, 0.45, 2.5, 0.16, fm, x, 1.25, at + 0.92);
+    box(THREE, g, 0.45, 0.16, 2.0, fm, x, 2.5, at);
+    plane(THREE, g, 1.84, 2.5, dm, x + face, 1.25, at, 0, side === 'W' ? Math.PI / 2 : -Math.PI / 2);
     box(THREE, g, 0.14, 0.12, 0.08, brassM, x + face * 1.1, 1.05, at + (side === 'W' ? -0.6 : 0.6));
   }
 }
@@ -153,6 +154,100 @@ function doorVisual(THREE, room, side, at, d, w, tex, frameColor = 0x241a12) {
 // ==================== MODELOS 3D AUTÊNTICOS DO SANATÓRIO ====================
 
 // 1. Maca Hospitalar Psiquiátrica Clássica
+// ---------- CAMA NORMAL (madeira + manta xadrez) — quartos residenciais ----------
+function makeNormalBed(THREE, TEX, room, x, z, ry = 0) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  g.rotation.y = ry;
+  room.group.add(g);
+  const woodM = tm(THREE, TEX.woodFurn, 1, 1);
+  const woodDark = flat(THREE, 0x3a2614);
+  const mattM = tm(THREE, TEX.mattress, 1, 1);
+  const sheetM = tm(THREE, TEX.sheet, 1, 1);
+  const spreadM = tm(THREE, TEX.bedspread, 1, 1);
+
+  // pés torneados + laterais (comprimento no eixo X, cabeceira no -X)
+  for (const [px, pz] of [[-0.95, -0.42], [0.95, -0.42], [-0.95, 0.42], [0.95, 0.42]]) {
+    box(THREE, g, 0.1, 0.42, 0.1, woodDark, px, 0.21, pz);
+  }
+  box(THREE, g, 2.0, 0.14, 0.07, woodM, 0, 0.42, -0.46);
+  box(THREE, g, 2.0, 0.14, 0.07, woodM, 0, 0.42, 0.46);
+  // cabeceira (x=-1) com topo arredondado fake + painel dos pés (x=+1)
+  box(THREE, g, 0.09, 0.85, 1.15, woodM, -1.0, 0.7, 0);
+  box(THREE, g, 0.09, 0.2, 0.9, woodM, -1.0, 1.2, 0);
+  box(THREE, g, 0.09, 0.55, 1.15, woodM, 1.0, 0.55, 0);
+  box(THREE, g, 0.09, 0.14, 0.9, woodM, 1.0, 0.88, 0);
+  // colchão + travesseiro
+  box(THREE, g, 1.92, 0.2, 0.95, mattM, 0, 0.58, 0);
+  box(THREE, g, 0.52, 0.13, 0.68, sheetM, -0.6, 0.73, 0);
+  // manta xadrez cobrindo os pés com caimento nas laterais
+  box(THREE, g, 1.3, 0.06, 0.99, spreadM, 0.28, 0.71, 0);
+  box(THREE, g, 0.06, 0.3, 0.99, spreadM, 0.95, 0.56, 0);
+  box(THREE, g, 0.06, 0.3, 0.99, spreadM, -0.39, 0.56, 0);
+
+  // footprint respeita a rotação (90° troca os eixos)
+  if (Math.abs(Math.sin(ry)) > 0.7) solid(room, x - 0.55, z - 1.1, x + 0.55, z + 1.1);
+  else solid(room, x - 1.1, z - 0.55, x + 1.1, z + 0.55);
+  return g;
+}
+
+// ---------- CADEIRA COM URSO DE PELÚCIA (silhueta de urso em blocos) ----------
+function makeTeddyChair(THREE, TEX, room, x, z, ry = 0) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  g.rotation.y = ry;
+  room.group.add(g);
+  const woodM = tm(THREE, TEX.woodFurn, 1, 1);
+  const woodDark = flat(THREE, 0x3a2614);
+  const plushM = tm(THREE, TEX.plush, 1, 1);
+  const muzzleM = flat(THREE, 0xc8a878);
+  // cadeira: 4 pernas, assento, encosto com ripa superior
+  for (const [px, pz] of [[-0.2, -0.2], [0.2, -0.2], [-0.2, 0.2], [0.2, 0.2]]) {
+    box(THREE, g, 0.06, 0.45, 0.06, woodDark, px, 0.225, pz);
+  }
+  box(THREE, g, 0.52, 0.06, 0.52, woodM, 0, 0.47, 0);
+  box(THREE, g, 0.52, 0.3, 0.06, woodM, 0, 0.62, -0.23); // encosto bem baixo: urso domina
+  // urso sentado no assento
+  box(THREE, g, 0.34, 0.36, 0.24, plushM, 0, 0.68, 0.03);    // torso gordo
+  box(THREE, g, 0.3, 0.28, 0.26, plushM, 0, 1.0, 0.02);      // cabeça grande
+  box(THREE, g, 0.11, 0.11, 0.07, plushM, -0.12, 1.18, 0.02); // orelha E
+  box(THREE, g, 0.11, 0.11, 0.07, plushM, 0.12, 1.18, 0.02);  // orelha D
+  box(THREE, g, 0.12, 0.08, 0.06, muzzleM, 0, 0.95, 0.16);    // focinho
+  box(THREE, g, 0.16, 0.18, 0.04, muzzleM, 0, 0.62, 0.16);    // barriga clara
+  box(THREE, g, 0.1, 0.28, 0.1, plushM, -0.22, 0.68, 0.05);   // braço E
+  box(THREE, g, 0.1, 0.28, 0.1, plushM, 0.22, 0.68, 0.05);    // braço D
+  box(THREE, g, 0.1, 0.1, 0.3, plushM, -0.11, 0.56, 0.18);    // perna E esticada
+  box(THREE, g, 0.1, 0.1, 0.3, plushM, 0.11, 0.56, 0.18);     // perna D esticada
+  box(THREE, g, 0.1, 0.08, 0.07, muzzleM, -0.11, 0.56, 0.35); // pé E
+  box(THREE, g, 0.1, 0.08, 0.07, muzzleM, 0.11, 0.56, 0.35);  // pé D
+  solid(room, x - 0.35, z - 0.35, x + 0.35, z + 0.35);
+  return g;
+}
+
+// ---------- ARMÁRIO DE MADEIRA (flush na parede) ----------
+function makeWardrobe(THREE, TEX, room, x, z, ry = 0) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  g.rotation.y = ry;
+  room.group.add(g);
+  const woodM = tm(THREE, TEX.woodFurn, 1, 1);
+  const woodDark = flat(THREE, 0x3a2614);
+  const brassM = flat(THREE, 0xb89030);
+  box(THREE, g, 1.7, 2.0, 0.5, woodM, 0, 1.15, 0);          // corpo
+  box(THREE, g, 1.8, 0.12, 0.56, woodM, 0, 2.2, 0);         // cornija
+  box(THREE, g, 1.74, 0.08, 0.54, woodDark, 0, 0.12, 0);     // plinto rente ao chão
+  box(THREE, g, 0.72, 1.66, 0.05, woodM, -0.42, 1.15, 0.26); // porta E
+  box(THREE, g, 0.72, 1.66, 0.05, woodM, 0.42, 1.15, 0.26);  // porta D
+  box(THREE, g, 0.56, 1.2, 0.02, woodDark, -0.42, 1.15, 0.29); // painel rebaixado E
+  box(THREE, g, 0.56, 1.2, 0.02, woodDark, 0.42, 1.15, 0.29);  // painel rebaixado D
+  box(THREE, g, 0.035, 0.22, 0.035, brassM, -0.09, 1.15, 0.31); // puxador E
+  box(THREE, g, 0.035, 0.22, 0.035, brassM, 0.09, 1.15, 0.31);  // puxador D
+  // footprint respeita a rotação (90° troca os eixos)
+  if (Math.abs(Math.sin(ry)) > 0.7) solid(room, x - 0.35, z - 0.95, x + 0.35, z + 0.95);
+  else solid(room, x - 0.95, z - 0.35, x + 0.95, z + 0.35);
+  return g;
+}
+
 function makeHospitalBed(THREE, TEX, room, x, z, ry = 0) {
   const g = new THREE.Group();
   g.position.set(x, 0, z);
@@ -264,13 +359,15 @@ function makeSafeConfidential(THREE, TEX, room, x, z, ry = 0) {
   const safeFaceM = new THREE.MeshLambertMaterial({ map: TEX.safe });
 
   box(THREE, g, 1.25, 1.45, 1.05, ironM, 0, 0.725, 0);
-  box(THREE, g, 1.32, 1.52, 0.08, steelM, 0, 0.725, 0.52);
-  plane(THREE, g, 1.15, 1.35, safeFaceM, 0, 0.725, 0.57, 0, 0);
-  box(THREE, g, 0.32, 0.06, 0.06, chromeM, 0, 0.725, 0.62);
-  box(THREE, g, 0.06, 0.32, 0.06, chromeM, 0, 0.725, 0.62);
-  box(THREE, g, 0.16, 0.16, 0.04, flat(THREE, 0xc8a028), 0.28, 0.95, 0.6);
+  box(THREE, g, 1.32, 1.52, 0.08, steelM, 0, 0.725, 0.565); // porta em BUTT JOINT (não afunda no corpo)
+  plane(THREE, g, 1.15, 1.35, safeFaceM, 0, 0.725, 0.615, 0, 0);
+  box(THREE, g, 0.32, 0.06, 0.06, chromeM, 0, 0.725, 0.66);
+  box(THREE, g, 0.06, 0.32, 0.06, chromeM, 0, 0.725, 0.66);
+  box(THREE, g, 0.16, 0.16, 0.04, flat(THREE, 0xc8a028), 0.28, 0.95, 0.635);
 
-  solid(room, x - 0.7, z - 0.6, x + 0.7, z + 0.6);
+  // footprint respeita a rotação (90° troca os eixos)
+  if (Math.abs(Math.sin(ry)) > 0.7) solid(room, x - 0.6, z - 0.75, x + 0.6, z + 0.75);
+  else solid(room, x - 0.75, z - 0.6, x + 0.75, z + 0.6);
   return g;
 }
 
@@ -384,7 +481,7 @@ function addPickup(THREE, room, TEX, item, x, z, qty = 1, page = null, y = 0.35)
   const mesh = makePickupMesh(THREE, TEX, item, page);
   mesh.position.set(x, y, z);
   room.group.add(mesh);
-  room.pickups.push({ idx: room.pickups.length, item, qty, page, x, z, y, mesh, taken: false, phase: Math.random() * 6 });
+  room.pickups.push({ idx: room.pickups.length, uid: room.id + ':' + room.pickups.length, item, qty, page, x, z, y, mesh, taken: false, phase: Math.random() * 6 });
 }
 function addInteract(room, x, z, r, prompt, act, when = null) {
   room.interacts.push({ x, z, r, prompt, act, when });
@@ -505,1005 +602,609 @@ export function makePickupMesh(THREE, TEX, item, page = null) {
 // CONSTRUÇÃO ARQUITETÔNICA DAS SALAS (4 FOLHAS DO PROJETO)
 // ============================================================
 
-// ---------------- 1. FOLHA P1: QUARTO 1 (DANIEL) ----------------
+// ============================================================
+// PLANTA NOVA (14/OUT — turnarounds do usuário): 3 NÍVEIS
+// FASE 1 = L1 (TÉRREO) completo. L2/L3 chegam nas fases 2/3.
+// L1: quarto1/2 → corredor → HALL PRINCIPAL (hub) → cemitério /
+//     estufa / corredor norte (elevador) → catedral (final Clara)
+//     ramo externo: floresta → estacionamento, floresta → casa do
+//     zelador → PASSAGEM SECRETA (armário) → corredor norte.
+// ============================================================
+
+// ---------------- L1: QUARTO 1 (spawn do Daniel) ----------------
 function buildQuarto(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'quarto', 'ALA DE INTERNAÇÃO · QUARTO 03', 10, 8, 3.2);
+  const R = baseRoom(THREE, TEX, 'quarto', 'QUARTO 1 · ALA DE INTERNAÇÃO', 10, 8, 3.2);
   R.fog = { c: 0x05050c, n: 5, f: 20 };
-  R.ambient = 'quarto';
+  R.music = 'creepy';
+  const wallM = tm(THREE, TEX.wallpaper, 4, 2);
+  plane(THREE, R.group, 10, 8, tm(THREE, TEX.floorWood, 4, 3), 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 10, 8, tm(THREE, TEX.ceiling, 4, 3), 0, 3.2, 0, Math.PI / 2);
+  perimeter(THREE, R, 10, 8, 3.2, wallM, [{ side: 'N', at: 0.0, w: 2.0 }]);
+  doorVisual(THREE, R, 'N', 0.0, 8, 10, TEX.doorWood);
+  pointLight(THREE, R, 0xffeebb, 3, 9, 0, 2.8, 0);
 
-  const floorM = tm(THREE, TEX.floorWood, 3, 3);
-  const wallM = tm(THREE, TEX.wallpaper, 4, 1.4);
-  const ceilM = tm(THREE, TEX.ceiling, 4, 3);
-  plane(THREE, R.group, 10, 8, floorM, 0, 0, 0, -Math.PI / 2);
-  plane(THREE, R.group, 10, 8, ceilM, 0, 3.2, 0, Math.PI / 2);
+  addDoor(R, 0.0, -3.5, 1.4, 'Sair ao Corredor dos Quartos', 'corredor', -4, 2.2, 0);
 
-  perimeter(THREE, R, 10, 8, 3.2, wallM, [{ side: 'S', at: 0.0, w: 1.8 }]);
-  doorVisual(THREE, R, 'S', 0.0, 8, 10, TEX.doorWood, 0x22160e);
+  makeNormalBed(THREE, TEX, R, -3.65, -2.0); // encostada na parede oeste (interior x=-4.75), cabeceira NA parede
+  box(THREE, R.group, 1.3, 0.9, 0.5, tm(THREE, TEX.woodFurn, 1, 1), -3.0, 0.45, -3.45); // gaveta no canto SO, rente à parede sul
+  box(THREE, R.group, 1.34, 0.06, 0.54, flat(THREE, 0x6a4a2c), -3.0, 0.93, -3.45); // tampo da gaveta
+  solid(R, -3.65, -3.7, -2.35, -3.2);
+  makeTeddyChair(THREE, TEX, R, -4.3, 1.8, Math.PI / 2 + 0.45); // cadeira em 3/4, urso vira pra porta
+  makeWardrobe(THREE, TEX, R, 4.5, -1.0, -Math.PI / 2); // armário flush na parede leste (interior x=4.75)
+  addCam(R, [-5, -4, 0, 4], [-4.0, 2.8, 3.2], [0, 1.0, 0], 62);
 
-  makeHospitalBed(THREE, TEX, R, -3.0, -2.4, 0);
-
-  const woodD = flat(THREE, 0x2a1c12);
-  box(THREE, R.group, 0.75, 0.75, 0.75, tm(THREE, TEX.wood, 1, 1), -1.6, 0.375, -3.2);
-  box(THREE, R.group, 0.22, 0.35, 0.22, flat(THREE, 0xded8c0), -1.6, 0.92, -3.2);
-  pointLight(THREE, R, 0xffa044, 4, 6, -1.6, 1.2, -3.2);
-  solid(R, -2.0, -3.6, -1.2, -2.8);
-
-  makeGothicWindow(THREE, TEX, R, 1.5, 1.8, -3.94, 0, 1.8, 2.2);
-  pointLight(THREE, R, 0x4a6a9a, 3, 8, 1.5, 2.0, -3.2);
-
-  box(THREE, R.group, 0.9, 0.45, 0.9, flat(THREE, 0x5a1a1a), -3.4, 0.225, 1.8);
-  box(THREE, R.group, 0.2, 0.9, 0.9, flat(THREE, 0x5a1a1a), -3.85, 0.65, 1.8);
-  solid(R, -4.1, 1.2, -2.8, 2.4);
-
-  box(THREE, R.group, 1.2, 2.4, 0.6, woodD, 4.3, 1.2, -1.0);
-  solid(R, 3.6, -1.5, 4.8, -0.5);
-
-  plane(THREE, R.group, 2.6, 2.0, tm(THREE, TEX.rug, 1, 1), 0, 0.012, 0.2, -Math.PI / 2);
-
-  addCam(R, [-5, -4, 0, 4], [-3.8, 2.6, 3.0], [-0.5, 1.1, -1.0], 60);
-  addCam(R, [0, -4, 5, 4], [3.8, 2.6, -3.0], [1.0, 1.1, 1.0], 60);
-
-  addDoor(R, 0.0, 3.4, 1.4, 'Sair para o Corredor dos Quartos', 'corredor_quartos', -4.0, -2.5, 0);
-
-  addInteract(R, -2.8, -2.0, 1.6, 'Examinar a cama hospitalar', 'bed');
-  addInteract(R, -1.6, -2.5, 1.4, 'Abrir a gaveta trancada', 'drawer');
-  addInteract(R, -3.4, 1.8, 1.3, 'Pegar o ursinho de pelúcia', 'teddy');
-  addInteract(R, 1.5, -3.0, 1.4, 'Olhar pela janela com grades', 'window_q');
-  addInteract(R, 4.2, -1.0, 1.3, 'Examinar o armário', 'clock');
-
-  addPickup(THREE, R, TEX, 'page', -0.5, 1.5, 1, 0, 0.06);
-
+  addInteract(R, -3.2, -2.0, 1.4, 'Examinar a cama', 'bed');
+  addInteract(R, -3.0, -3.2, 1.3, 'Abrir a gaveta trancada', 'drawer');
+  addInteract(R, -4.0, 1.8, 1.3, 'Pegar o ursinho de pelúcia da cadeira', 'teddy');
+  addInteract(R, 3.9, -1.0, 1.4, 'Examinar o armário', 'clock');
+  addPickup(THREE, R, TEX, 'pills', 2.0, 2.4, 1);
+  // sem spawn de inimigo aqui: é a sala onde o player ACORDA (segura, clássico RE)
   return R;
 }
 
-// ---------------- 2. FOLHA P1: CORREDOR DOS QUARTOS ----------------
-function buildCorredorQuartos(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'corredor_quartos', 'ALA DE INTERNAÇÃO · CORREDOR OESTE', 16, 8, 3.2);
-  R.fog = { c: 0x05050c, n: 6, f: 22 };
-  R.ambient = 'quarto';
-
-  const floorM = tm(THREE, TEX.floorWood, 5, 2);
-  const wallM = tm(THREE, TEX.wallpaper, 6, 1.4);
-  const ceilM = tm(THREE, TEX.ceiling, 6, 3);
-  plane(THREE, R.group, 16, 8, floorM, 0, 0, 0, -Math.PI / 2);
-  plane(THREE, R.group, 16, 8, ceilM, 0, 3.2, 0, Math.PI / 2);
-
-  perimeter(THREE, R, 16, 8, 3.2, wallM, [
-    { side: 'N', at: -4.0, w: 1.8 },
-    { side: 'S', at: -4.0, w: 1.8 },
-    { side: 'E', at: 0.0, w: 1.8 },
-  ]);
-  doorVisual(THREE, R, 'N', -4.0, 8, 16, TEX.doorWood, 0x241a12);
-  doorVisual(THREE, R, 'S', -4.0, 8, 16, TEX.doorWood, 0x241a12);
-  doorVisual(THREE, R, 'E', 0.0, 8, 16, TEX.doorWood, 0x241a12);
-
-  plane(THREE, R.group, 13, 2.2, tm(THREE, TEX.carpet, 5, 1), 0.5, 0.012, 0, -Math.PI / 2);
-
-  makeHospitalBed(THREE, TEX, R, 2.5, -2.8, 0);
-  makeGothicWindow(THREE, TEX, R, -1.0, 1.8, -3.94, 0, 1.8, 2.2);
-
-  pointLight(THREE, R, 0x9a8060, 4, 10, -4.0, 2.4, 0);
-  pointLight(THREE, R, 0x4a6a9a, 3, 9, 2.0, 2.4, 0);
-
-  addCam(R, [-8, -4, 0, 4], [-5.0, 2.6, 2.8], [-1.0, 1.1, 0.0], 65);
-  addCam(R, [0, -4, 8, 4], [5.0, 2.6, 2.8], [1.0, 1.1, 0.0], 65);
-
-  addDoor(R, -4.0, -3.4, 1.3, 'Entrar no Quarto 1 (Daniel)', 'quarto', 0, 2.4, Math.PI);
-  addDoor(R, -4.0, 3.4, 1.3, 'Entrar no Quarto 2 (Cofre Confidencial)', 'quarto2', 0, -2.6, 0);
-  addDoor(R, 7.4, 0.0, 1.4, 'Ir ao Saguão Principal', 'saguao', -7.5, 3.5, -Math.PI / 2);
-
-  addPickup(THREE, R, TEX, 'ammo9', 2.0, 2.8, 15);
-  addSpawn(R, 'infectado', 0.0, 0.0);
-
-  return R;
-}
-
-// ---------------- 3. FOLHA P1: QUARTO 2 (COFRE CONFIDENCIAL) ----------------
+// ---------------- L1: QUARTO 2 ----------------
 function buildQuarto2(THREE, TEX) {
   const R = baseRoom(THREE, TEX, 'quarto2', 'QUARTO 2 · COFRE CONFIDENCIAL', 10, 8, 3.2);
-  R.fog = { c: 0x06050b, n: 5, f: 20 };
-  R.ambient = 'quarto';
-
-  const floorM = tm(THREE, TEX.floorWood, 3, 3);
-  const wallM = tm(THREE, TEX.wallpaper, 4, 1.4);
-  const ceilM = tm(THREE, TEX.ceiling, 4, 3);
-  plane(THREE, R.group, 10, 8, floorM, 0, 0, 0, -Math.PI / 2);
-  plane(THREE, R.group, 10, 8, ceilM, 0, 3.2, 0, Math.PI / 2);
-
-  perimeter(THREE, R, 10, 8, 3.2, wallM, [{ side: 'N', at: 0.0, w: 1.8 }]);
-  doorVisual(THREE, R, 'N', 0.0, 8, 10, TEX.doorWood, 0x22160e);
-
-  makeSafeConfidential(THREE, TEX, R, -3.5, 2.7, 0);
-  makeHospitalBed(THREE, TEX, R, 3.0, -2.4, Math.PI);
-
-  box(THREE, R.group, 0.5, 2.4, 2.6, tm(THREE, TEX.bookcase, 1, 1), -4.5, 1.2, -1.2);
-  solid(R, -4.9, -2.6, -4.1, 0.2);
-
-  plane(THREE, R.group, 2.4, 2.8, tm(THREE, TEX.rug, 1, 1), 0, 0.012, 0.4, -Math.PI / 2);
-
-  pointLight(THREE, R, 0x9a8060, 4, 9, 0, 2.4, 0);
-  pointLight(THREE, R, 0x4a7a9a, 3, 7, -3.5, 1.8, 2.0);
-
-  addCam(R, [-5, -4, 0, 4], [-3.4, 2.6, -2.6], [-0.5, 1.1, 1.0], 62);
-  addCam(R, [0, -4, 5, 4], [3.4, 2.6, 2.6], [0.0, 1.1, 0.0], 62);
-
-  addDoor(R, 0.0, -3.4, 1.3, 'Sair para o Corredor dos Quartos', 'corredor_quartos', -4.0, 2.5, Math.PI);
-
-  addInteract(R, -3.5, 1.8, 1.5, 'Abrir o cofre confidencial', 'safe');
-  addInteract(R, 3.0, -1.5, 1.3, 'Examinar a cama antiga', 'bed2');
-  addInteract(R, -4.2, -1.2, 1.3, 'Examinar a estante de prontuários', 'shelf');
-
-  addPickup(THREE, R, TEX, 'antidote', -1.2, 2.2, 1);
-  addPickup(THREE, R, TEX, 'shell', 2.0, 2.0, 4); // Cartuchos críticos
-  addSpawn(R, 'sombra', 1.5, 1.0);
-
-  return R;
-}
-
-// ---------------- 4. FOLHA P1: SAGUÃO PRINCIPAL REMASTERIZADO ----------------
-function buildSaguao(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'saguao', 'SAGUÃO PRINCIPAL', 18, 14, 4.5);
-  R.fog = { c: 0x030304, n: 7, f: 30 };
-  R.ambient = 'saguao';
-  R.music = 'save';
-
-  const floorM = tm(THREE, TEX.floorTile, 6, 5);
-  const wallM = tm(THREE, TEX.wallDirty, 7, 2);
-  const ceilM = tm(THREE, TEX.ceiling, 7, 6);
-  plane(THREE, R.group, 18, 14, floorM, 0, 0, 0, -Math.PI / 2);
-  plane(THREE, R.group, 18, 14, ceilM, 0, 4.5, 0, Math.PI / 2);
-
-  perimeter(THREE, R, 18, 14, 4.5, wallM, [
-    { side: 'W', at: 3.5, w: 2.0 },  // Ala dos Quartos
-    { side: 'W', at: -2.5, w: 1.8 }, // Porão
-    { side: 'S', at: -3.0, w: 2.2 }, // Estufa Botânica
-    { side: 'S', at: 2.5, w: 2.0 },  // Floresta / Capela
-    { side: 'N', at: -3.0, w: 2.2 }, // Cemitério
-    { side: 'N', at: 3.5, w: 2.4 },  // Elevador
-    { side: 'E', at: -1.5, w: 2.0 }, // Pátio Canil
-    { side: 'E', at: 2.0, w: 2.0 },  // Enfermaria
-    { side: 'E', at: -4.5, w: 1.8 }, // Capela
-  ]);
-
-  doorVisual(THREE, R, 'W', 3.5, 14, 18, TEX.doorWood);
-  doorVisual(THREE, R, 'W', -2.5, 14, 18, TEX.doorMetal);
-  doorVisual(THREE, R, 'S', -3.0, 14, 18, TEX.greenhouseGlass);
-  doorVisual(THREE, R, 'S', 2.5, 14, 18, TEX.doorMetal);
-  doorVisual(THREE, R, 'N', -3.0, 14, 18, TEX.doorWood);
-  doorVisual(THREE, R, 'E', -1.5, 14, 18, TEX.doorWood);
-  doorVisual(THREE, R, 'E', 2.0, 14, 18, TEX.doorWood);
-  doorVisual(THREE, R, 'E', -4.5, 14, 18, TEX.doorWood);
-
-  plane(THREE, R.group, 3.0, 12.0, tm(THREE, TEX.carpet, 1, 6), 0.5, 0.012, 0.0, -Math.PI / 2);
-
-  // O IMPONENTE BALCÃO EM 'U' DE RECEPÇÃO COM MÁQUINA DE ESCREVER & GALÃO DE ÁGUA
-  makeReceptionCounterU(THREE, TEX, R, 0.5, 0.2);
-
-  // Escadaria nobre em curva para o Mezanino (P2)
-  const stairM = tm(THREE, TEX.wood, 1, 1);
-  for (let i = 0; i < 7; i++) {
-    box(THREE, R.group, 2.6, 0.28, 0.7, stairM, -7.0, 0.14 + i * 0.28, -5.5 + i * 0.4);
-  }
-  solid(R, -8.6, -6.5, -5.6, -3.4); // Sólido da escada recuado para deixar z = -2.8 livre
-
-  // Elevador de Serviço na parede Norte (x = 3.5)
-  box(THREE, R.group, 2.6, 3.2, 0.3, flat(THREE, 0x1c1e22), 3.5, 1.6, -6.9);
-  plane(THREE, R.group, 1.8, 2.6, new THREE.MeshLambertMaterial({ map: TEX.doorMetal }), 3.5, 1.3, -6.74, 0, 0);
-  const elevLampM = new THREE.MeshBasicMaterial({ color: 0x331111 });
-  box(THREE, R.group, 0.5, 0.12, 0.1, elevLampM, 3.5, 3.0, -6.7);
-  R.elevLampM = elevLampM;
-  R.elevLight = pointLight(THREE, R, 0xaac8ff, 0, 7, 3.5, 2.6, -5.8);
-
-  // Estátua de mármore clássica no nicho decorativo
-  const marM = tm(THREE, TEX.statue, 1, 1);
-  box(THREE, R.group, 1.2, 0.8, 1.2, marM, -0.5, 0.4, -5.5);
-  const robe = new THREE.Mesh(new THREE.ConeGeometry(0.38, 1.2, 7), marM);
-  robe.position.set(-0.5, 1.4, -5.5); R.group.add(robe);
-  solid(R, -1.2, -6.2, 0.2, -4.8);
-
-  // Lustre de ferro central
-  const ch = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.08, 6, 12), flat(THREE, 0x6a5a28));
-  ch.position.set(0.5, 3.5, 0.2); ch.rotation.x = Math.PI / 2; R.group.add(ch);
-  const chGlow = new THREE.Sprite(new THREE.SpriteMaterial({
-    map: TEX.glowWarm, color: 0xffcc88, transparent: true, opacity: 0.5,
-    blending: THREE.AdditiveBlending, depthWrite: false,
-  }));
-  chGlow.scale.set(3.5, 3.5, 1); chGlow.position.set(0.5, 3.4, 0.2); R.group.add(chGlow);
-  R.chandelier = pointLight(THREE, R, 0xffb060, 0, 18, 0.5, 3.2, 0.2);
-  R.chGlow = chGlow;
-
-  addCam(R, [-9, 0, -2, 7], [-3.5, 3.8, 2.2], [-6.5, 1.2, 3.5], 60);
-  addCam(R, [-9, -7, -2, 0], [-3.5, 3.8, 1.0], [-6.5, 1.2, -3.0], 60);
-  addCam(R, [-2, -7, 4, 7], [1.5, 4.0, -1.5], [0.5, 1.2, 2.0], 60);
-  addCam(R, [4, -7, 9, 7], [4.5, 3.8, -0.5], [7.0, 1.2, 0.0], 58);
-
-  // PORTAS SINCRONIZADAS COM O MAPA DO CADERNO (Folha P1)
-  addDoor(R, -8.2, 3.5, 1.4, 'Ala de Internação (Corredor dos Quartos)', 'corredor_quartos', 6.5, 0.0, -Math.PI / 2);
-  addDoor(R, -3.0, 6.2, 1.4, 'Entrar na Estufa Botânica (Ala Sul)', 'estufa', 0, -3.8, 0);
-  addDoor(R, -3.0, -6.2, 1.4, 'Ir ao Cemitério das Lápides (Ala Norte)', 'cemiterio', 0, 4.5, Math.PI);
-  addDoor(R, 8.2, -1.5, 1.4, 'Pátio Externo & Canil (Ala Leste)', 'jardim', -7.5, -1.0, Math.PI / 2);
-  addDoor(R, -6.8, -2.8, 1.4, 'Subir ao Mezanino (2º Andar P2)', 'mezanino', 5.5, 3.0, 0);
-
-  addDoor(R, 8.2, 2.0, 1.3, 'Ir para a Enfermaria (Ala Médica)', 'enfermaria', -6.0, 0.0, Math.PI / 2);
-  addDoor(R, -8.2, -2.5, 1.3, 'Descer ao Porão das Caldeiras', 'porao', 0.0, -4.0, 0,
-    { need: { item: 'basekey' }, consume: true, setFlag: 'poraoOpen', msg: 'Trancada. A placa diz "PORÃO — PROIBIDO". Precisa da CHAVE DO PORÃO.' });
-  addDoor(R, 3.5, -6.2, 1.5, 'Chamar o elevador para o Terraço', 'terraco', 3.0, 1.8, Math.PI,
-    { need: { flag: 'fuseOn' }, elevator: true, msg: 'elevador_off' });
-  addDoor(R, 2.5, 6.2, 1.4, 'Portão para os Jardins da Floresta', 'floresta', 0, -14.0, 0,
-    { need: { item: 'forest_key' }, setFlag: 'forestUnlocked', msg: 'Portão de ferro fundido trancado. Precisa da CHAVE DO PORTÃO DE FERRO.' });
-  addDoor(R, 8.2, -4.5, 1.3, 'Entrar na Capela Santa Lúcia', 'capela', 0, 8.0, Math.PI);
-
-  addInteract(R, 0.5, 1.2, 1.6, 'Usar a Máquina de Escrever da Recepção', 'save');
-  addInteract(R, -0.5, -4.5, 1.5, 'Examinar a estátua de mármore', 'statue');
-  addInteract(R, -2.7, 0.5, 1.3, 'Beber água do bebedouro', 'vase');
-  addInteract(R, -6.8, -2.4, 1.6, 'Olhar a escadaria do mezanino', 'stairs');
-
-  addPickup(THREE, R, TEX, 'ribbon', 0.85, 0.22, 2);
-  addPickup(THREE, R, TEX, 'page', -4.0, 2.5, 1, 1, 0.06);
-  addPickup(THREE, R, TEX, 'ammo9', 6.5, 4.5, 12);
-
-  // Inimigos posicionados fora dos móveis
-  addSpawn(R, 'sombra', -3.5, 3.5);
-  addSpawn(R, 'infectado', -3.0, -2.5);
-  addSpawn(R, 'rastejador', 4.5, -3.5);
-  addSpawn(R, 'infectado', 5.0, 3.5);
-
-  R.fx = (dt, t, game) => {
-    const on = game.flags.fuseOn;
-    R.chandelier.intensity += (((on ? 26 : 0)) - R.chandelier.intensity) * Math.min(1, dt * 2);
-    R.chGlow.material.opacity += (((on ? 0.55 : 0.02)) - R.chGlow.material.opacity) * Math.min(1, dt * 2);
-    R.elevLight.intensity += (((on ? 8 : 0)) - R.elevLight.intensity) * Math.min(1, dt * 2);
-    R.elevLampM.color.setHex(on ? 0x66ff88 : 0x331111);
-  };
-
-  return R;
-}
-
-// ---------------- 5. FOLHA P1: ESTUFA BOTÂNICA ----------------
-function buildEstufa(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'estufa', 'ESTUFA BOTÂNICA · ALA SUL', 14, 10, 4.2);
-  R.fog = { c: 0x050c05, n: 5, f: 22 };
-  R.ambient = 'floresta';
-
-  const floorM = tm(THREE, TEX.greenhouseSoil, 4, 3);
-  const wallM = tm(THREE, TEX.greenhouseGlass, 4, 2);
-  plane(THREE, R.group, 14, 10, floorM, 0, 0, 0, -Math.PI / 2);
-
-  perimeter(THREE, R, 14, 10, 4.2, wallM, [{ side: 'N', at: 0.0, w: 2.2 }]);
-  doorVisual(THREE, R, 'N', 0.0, 10, 14, TEX.greenhouseGlass);
-
-  const soilM = tm(THREE, TEX.greenhouseSoil, 2, 1);
-  const brickM = flat(THREE, 0x4a2a1a);
-  for (const bx of [-3.0, 3.0]) {
-    box(THREE, R.group, 2.2, 0.45, 5.0, soilM, bx, 0.225, 0);
-    box(THREE, R.group, 2.4, 0.5, 0.15, brickM, bx, 0.25, -2.6);
-    box(THREE, R.group, 2.4, 0.5, 0.15, brickM, bx, 0.25, 2.6);
-    solid(R, bx - 1.2, -2.6, bx + 1.2, 2.6);
-  }
-
-  const woodM = tm(THREE, TEX.wood, 1, 1);
-  box(THREE, R.group, 3.0, 0.9, 0.8, woodM, 0, 0.45, 4.2);
-  solid(R, -1.6, 3.7, 1.6, 4.7);
-
-  pointLight(THREE, R, 0x55aa66, 6, 12, 0, 3.0, 0);
-
-  addCam(R, [-7, -5, 0, 5], [-5.5, 3.2, -4.0], [0, 1.0, 0], 62);
-  addCam(R, [0, -5, 7, 5], [5.5, 3.2, 4.0], [0, 1.0, 0], 62);
-
-  addDoor(R, 0.0, -4.2, 1.4, 'Voltar ao Saguão Principal', 'saguao', -3.0, 5.0, Math.PI);
-
-  addInteract(R, 0.0, 3.5, 1.4, 'Examinar a bancada de pesticidas', 'herbicide_table');
-  addInteract(R, -1.5, 0.0, 1.5, 'Examinar as raízes carnívoras', 'plant_roots');
-
-  addPickup(THREE, R, TEX, 'herbicide', 0.0, 4.2, 1, null, 0.95);
-  addPickup(THREE, R, TEX, 'firstaid', 5.2, 4.0, 1);
-  addSpawn(R, 'infectado', 0, 1.0);
-
-  return R;
-}
-
-// ---------------- 6. FOLHA P1: CEMITÉRIO DAS LÁPIDES ----------------
-function buildCemiterio(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'cemiterio', 'CEMITÉRIO DAS LÁPIDES · ALA NORTE', 18, 14, 12);
-  R.ambient = 'floresta';
-  R.fog = { c: 0x05070a, n: 6, f: 26 };
-  R.openSky = true;
-
-  const groundM = tm(THREE, TEX.forestGround, 5, 4);
-  plane(THREE, R.group, 18, 14, groundM, 0, 0, 0, -Math.PI / 2);
-
-  const wallM = tm(THREE, TEX.wallStone, 4, 1);
-  box(THREE, R.group, 18.0, 2.0, 0.5, wallM, 0, 1.0, -7.0);
-  box(THREE, R.group, 0.5, 2.0, 14.0, wallM, -9.0, 1.0, 0);
-  box(THREE, R.group, 0.5, 2.0, 14.0, wallM, 9.0, 1.0, 0);
-  solid(R, -9.2, -7.2, 9.2, -6.7);
-  solid(R, -9.2, -7.0, -8.7, 7.0);
-  solid(R, 8.7, -7.0, 9.2, 7.0);
-
-  const tombM = tm(THREE, TEX.tombstone, 1, 1);
-  for (let row = -1; row <= 1; row += 2) {
-    for (let col = -3; col <= 3; col += 2) {
-      const lx = col * 1.8;
-      const lz = row * 2.8;
-      box(THREE, R.group, 0.8, 1.2, 0.25, tombM, lx, 0.6, lz);
-      solid(R, lx - 0.45, lz - 0.2, lx + 0.45, lz + 0.2);
-    }
-  }
-
-  box(THREE, R.group, 4.0, 3.2, 3.0, wallM, 0, 1.6, -5.0);
-  solid(R, -2.1, -6.6, 2.1, -3.4);
-
-  pointLight(THREE, R, 0x334466, 6, 22, 0, 4.5, 0);
-
-  addCam(R, [-9, -7, 0, 7], [-5.0, 3.5, 4.5], [0, 1.0, -2.0], 65);
-  addCam(R, [0, -7, 9, 7], [5.0, 3.5, 4.5], [0, 1.0, -2.0], 65);
-
-  addDoor(R, 0.0, 6.2, 1.4, 'Voltar ao Saguão Principal', 'saguao', -3.0, -5.0, 0);
-
-  addInteract(R, 0.0, -3.2, 1.4, 'Examinar a cripta selada da família Silva', 'cripta');
-  addPickup(THREE, R, TEX, 'shotgun', 0.0, -3.0, 1, null, 0.4);
-  addSpawn(R, 'infectado', -3.0, 0.0);
-  addSpawn(R, 'sombra', 3.0, 1.0);
-
-  return R;
-}
-
-// ---------------- 7. FOLHA P1: PÁTIO EXTERNO & CANIL ----------------
-function buildJardim(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'jardim', 'PÁTIO EXTERNO & CANIL', 18, 12, 10);
-  R.ambient = 'floresta';
-  R.fog = { c: 0x06080b, n: 6, f: 25 };
-  R.openSky = true;
-
-  const groundM = tm(THREE, TEX.forestGround, 5, 4);
-  plane(THREE, R.group, 18, 12, groundM, 0, 0, 0, -Math.PI / 2);
-
-  const wallM = tm(THREE, TEX.wallStone, 4, 1);
-  box(THREE, R.group, 18.0, 2.0, 0.5, wallM, 0, 1.0, -6.0);
-  box(THREE, R.group, 18.0, 2.0, 0.5, wallM, 0, 1.0, 6.0);
-  solid(R, -9.0, -6.2, 9.0, -5.7);
-  solid(R, -9.0, 5.7, 9.0, 6.2);
-
-  // Gaiolas do Canil (Folha P1)
-  const kennelM = tm(THREE, TEX.dogKennel, 1, 1);
-  box(THREE, R.group, 5.0, 2.2, 2.5, kennelM, -2.0, 1.1, -4.5);
-  solid(R, -4.6, -5.8, 0.6, -3.2);
-
-  // Casinhas de madeira destruídas do canil
-  const woodM = tm(THREE, TEX.wood, 1, 1);
-  box(THREE, R.group, 1.2, 1.1, 1.2, woodM, -5.0, 0.55, -4.5);
-  solid(R, -5.7, -5.2, -4.3, -3.8);
-  box(THREE, R.group, 1.2, 1.1, 1.2, woodM, 2.0, 0.55, -4.5);
-  solid(R, 1.3, -5.2, 2.7, -3.8);
-
-  // Poste de luz do pátio
-  box(THREE, R.group, 0.2, 4.0, 0.2, flat(THREE, 0x22262c), 0, 2.0, 2.0);
-  box(THREE, R.group, 0.6, 0.2, 0.4, flat(THREE, 0xd8ccb0), 0, 3.9, 2.0);
-  solid(R, -0.2, 1.8, 0.2, 2.2);
-
-  // Árvores retorcidas e caçamba
-  const barkM = tm(THREE, TEX.bark, 1, 2);
-  box(THREE, R.group, 0.8, 6.0, 0.8, barkM, 5.0, 3.0, -4.0);
-  solid(R, 4.5, -4.5, 5.5, -3.5);
-  box(THREE, R.group, 0.8, 6.0, 0.8, barkM, -6.0, 3.0, 4.0);
-  solid(R, -6.5, 3.5, -5.5, 4.5);
-
-  pointLight(THREE, R, 0x4a5a7a, 5, 20, 0, 4.0, 0);
-
-  addCam(R, [-9, -6, 0, 6], [-5.0, 3.4, 3.5], [0, 1.0, 0], 65);
-  addCam(R, [0, -6, 9, 6], [5.0, 3.4, 3.5], [0, 1.0, 0], 65);
-
-  addDoor(R, -8.2, -1.0, 1.4, 'Voltar ao Saguão Principal', 'saguao', 7.5, -1.5, -Math.PI / 2);
-  addDoor(R, 8.2, 0.0, 1.4, 'Entrar na Casa do Zelador Bento', 'casa_zelador', -3.5, 0.0, Math.PI / 2);
-
-  addInteract(R, -2.0, -3.0, 1.4, 'Vasculhar as jaulas arrebentadas do canil', 'kennel_search');
-  addPickup(THREE, R, TEX, 'greenhouse_key', -2.0, -3.0, 1);
-  addPickup(THREE, R, TEX, 'ammo9', 3.0, 4.0, 15);
-  addSpawn(R, 'rastejador', 1.0, -1.0);
-  addSpawn(R, 'infectado', 4.0, 2.0);
-
-  return R;
-}
-
-// ---------------- 8. FOLHA P1: CASA DO ZELADOR BENTO ----------------
-function buildCasaZelador(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'casa_zelador', 'CASA DO ZELADOR BENTO', 10, 8, 3.0);
-  R.fog = { c: 0x05040a, n: 5, f: 18 };
-  R.ambient = 'quarto';
-
-  const floorM = tm(THREE, TEX.floorWood, 3, 2);
-  const wallM = tm(THREE, TEX.wood, 4, 1.4);
-  const ceilM = tm(THREE, TEX.ceiling, 3, 3);
-  plane(THREE, R.group, 10, 8, floorM, 0, 0, 0, -Math.PI / 2);
-  plane(THREE, R.group, 10, 8, ceilM, 0, 3.0, 0, Math.PI / 2);
-
-  perimeter(THREE, R, 10, 8, 3.0, wallM, [{ side: 'W', at: 0.0, w: 1.8 }]);
-  doorVisual(THREE, R, 'W', 0.0, 8, 10, TEX.doorWood);
-
-  const woodD = flat(THREE, 0x221810);
-  box(THREE, R.group, 3.2, 0.9, 0.9, woodD, 0, 0.45, -3.4);
-  solid(R, -1.7, -3.9, 1.7, -2.8);
-
-  box(THREE, R.group, 2.2, 1.8, 1.1, woodD, 3.5, 0.9, 2.0);
-  solid(R, 2.3, 1.3, 4.7, 2.7);
-
-  pointLight(THREE, R, 0xffa044, 5, 8, 0, 2.2, -2.5);
-
-  addCam(R, [-5, -4, 0, 4], [-3.2, 2.4, 2.5], [0, 1.0, 0], 62);
-  addCam(R, [0, -4, 5, 4], [3.2, 2.4, -2.5], [0, 1.0, 0], 62);
-
-  addDoor(R, -4.2, 0.0, 1.4, 'Sair para o Pátio Externo', 'jardim', 7.5, 0.0, -Math.PI / 2);
-
-  addInteract(R, 0.0, -2.8, 1.4, 'Vasculhar a bancada de trabalho de Bento', 'bento_bench');
-  addInteract(R, 3.5, 1.5, 1.4, 'Olhar o beliche e a lanterna', 'bento_bed');
-
-  addPickup(THREE, R, TEX, 'crowbar', 0.0, -3.2, 1, null, 0.95);
-  addPickup(THREE, R, TEX, 'lightflask', 1.0, -2.5, 1); // Fluido crítico
-  addPickup(THREE, R, TEX, 'page', 1.5, 2.0, 1, 6, 0.06);
-
-  return R;
-}
-
-// ---------------- 9. FOLHA P2: MEZANINO (2º ANDAR) ----------------
-function buildMezanino(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'mezanino', 'MEZANINO · 2º ANDAR', 16, 12, 3.8);
-  R.fog = { c: 0x05050c, n: 6, f: 24 };
-  R.ambient = 'saguao';
-
-  const floorM = tm(THREE, TEX.floorWood, 5, 4);
-  const wallM = tm(THREE, TEX.wallpaper, 6, 1.4);
-  plane(THREE, R.group, 16, 12, floorM, 0, 0, 0, -Math.PI / 2);
-
-  perimeter(THREE, R, 16, 12, 3.8, wallM, [
-    { side: 'N', at: 0.0, w: 2.0 },  // Ala Médica / Enfermaria
-    { side: 'S', at: 0.0, w: 2.0 },  // Ala das Caldeiras / Porão
-    { side: 'W', at: 0.0, w: 2.0 },  // Escada para o 3º Andar
-  ]);
-  doorVisual(THREE, R, 'N', 0.0, 12, 16, TEX.doorWood);
-  doorVisual(THREE, R, 'S', 0.0, 12, 16, TEX.doorMetal);
-  doorVisual(THREE, R, 'W', 0.0, 12, 16, TEX.doorWood);
-
-  const railM = flat(THREE, 0x1a1e24);
-  box(THREE, R.group, 8.0, 1.0, 0.1, railM, 0, 0.5, -2.5);
-  box(THREE, R.group, 8.0, 1.0, 0.1, railM, 0, 0.5, 2.5);
-  box(THREE, R.group, 0.1, 1.0, 5.0, railM, -4.0, 0.5, 0);
-  box(THREE, R.group, 0.1, 1.0, 5.0, railM, 4.0, 0.5, 0);
-  solid(R, -4.1, -2.6, 4.1, 2.6);
-
-  pointLight(THREE, R, 0x9a8060, 5, 14, 0, 2.8, 0);
-
-  addCam(R, [-8, -6, 0, 6], [-5.0, 3.0, 3.0], [0, 1.0, 0], 65);
-  addCam(R, [0, -6, 8, 6], [5.0, 3.0, -3.0], [0, 1.0, 0], 65);
-
-  addDoor(R, 6.2, 3.0, 1.4, 'Descer ao Saguão Principal (P1)', 'saguao', -6.8, -2.2, 0);
-  addDoor(R, 0.0, -5.2, 1.4, 'Entrar na Ala Médica (Enfermaria)', 'enfermaria', -6.0, 0.0, Math.PI / 2);
-  addDoor(R, 0.0, 5.2, 1.4, 'Entrar na Ala das Caldeiras (Porão)', 'porao', 0.0, -4.0, 0);
-  addDoor(R, -7.2, 0.0, 1.4, 'Subir ao 3º Andar (Corredor P3)', 'corredor_p3', 5.5, 0.0, -Math.PI / 2);
-
-  addInteract(R, 0.0, -2.3, 1.4, 'Olhar o parapeito do saguão lá embaixo', 'rail_view');
-  addSpawn(R, 'sombra', 4.5, 0.0);
-
-  return R;
-}
-
-// ---------------- 10. FOLHA P2: ENFERMARIA (ALA MÉDICA) ----------------
-function buildEnfermaria(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'enfermaria', 'ALA MÉDICA · ENFERMARIA', 16, 10, 3.4);
-  R.fog = { c: 0x05080c, n: 6, f: 22 };
-  R.ambient = 'quarto';
-
-  const floorM = tm(THREE, TEX.wallTile, 5, 3);
-  const wallM = tm(THREE, TEX.wallDirty, 6, 2);
-  const ceilM = tm(THREE, TEX.ceiling, 6, 4);
-  plane(THREE, R.group, 16, 10, floorM, 0, 0, 0, -Math.PI / 2);
-  plane(THREE, R.group, 16, 10, ceilM, 0, 3.4, 0, Math.PI / 2);
-
-  perimeter(THREE, R, 16, 10, 3.4, wallM, [
-    { side: 'S', at: 0.0, w: 2.0 },
-    { side: 'N', at: 0.0, w: 2.0 },
-    { side: 'W', at: 0.0, w: 2.0 },
-  ]);
-  doorVisual(THREE, R, 'S', 0.0, 10, 16, TEX.doorWood);
-  doorVisual(THREE, R, 'N', 0.0, 10, 16, TEX.doorWood);
-  doorVisual(THREE, R, 'W', 0.0, 10, 16, TEX.doorWood);
-
-  makeHospitalBed(THREE, TEX, R, -4.5, -2.2, 0);
-  makeHospitalBed(THREE, TEX, R, -4.5, 2.2, 0);
-  makeHospitalBed(THREE, TEX, R, 4.5, -2.2, Math.PI);
-  makeHospitalBed(THREE, TEX, R, 4.5, 2.2, Math.PI);
-
-  makeMedicalCabinet(THREE, TEX, R, 0.0, -4.6, 0);
-
-  box(THREE, R.group, 1.2, 1.4, 0.2, tm(THREE, TEX.fusebox, 1, 1), 7.6, 1.6, 0, 0, -Math.PI / 2);
-  solid(R, 7.3, -0.7, 7.9, 0.7);
-
-  pointLight(THREE, R, 0x8a9abb, 5, 14, 0, 2.6, 0);
-
-  addCam(R, [-8, -5, 0, 5], [-6.2, 2.8, 0.0], [0, 1.1, 0], 62);
-  addCam(R, [0, -5, 8, 5], [6.2, 2.8, 0.0], [0, 1.1, 0], 62);
-
-  addDoor(R, -7.2, 0.0, 1.4, 'Voltar ao Saguão Principal', 'saguao', 7.5, 2.0, -Math.PI / 2);
-  addDoor(R, 0.0, 4.4, 1.4, 'Voltar ao Mezanino (2º Andar)', 'mezanino', 0, -4.2, 0);
-  addDoor(R, 0.0, -4.4, 1.4, 'Entrar no Consultório do Dr. Alencastro', 'consultorio', 0, 3.5, 0,
-    { need: { item: 'rustkey' }, consume: true, setFlag: 'consultOpen', msg: 'Trancada com chave enferrujada pesada.' });
-
-  addInteract(R, 7.3, 0.0, 1.5, 'Examinar o painel elétrico de força', 'fusebox');
-  addInteract(R, 0.0, -4.0, 1.4, 'Examinar o armário de medicamentos', 'cabinet');
-  addInteract(R, -4.5, -1.8, 1.4, 'Inspecionar a maca ensanguentada', 'bed');
-
-  addPickup(THREE, R, TEX, 'crank', 0.0, -4.2, 1, null, 0.85);
-  addPickup(THREE, R, TEX, 'pills', 2.0, -4.0, 1);
-  addPickup(THREE, R, TEX, 'page', -2.0, -3.5, 1, 2, 0.06);
-
-  addSpawn(R, 'enfermeira', -2.0, 0.0);
-  addSpawn(R, 'infectado', 2.0, 1.5);
-
-  return R;
-}
-
-// ---------------- 11. FOLHA P2: CONSULTÓRIO DO DR. ALENCASTRO ----------------
-function buildConsultorio(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'consultorio', 'CONSULTÓRIO DO DR. ALENCASTRO', 12, 10, 3.4);
-  R.fog = { c: 0x070505, n: 5, f: 20 };
-  R.ambient = 'quarto';
-
-  const floorM = tm(THREE, TEX.floorWood, 4, 3);
-  const wallM = tm(THREE, TEX.wallpaper, 5, 1.4);
-  const ceilM = tm(THREE, TEX.ceiling, 4, 3);
-  plane(THREE, R.group, 12, 10, floorM, 0, 0, 0, -Math.PI / 2);
-  plane(THREE, R.group, 12, 10, ceilM, 0, 3.4, 0, Math.PI / 2);
-
-  perimeter(THREE, R, 12, 10, 3.4, wallM, [{ side: 'S', at: 0.0, w: 2.0 }]);
-  doorVisual(THREE, R, 'S', 0.0, 10, 12, TEX.doorWood);
-
-  const woodD = flat(THREE, 0x22140e);
-  box(THREE, R.group, 3.2, 0.9, 1.4, woodD, 0, 0.45, -2.5);
-  solid(R, -1.8, -3.3, 1.8, -1.7);
-
-  box(THREE, R.group, 0.8, 1.2, 0.8, flat(THREE, 0x141820), 0, 0.6, -3.8);
-
-  box(THREE, R.group, 1.6, 1.2, 0.08, tm(THREE, TEX.negatoscope, 1, 1), -4.0, 1.8, -4.9);
-  pointLight(THREE, R, 0x88ccff, 4, 6, -4.0, 1.8, -4.4);
-
-  plane(THREE, R.group, 1.4, 1.8, new THREE.MeshLambertMaterial({ map: TEX.paint1 }), 5.94, 1.8, 0, 0, -Math.PI / 2);
-
-  pointLight(THREE, R, 0xffaa44, 5, 9, 0, 2.2, -2.0);
-
-  addCam(R, [-6, -5, 0, 5], [-3.8, 2.6, 3.2], [0, 1.1, -1.0], 62);
-  addCam(R, [0, -5, 6, 5], [3.8, 2.6, 3.2], [0, 1.1, -1.0], 62);
-
-  addDoor(R, 0.0, 4.4, 1.4, 'Voltar à Enfermaria', 'enfermaria', -6.0, 0.0, Math.PI / 2);
-
-  addInteract(R, 0.0, -1.5, 1.5, 'Examinar a mesa do Dr. Alencastro', 'desk_dr');
-  addInteract(R, 5.2, 0.0, 1.4, 'Examinar o quadro a óleo na parede', 'painting');
-  addInteract(R, -4.0, -4.0, 1.4, 'Inspecionar os exames no negatoscópio', 'negatoscope_view');
-
-  addPickup(THREE, R, TEX, 'fuse', 0.8, -2.4, 1, null, 0.95);
-  addPickup(THREE, R, TEX, 'page', -0.8, -1.8, 1, 3, 0.06);
-  addSpawn(R, 'alencastro', 0.0, 0.0);
-
-  return R;
-}
-
-// ---------------- 12. FOLHA P2: ALA DAS CALDEIRAS (PORÃO INDUSTRIAL) ----------------
-function buildPorao(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'porao', 'ALA DAS CALDEIRAS · PORÃO INDUSTRIAL', 16, 12, 3.6);
-  R.fog = { c: 0x050406, n: 6, f: 22 };
-  R.ambient = 'porao';
+  R.fog = { c: 0x05050c, n: 5, f: 20 };
   R.music = 'creepy';
+  const wallM = tm(THREE, TEX.wallpaper, 4, 2);
+  plane(THREE, R.group, 10, 8, tm(THREE, TEX.floorWood, 4, 3), 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 10, 8, tm(THREE, TEX.ceiling, 4, 3), 0, 3.2, 0, Math.PI / 2);
+  perimeter(THREE, R, 10, 8, 3.2, wallM, [{ side: 'N', at: 0.0, w: 2.0 }]);
+  doorVisual(THREE, R, 'N', 0.0, 8, 10, TEX.doorWood);
+  pointLight(THREE, R, 0xffeebb, 3, 9, 0, 2.8, 0);
 
-  const floorM = tm(THREE, TEX.stoneFloor, 5, 4);
-  const wallM = tm(THREE, TEX.wallStone, 6, 2);
-  const ceilM = tm(THREE, TEX.ceiling, 6, 5);
-  plane(THREE, R.group, 16, 12, floorM, 0, 0, 0, -Math.PI / 2);
-  plane(THREE, R.group, 16, 12, ceilM, 0, 3.6, 0, Math.PI / 2);
+  addDoor(R, 0.0, -3.5, 1.4, 'Sair ao Corredor dos Quartos', 'corredor', 4, 2.2, 0);
 
-  perimeter(THREE, R, 16, 12, 3.6, wallM, [
+  makeSafeConfidential(THREE, TEX, R, -4.22, 1.8, Math.PI / 2); // cofre flush na parede oeste (interior x=-4.75), dial pro quarto
+  box(THREE, R.group, 0.5, 2.4, 1.8, tm(THREE, TEX.woodFurn, 1, 1), -4.5, 1.2, -1.2); // estante: fundo 0.5 na parede oeste, face 1.8 pro quarto
+  box(THREE, R.group, 0.44, 0.08, 1.7, flat(THREE, 0x3a2614), -4.5, 2.42, -1.2); // cornija recuada
+  const shelfM = flat(THREE, 0x3a2614);
+  for (const sy of [0.62, 1.18, 1.74]) { // prateleiras salientes na face
+    box(THREE, R.group, 0.06, 0.05, 1.7, shelfM, -4.22, sy, -1.2);
+  }
+  // pastas de prontuários DE FRENTE pra face, apoiadas nas prateleiras (2 fileiras)
+  const pastas = (yBase, lista) => {
+    for (const [cor, pz] of lista) box(THREE, R.group, 0.18, 0.42, 0.1, flat(THREE, cor), -4.18, yBase + 0.235, pz);
+  };
+  pastas(0.645, [[0xe8e2d0, -1.9], [0xb0a890, -1.77], [0x8a929a, -1.64], [0xe8e2d0, -1.51], [0xb0a890, -1.38],
+                 [0x9a6a4a, -1.05], [0xe8e2d0, -0.92], [0xb0a890, -0.79], [0x8a929a, -0.66], [0xe8e2d0, -0.53]]);
+  pastas(1.205, [[0xb0a890, -1.85], [0xe8e2d0, -1.7], [0x9a6a4a, -1.55], [0xb0a890, -1.4], [0x8a929a, -1.25],
+                 [0xe8e2d0, -0.9], [0xb0a890, -0.75], [0xe8e2d0, -0.6]]);
+  solid(R, -4.75, -2.1, -4.25, -0.3); // solid = volume exato
+  makeNormalBed(THREE, TEX, R, 3.65, -1.5, Math.PI); // encostada na parede leste (interior x=4.75), cabeceira NA parede
+  addCam(R, [-5, -4, 0, 4], [4.0, 2.8, 3.2], [0, 1.0, 0], 62);
+
+  addInteract(R, -3.4, 1.8, 1.5, 'Abrir o cofre confidencial', 'safe');
+  addInteract(R, -3.2, -1.2, 1.4, 'Examinar a estante de prontuários', 'shelf2');
+  addInteract(R, 3.2, -1.5, 1.4, 'Examinar a cama antiga', 'bed2');
+  addPickup(THREE, R, TEX, 'ribbon', 1.5, 2.2, 1);
+  return R;
+}
+
+// ---------------- L1: CORREDOR DOS QUARTOS ----------------
+function buildCorredor(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'corredor', 'CORREDOR DOS QUARTOS', 16, 7, 3.0);
+  R.fog = { c: 0x040409, n: 5, f: 16 };
+  R.music = 'creepy';
+  const wallM = tm(THREE, TEX.wallpaper, 6, 2);
+  plane(THREE, R.group, 16, 7, tm(THREE, TEX.floorWood, 6, 3), 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 16, 7, tm(THREE, TEX.ceiling, 6, 3), 0, 3.0, 0, Math.PI / 2);
+  perimeter(THREE, R, 16, 7, 3.0, wallM, [
     { side: 'N', at: 0.0, w: 2.0 },
+    { side: 'S', at: -4.0, w: 2.0 },
+    { side: 'S', at: 4.0, w: 2.0 },
+  ]);
+  doorVisual(THREE, R, 'N', 0.0, 7, 16, TEX.doorWood);
+  doorVisual(THREE, R, 'S', -4.0, 7, 16, TEX.doorWood);
+  doorVisual(THREE, R, 'S', 4.0, 7, 16, TEX.doorWood);
+  pointLight(THREE, R, 0xffddaa, 2.5, 8, -4, 2.6, 0);
+  pointLight(THREE, R, 0xffddaa, 2.5, 8, 4, 2.6, 0, { amp: 0.8, speed: 7 });
+
+  addDoor(R, -4.0, 3.0, 1.4, 'Entrar no Quarto 1', 'quarto', 0, -2.4, 0);
+  addDoor(R, 4.0, 3.0, 1.4, 'Entrar no Quarto 2', 'quarto2', 0, -2.4, 0);
+  addDoor(R, 0.0, -3.0, 1.4, 'Ir ao Hall Principal', 'saguao', -4, 7.4, Math.PI);
+
+  makeGothicWindow(THREE, TEX, R, -7.8, 1.8, 0, Math.PI / 2);
+  makeGothicWindow(THREE, TEX, R, 7.8, 1.8, 0, -Math.PI / 2);
+  bloodDecal(THREE, R, TEX, 0.0, 0.0, 2.0, 1.4);
+  addCam(R, [-8, -3.5, 0, 3.5], [-6.0, 2.6, 2.8], [0, 1.0, 0], 62);
+  addCam(R, [0, -3.5, 8, 3.5], [6.0, 2.6, 2.8], [0, 1.0, 0], 62);
+
+  addPickup(THREE, R, TEX, 'ammo9', 2.0, 2.2, 8);
+  addSpawn(R, 'infectado', 0.5, 0.0);
+  return R;
+}
+
+// ---------------- L1: HALL PRINCIPAL (hub central, 3-4x quarto) ----------------
+function buildSaguao(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'saguao', 'HALL PRINCIPAL', 26, 18, 4.4);
+  R.fog = { c: 0x060609, n: 7, f: 26 };
+  R.music = 'creepy';
+  const wallM = tm(THREE, TEX.wallpaper, 8, 3);
+  plane(THREE, R.group, 26, 18, tm(THREE, TEX.floorWood, 8, 6), 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 26, 18, tm(THREE, TEX.ceiling, 8, 6), 0, 4.4, 0, Math.PI / 2);
+  perimeter(THREE, R, 26, 18, 4.4, wallM, [
+    { side: 'S', at: -4.0, w: 2.0 },
+    { side: 'W', at: -2.0, w: 2.0 },
+    { side: 'E', at: -2.0, w: 2.0 },
+    { side: 'N', at: 0.0, w: 2.0 },
+  ]);
+  doorVisual(THREE, R, 'S', -4.0, 18, 26, TEX.doorWood);
+  doorVisual(THREE, R, 'W', -2.0, 18, 26, TEX.doorWood);
+  doorVisual(THREE, R, 'E', -2.0, 18, 26, TEX.doorWood);
+  doorVisual(THREE, R, 'N', 0.0, 18, 26, TEX.doorMetal); // d/w estavam INVERTIDOS: folha nascia a 4m fora da sala (buraco preto)
+  pointLight(THREE, R, 0xffddaa, 5, 16, 0, 3.8, 0, { amp: 0.4, speed: 3 });
+  pointLight(THREE, R, 0x8899ff, 3, 12, -8, 3.2, -5);
+  pointLight(THREE, R, 0x8899ff, 3, 12, 8, 3.2, 5);
+
+  addDoor(R, -4.0, 8.4, 1.4, 'Voltar ao Corredor dos Quartos', 'corredor', 0, -2.2, 0);
+  addDoor(R, -12.4, -2.0, 1.4, 'Ir ao Cemitério', 'cemiterio', 6.4, 0.0, -Math.PI / 2);
+  addDoor(R, 12.4, -2.0, 1.4, 'Ir à Estufa Botânica', 'estufa', -4.4, 0.0, Math.PI / 2,
+    { need: { item: 'greenhouse_key' }, msg: 'Trancada. A placa diz "ESTUFA BOTÂNICA — só o jardineiro entra". Precisa da CHAVE DE LATÃO.' });
+  addDoor(R, 0.0, -8.4, 1.4, 'Passagem Norte (Recepção Técnica)', 'corredor_n', -7.4, 0.0, Math.PI / 2,
+    { need: { item: 'basekey' }, consume: true, setFlag: 'hallNorthOpen', msg: 'Porta de aço trancada. A placa diz "ADMINISTRAÇÃO — PROIBIDO". Precisa da CHAVE DE ACESSO.' });
+  addDoor(R, -8.4, -6.5, 1.5, 'Subir a Escada Espiral (2º Andar)', 'hall2', -8.5, 5.8, 0, { stairs: true });
+
+  // Tapete central e recepção
+  const rug = plane(THREE, R.group, 6, 9, flat(THREE, 0x5a1420), 0, 0.02, 0, -Math.PI / 2);
+  R.decor = R.decor || []; R.decor.push(rug);
+  makeReceptionCounterU(THREE, TEX, R, 2.0, 3.0);
+  solid(R, 0.4, 1.4, 3.6, 4.6);
+  // ESCADARIA em ESPIRAL (cenário; o 2º andar se acessa pela porta da ala norte)
+  // colada na parede oeste, subindo ATÉ O TETO (4.4m) num fuso de pedra
+  {
+    // espiral ENCAIXADA no cantão sudoeste (pole a 0.55 das duas paredes, degraus
+    // a até 1.25 do pole = sem cortar parede nem flutuar no vão)
+    const stoneM = tm(THREE, TEX.wallStone, 1, 1);
+    const ironM = flat(THREE, 0x4a4440);
+    const brassM = flat(THREE, 0x8a7430);
+    const PX = -10.0, PZ = -7.3; // degraus chegam a exatamente 0.05 da parede oeste
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.17, 4.4, 8), ironM);
+    pole.position.set(PX, 2.2, PZ);
+    R.group.add(pole);
+    box(THREE, R.group, 0.34, 0.1, 0.34, brassM, PX, 4.42, PZ); // remate do fuso
+    const N = 16;
+    for (let i = 0; i < N; i++) {
+      const a = i * (Math.PI * 2) / N;
+      // degrau CANTILEVER: entra no fuso (r=0.08) e vai até r=1.35 — sem flutuar
+      const st = box(THREE, R.group, 1.27, 0.13, 0.62, stoneM, 0, 0, 0);
+      st.position.set(PX + Math.cos(a) * 0.72, 0.26 + i * 0.25, PZ + Math.sin(a) * 0.72);
+      st.rotation.y = -a;
+      // corrimão HELICOIDAL: um elo por degrau, subindo contínuo
+      const ra = a + (Math.PI * 2) / N / 2;
+      const rail = box(THREE, R.group, 0.5, 0.07, 0.07, ironM, 0, 0, 0);
+      rail.position.set(PX + Math.cos(ra) * 1.22, 0.26 + i * 0.25 + 1.0, PZ + Math.sin(ra) * 1.22);
+      rail.rotation.y = -ra - Math.PI / 2;
+      if (i % 3 === 0) { // balaústre ligando degrau ao corrimão
+        box(THREE, R.group, 0.055, 0.9, 0.055, ironM, PX + Math.cos(a) * 1.22, 0.26 + i * 0.25 + 0.55, PZ + Math.sin(a) * 1.22);
+      }
+    }
+    // patamar no alto encontrando a parede oeste
+    box(THREE, R.group, 1.3, 0.12, 1.3, stoneM, PX, 4.34, PZ);
+    pointLight(THREE, R, 0xffcc88, 1.2, 5.0, PX + 1.4, 1.6, PZ + 1.4); // vela na base
+    pointLight(THREE, R, 0x8899ff, 1.0, 5.0, PX + 1.2, 3.9, PZ + 1.2); // luar no topo
+  }
+  solid(R, -11.25, -8.75, -8.9, -5.85); // volume varrido pelos degraus (flush nas paredes)
+  // ESTÁTUA de Santa Lúcia (pedra, com o prato dos olhos — o símbolo dela)
+  {
+    const sta = new THREE.Group();
+    sta.position.set(0.0, 0, -4.5);
+    const stone = flat(THREE, 0x7e8288);
+    const stoneDark = flat(THREE, 0x5a5e64);
+    const veilM = flat(THREE, 0x8e9298);
+    box(THREE, sta, 1.7, 0.35, 1.7, stoneDark, 0, 0.175, 0);   // base larga
+    box(THREE, sta, 1.25, 0.4, 1.25, stone, 0, 0.55, 0);        // pedestal
+    box(THREE, sta, 0.62, 1.05, 0.5, stone, 0, 1.28, 0);        // manto (saia)
+    box(THREE, sta, 0.5, 0.75, 0.42, stone, 0, 2.13, 0);        // torso afunilado
+    box(THREE, sta, 0.58, 0.22, 0.4, stone, 0, 2.55, 0);        // ombros
+    box(THREE, sta, 0.13, 0.42, 0.16, stone, -0.3, 2.0, 0.05);  // braço E
+    box(THREE, sta, 0.13, 0.42, 0.16, stone, 0.3, 2.0, 0.05);   // braço D
+    box(THREE, sta, 0.3, 0.05, 0.26, veilM, 0, 1.82, 0.3);      // PRATO nas mãos
+    box(THREE, sta, 0.06, 0.04, 0.04, flat(THREE, 0xe8e4d8), -0.07, 1.86, 0.32); // olho E
+    box(THREE, sta, 0.06, 0.04, 0.04, flat(THREE, 0xe8e4d8), 0.07, 1.86, 0.32);  // olho D
+    box(THREE, sta, 0.32, 0.32, 0.3, veilM, 0, 2.82, 0);        // cabeça
+    box(THREE, sta, 0.4, 0.08, 0.38, veilM, 0, 3.0, -0.02);     // véu
+    box(THREE, sta, 0.38, 0.5, 0.08, veilM, 0, 2.6, -0.2);      // véu nas costas
+    pointLight(THREE, R, 0xffcc88, 1.4, 4.5, 0, 1.2, -3.6);     // vela aos pés (mundo)
+    R.group.add(sta);
+  }
+  solid(R, -0.9, -5.4, 0.9, -3.6);
+  // QUADRO DE FORÇA: gabinete metálico FLUSH na parede leste, com eletrodutos até o teto
+  {
+    const panel = new THREE.Group();
+    panel.position.set(12.66, 0, 4.0);
+    const ironM = flat(THREE, 0x3c434b);
+    const steelM = flat(THREE, 0x5a646e);
+    box(THREE, panel, 0.18, 1.5, 1.15, ironM, 0, 1.55, 0);      // gabinete
+    box(THREE, panel, 0.04, 1.34, 1.0, steelM, -0.11, 1.55, 0); // porta c/ moldura
+    box(THREE, panel, 0.03, 0.09, 0.09, flat(THREE, 0x20242a), -0.14, 1.55, 0.42); // dobradiça
+    box(THREE, panel, 0.03, 0.09, 0.09, flat(THREE, 0x20242a), -0.14, 1.55, -0.42);
+    box(THREE, panel, 0.05, 0.22, 0.06, flat(THREE, 0x8a929a), -0.15, 1.55, -0.48); // maçaneta
+    box(THREE, panel, 0.05, 0.1, 1.0, flat(THREE, 0xc8a028), -0.13, 0.92, 0);  // faixa de PERIGO
+    for (const pz of [-0.28, 0, 0.28]) { // disjuntores na face
+      box(THREE, panel, 0.04, 0.16, 0.09, flat(THREE, 0x1a1e24), -0.14, 1.78, pz);
+    }
+    const ledOk = box(THREE, panel, 0.04, 0.05, 0.05, flat(THREE, 0x1a3a22), -0.14, 2.0, 0.35);  // led ON (apagado sem fusível)
+    const ledFail = box(THREE, panel, 0.04, 0.05, 0.05, flat(THREE, 0xff4030), -0.14, 2.0, 0.22); // led falha
+    R.fuseLeds = { ok: ledOk, fail: ledFail }; // o jogo acende o verde quando o fusível entra
+    for (const pz of [-0.35, 0.0, 0.35]) { // eletrodutos sobem até o teto
+      box(THREE, panel, 0.07, 4.4 - 2.32, 0.07, flat(THREE, 0x4a525a), 0, 2.32 + (4.4 - 2.32) / 2, pz);
+    }
+    R.group.add(panel);
+  }
+  solid(R, 12.4, 3.3, 12.75, 4.7);
+  addCam(R, [-13, -9, 0, 9], [-10.0, 3.6, 6.5], [0, 1.0, 0], 64);
+  addCam(R, [0, -9, 13, 9], [10.0, 3.6, 6.5], [0, 1.0, 0], 64);
+
+  addInteract(R, 2.0, 0.4, 1.7, 'Usar a Máquina de Escrever da Recepção', 'save');
+  addInteract(R, 11.9, 4.0, 1.7, 'Abrir o quadro de força', 'fusebox');
+  addInteract(R, 0.0, -4.5, 1.6, 'Orar diante da estátua de Santa Lúcia', 'statue');
+  addInteract(R, -2.7, 0.5, 1.3, 'Beber água do bebedouro', 'vase');
+  addPickup(THREE, R, TEX, 'page', -4.0, 2.5, 1, 1, 0.06);
+  addPickup(THREE, R, TEX, 'ammo9', 10.0, 6.5, 8);
+    addPickup(THREE, R, TEX, 'ribbon', 4.6, 2.6, 1);
+return R;
+}
+
+// ---------------- L1: CEMITÉRIO ----------------
+function buildCemiterio(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'cemiterio', 'CEMITÉRIO DAS LÁPIDES', 16, 10, 3.4);
+  R.fog = { c: 0x05070a, n: 6, f: 20 };
+  R.music = 'creepy';
+  const wallM = tm(THREE, TEX.wallStone, 6, 2);
+  plane(THREE, R.group, 16, 10, tm(THREE, TEX.stoneFloor, 5, 4), 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 16, 10, tm(THREE, TEX.ceiling, 6, 4), 0, 3.4, 0, Math.PI / 2);
+  perimeter(THREE, R, 16, 10, 3.4, wallM, [
+    { side: 'E', at: 0.0, w: 2.0 },
+    { side: 'N', at: 0.0, w: 2.0 },
+  ]);
+  doorVisual(THREE, R, 'E', 0.0, 10, 16, TEX.doorWood);
+  doorVisual(THREE, R, 'N', 0.0, 10, 16, TEX.doorWood);
+  pointLight(THREE, R, 0x99bbff, 3, 14, 0, 3.0, 0, { amp: 0.5, speed: 5 });
+  pointLight(THREE, R, 0xccddff, 2, 13, 0, 4.0, 0);
+
+  addDoor(R, 7.4, 0.0, 1.4, 'Voltar ao Hall Principal', 'saguao', -11.4, -2.0, -Math.PI / 2);
+  addDoor(R, 0.0, -4.4, 1.4, 'Portão para a Floresta', 'floresta', 0, 5.6, Math.PI);
+
+  // lápides
+  for (const [lx, lz] of [[-5, -2], [-3, 1], [-1, -1.5], [1, 1.5], [3, -2], [5, 1]]) {
+    box(THREE, R.group, 0.7, 1.1, 0.18, tm(THREE, TEX.wallStone, 1, 1), lx, 0.55, lz);
+    solid(R, lx - 0.35, lz - 0.12, lx + 0.35, lz + 0.12);
+  }
+  // Mausoléu dos Alencastro
+  box(THREE, R.group, 2.4, 2.2, 1.6, wallM, -5.0, 1.1, -3.0);
+  solid(R, -6.2, -3.8, -3.8, -2.2);
+  addCam(R, [-8, -5, 0, 5], [-5.8, 3.0, 3.5], [0, 1.0, 0], 62);
+  addCam(R, [0, -5, 8, 5], [5.8, 3.0, 3.5], [0, 1.0, 0], 62);
+
+  addInteract(R, 0.0, -2.5, 1.7, 'Examinar o túmulo recém-cavado', 'tumulo_lucia');
+  addInteract(R, -5.0, -3.0, 1.6, 'Ler o mausoléu da família Alencastro', 'mausoleum');
+  addPickup(THREE, R, TEX, 'greenhouse_key', 4.5, 2.8, 1);
+  addPickup(THREE, R, TEX, 'page', -4.5, 3.2, 1, 2, 0.06);
+  addSpawn(R, 'sombra', -2.2, 2.6);
+  addSpawn(R, 'rastejador', 0.0, -1.0);
+  addSpawn(R, 'sombra', 4.0, 2.0);
+  return R;
+}
+
+// ---------------- L1: ESTUFA BOTÂNICA ----------------
+function buildEstufa(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'estufa', 'ESTUFA BOTÂNICA', 12, 10, 3.6);
+  R.fog = { c: 0x04120a, n: 6, f: 18 };
+  R.music = 'creepy';
+  const wallM = tm(THREE, TEX.wallpaper, 5, 2, 0xaabb99);
+  plane(THREE, R.group, 12, 10, tm(THREE, TEX.stoneFloor, 5, 4, 0x99aa88), 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 12, 10, tm(THREE, TEX.ceiling, 5, 4), 0, 3.6, 0, Math.PI / 2);
+  perimeter(THREE, R, 12, 10, 3.6, wallM, [{ side: 'W', at: 0.0, w: 2.0 }]);
+  doorVisual(THREE, R, 'W', 0.0, 10, 12, TEX.doorWood);
+  pointLight(THREE, R, 0xaaffcc, 3, 12, 0, 3.0, 0, { amp: 0.3, speed: 2 });
+
+  addDoor(R, -5.4, 0.0, 1.4, 'Voltar ao Hall Principal', 'saguao', 11.4, -2.0, -Math.PI / 2);
+
+  // bancada de botânica e canteiros
+  box(THREE, R.group, 3.0, 0.9, 1.0, tm(THREE, TEX.floorWood, 2, 1), -2.0, 0.45, 2.0);
+  solid(R, -3.5, 1.5, -0.5, 2.5);
+  for (const [px, pz] of [[2.0, -2.0], [3.4, -1.0], [2.6, -3.2]]) {
+    box(THREE, R.group, 1.0, 0.9, 1.0, flat(THREE, 0x224422), px, 0.45, pz);
+    solid(R, px - 0.5, pz - 0.5, px + 0.5, pz + 0.5);
+  }
+  addCam(R, [-6, -5, 0, 5], [-4.0, 3.0, 3.4], [0, 1.0, 0], 62);
+
+  addInteract(R, -2.0, 2.0, 1.5, 'Vasculhar a bancada de botânica', 'greenhouse_bench');
+  addInteract(R, 2.0, -2.0, 1.6, 'Examinar as plantas carnívoras', 'greenhouse_plants');
+  addPickup(THREE, R, TEX, 'antidote', 4.0, 3.0, 1);
+  addPickup(THREE, R, TEX, 'page', -4.0, -3.0, 1, 3, 0.06);
+  addSpawn(R, 'rastejador', 0.0, 0.0);
+  return R;
+}
+
+// ---------------- L1: FLORESTA DOS LAMENTOS ----------------
+function buildFloresta(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'floresta', 'FLORESTA DOS LAMENTOS', 20, 14, 4.8);
+  R.fog = { c: 0x030604, n: 5, f: 15 };
+  const wallM = tm(THREE, TEX.wallStone, 8, 2, 0x445544);
+  plane(THREE, R.group, 20, 14, tm(THREE, TEX.stoneFloor, 8, 6, 0x556655), 0, 0, 0, -Math.PI / 2);
+  perimeter(THREE, R, 20, 14, 4.8, wallM, [
     { side: 'S', at: 0.0, w: 2.0 },
     { side: 'E', at: 0.0, w: 2.0 },
+    { side: 'N', at: 5.0, w: 2.0 },
   ]);
-  doorVisual(THREE, R, 'N', 0.0, 12, 16, TEX.doorMetal);
-  doorVisual(THREE, R, 'S', 0.0, 12, 16, TEX.doorMetal);
-  doorVisual(THREE, R, 'E', 0.0, 12, 16, TEX.doorMetal);
+  doorVisual(THREE, R, 'S', 0.0, 14, 20, TEX.doorWood);
+  doorVisual(THREE, R, 'E', 0.0, 14, 20, TEX.doorWood);
+  doorVisual(THREE, R, 'N', 5.0, 14, 20, TEX.doorWood);
+  pointLight(THREE, R, 0x88aaff, 2.5, 12, 0, 3.5, 0, { amp: 0.6, speed: 4 });
+  pointLight(THREE, R, 0x88aaff, 2.0, 10, -6, 3.0, -3);
+  pointLight(THREE, R, 0xaabbdd, 1.8, 15, 4, 4.4, 2);
 
-  makeIndustrialBoiler(THREE, TEX, R, -4.5, -2.2);
-  makeIndustrialBoiler(THREE, TEX, R, 4.5, -2.2);
+  addDoor
 
-  const waterMesh = plane(THREE, R.group, 16, 12, tm(THREE, TEX.water, 4, 3, 0x446655), 0, 0.35, 0, -Math.PI / 2);
-  R.waterMesh = waterMesh;
-  solid(R, -7.5, -5.5, 7.5, 5.5, 'water');
+  addDoor(R, 0.0, 6.4, 1.4, 'Voltar ao Cemitério', 'cemiterio', 0, -3.4, 0);
+  addDoor(R, 9.4, 0.0, 1.4, 'Portão para o Estacionamento', 'estacionamento', -6.4, 0.0, Math.PI / 2,
+    { need: { item: 'forest_key' }, msg: 'Um portão de ferro com correntes. O cadeado é gótico — a CHAVE DO PORTÃO DE FERRO o abre.' });
+  addDoor(R, 5.0, -6.4, 1.4, 'Entrar na Casa do Zelador', 'casa_zelador', 0, 2.4, 0);
 
-  pointLight(THREE, R, 0xff6633, 5, 12, -4.5, 2.2, -1.5);
-  pointLight(THREE, R, 0x336688, 4, 12, 0, 2.5, 2.0);
+  // árvores
+  for (const [ax, az, r0] of [[-8, -4, 0.5], [-5, 1, 0.6], [-2, -4, 0.5], [3, 2, 0.6], [6, -3, 0.5], [-8, 4, 0.55], [1, 4.5, 0.5], [8, 3.5, 0.6]]) {
+    const tr = new THREE.Mesh(new THREE.CylinderGeometry(r0 * 0.6, r0, 3.6, 6), flat(THREE, 0x2a2318));
+    tr.position.set(ax, 1.8, az); R.group.add(tr);
+    solid(R, ax - r0, az - r0, ax + r0, az + r0);
+  }
+  // monólito profano
+  const mono = new THREE.Mesh(new THREE.BoxGeometry(1.0, 2.6, 0.5), tm(THREE, TEX.wallStone, 1, 1, 0x111111));
+  mono.position.set(-6.0, 1.3, -3.0); R.group.add(mono);
+  solid(R, -6.5, -3.3, -5.5, -2.7);
+  // carro da Clara
+  const car = new THREE.Group(); car.position.set(-2.0, 0, 4.0);
+  const body = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.8, 4.2), flat(THREE, 0x2244aa));
+  body.position.y = 0.6; car.add(body);
+  const cab = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.6, 2.0), flat(THREE, 0x1133aa));
+  cab.position.set(0, 1.2, -0.2); car.add(cab);
+  R.group.add(car);
+  solid(R, -3.0, 1.8, -1.0, 6.2);
+  addCam(R, [-10, -7, 0, 7], [-7.0, 3.4, 4.5], [0, 1.0, 0], 64);
+  addCam(R, [0, -7, 10, 7], [7.0, 3.4, 4.5], [0, 1.0, 0], 64);
 
-  addCam(R, [-8, -6, 0, 6], [-5.8, 3.0, 3.5], [0, 1.0, 0], 62);
-  addCam(R, [0, -6, 8, 6], [5.8, 3.0, 3.5], [0, 1.0, 0], 62);
-
-  addDoor(R, 7.2, 0.0, 1.4, 'Subir ao Saguão Principal', 'saguao', -7.5, -2.5, Math.PI / 2);
-  addDoor(R, 0.0, -5.4, 1.4, 'Voltar ao Mezanino (2º Andar)', 'mezanino', 0, 4.2, Math.PI);
-  addDoor(R, 0.0, 5.4, 1.4, 'Descer ao Subsolo Secreto', 'subsolo_corredor', 0.0, -3.2, 0);
-
-  addInteract(R, -3.8, -1.8, 1.5, 'Girar a grande válvula vermelha de drenagem', 'valve');
-  addInteract(R, 3.5, 2.0, 1.4, 'Examinar o engradado de madeira boiando', 'crates');
-
-  addPickup(THREE, R, TEX, 'launcher', 5.5, 3.5, 1);
-  addPickup(THREE, R, TEX, 'page', 2.5, 3.5, 1, 4, 0.06);
-  addSpawn(R, 'carrasco', 2.0, 0.0);
-  addSpawn(R, 'aberracao', -2.0, 1.0);
-
+  addInteract(R, -6.0, -3.0, 1.7, 'Examinar o monólito de pedra negra', 'monolith');
+  addInteract(R, -2.0, 4.0, 1.8, 'Examinar o carro destruído', 'carro_clara');
+  addInteract(R, 9.0, 1.2, 1.6, 'Fechar o portão de ferro com a corrente', 'gate_final');
+  addPickup(THREE, R, TEX, 'ammo38', 6.5, -4.5, 8);
+  addSpawn(R, 'sombra', -4.2, 2.8);
+  addSpawn(R, 'lamento', 0.0, 0.0);
+  addSpawn(R, 'sombra', 3.0, -3.0);
   return R;
 }
 
-// ---------------- 13. FOLHA P3: CORREDOR DO 3º ANDAR ----------------
-function buildCorredorP3(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'corredor_p3', 'CORREDOR DA DIRETORIA · 3º ANDAR', 14, 8, 3.2);
-  R.fog = { c: 0x05040a, n: 5, f: 20 };
-  R.ambient = 'quarto';
+// ---------------- L1: ESTACIONAMENTO (substitui pátio/canil) ----------------
+function buildEstacionamento(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'estacionamento', 'ESTACIONAMENTO ABANDONADO', 16, 12, 4.4);
+  R.fog = { c: 0x05060a, n: 6, f: 18 };
+  R.music = 'creepy';
+  const wallM = tm(THREE, TEX.wallStone, 6, 2);
+  plane(THREE, R.group, 16, 12, tm(THREE, TEX.stoneFloor, 6, 5, 0x777788), 0, 0, 0, -Math.PI / 2);
+  perimeter(THREE, R, 16, 12, 4.4, wallM, [{ side: 'W', at: 0.0, w: 2.0 }]);
+  doorVisual(THREE, R, 'W', 0.0, 12, 16, TEX.doorWood);
+  pointLight(THREE, R, 0xffcc88, 3, 14, 0, 3.6, 0, { amp: 0.7, speed: 6 });
+  pointLight(THREE, R, 0xffaa66, 2.2, 12, 0, 4.0, 3);
 
-  const floorM = tm(THREE, TEX.floorWood, 4, 2);
-  const wallM = tm(THREE, TEX.wallpaper, 5, 1.4);
-  const ceilM = tm(THREE, TEX.ceiling, 4, 3);
-  plane(THREE, R.group, 14, 8, floorM, 0, 0, 0, -Math.PI / 2);
-  plane(THREE, R.group, 14, 8, ceilM, 0, 3.2, 0, Math.PI / 2);
+  addDoor(R, -7.4, 0.0, 1.4, 'Voltar à Floresta', 'floresta', 8.4, 0.0, -Math.PI / 2);
 
-  perimeter(THREE, R, 14, 8, 3.2, wallM, [
-    { side: 'S', at: -4.0, w: 2.0 }, // Mezanino P2
-    { side: 'N', at: 0.0, w: 2.0 },  // Sala do Dr. P3
-    { side: 'E', at: 0.0, w: 2.0 },  // Terraço
-  ]);
-  doorVisual(THREE, R, 'S', -4.0, 8, 14, TEX.doorWood);
-  doorVisual(THREE, R, 'N', 0.0, 8, 14, TEX.doorWood);
-  doorVisual(THREE, R, 'E', 0.0, 8, 14, TEX.doorMetal);
+  // carros abandonados em fila
+  for (const [cx, cz, cor] of [[-4, -3, 0x666666], [0, -3, 0x774422], [4, -3, 0x334455], [-4, 2, 0x444455], [4, 2, 0x553333]]) {
+    const c = new THREE.Mesh(new THREE.BoxGeometry(1.9, 1.1, 4.0), flat(THREE, cor));
+    c.position.set(cx, 0.55, cz); R.group.add(c);
+    solid(R, cx - 1.0, cz - 2.0, cx + 1.0, cz + 2.0);
+  }
+  bloodDecal(THREE, R, TEX, 2.0, 0.0, 2.2, 1.6);
+  addCam(R, [-8, -6, 0, 6], [-6.0, 3.4, 4.4], [0, 1.0, 0], 64);
+  addCam(R, [0, -6, 8, 6], [6.0, 3.4, 4.4], [0, 1.0, 0], 64);
+  addCam(R, [0, -6, 8, 6], [6.8, 3.9, 5.4], [0, 1.0, -1], 60);
 
-  plane(THREE, R.group, 11, 2.2, tm(THREE, TEX.carpet, 4, 1), 0, 0.012, 0, -Math.PI / 2);
-
-  pointLight(THREE, R, 0xc8a044, 5, 10, 0, 2.4, 0);
-
-  addCam(R, [-7, -4, 0, 4], [-4.5, 2.6, 2.8], [0, 1.1, 0], 65);
-  addCam(R, [0, -4, 7, 4], [4.5, 2.6, 2.8], [0, 1.1, 0], 65);
-
-  addDoor(R, -4.0, 3.4, 1.4, 'Descer ao Mezanino (2º Andar P2)', 'mezanino', -6.0, 0.0, Math.PI / 2);
-  addDoor(R, 0.0, -3.4, 1.4, 'Entrar na Sala da Diretoria', 'sala_dr_p3', 0, 2.8, 0);
-  addDoor(R, 6.4, 0.0, 1.4, 'Subir ao Terraço do Heliponto', 'terraco', -3.0, 3.0, -Math.PI / 2);
-
-  addPickup(THREE, R, TEX, 'ammo9', 3.0, -2.8, 15);
-  addPickup(THREE, R, TEX, 'page', 1.5, 2.0, 1, 5, 0.06);
-  addSpawn(R, 'sombra', 2.0, 0.0);
-
-  return R;
+  addInteract(R, -4.0, 2.0, 1.7, 'Vasculhar o carro do zelador', 'carro_zelador');
+  addPickup(THREE, R, TEX, 'ammo9', 6.0, 4.5, 10);
+  addPickup(THREE, R, TEX, 'pills', -6.0, -4.0, 1);
+  addSpawn(R, 'infectado', 2.0, -2.0);
+  addSpawn(R, 'rastejador', -2.0, -3.5);
+    addPickup(THREE, R, TEX, 'ribbon', 2.2, 3.0, 1);
+return R;
 }
 
-// ---------------- 14. FOLHA P3: SALA DA DIRETORIA P3 ----------------
-function buildSalaDrP3(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'sala_dr_p3', 'SALA DA DIRETORIA EXECUTIVA · 3º ANDAR', 10, 8, 3.2);
-  R.fog = { c: 0x050409, n: 5, f: 18 };
-  R.ambient = 'quarto';
-
-  const floorM = tm(THREE, TEX.floorWood, 3, 2);
-  const wallM = tm(THREE, TEX.wallpaper, 4, 1.4);
-  const ceilM = tm(THREE, TEX.ceiling, 3, 3);
-  plane(THREE, R.group, 10, 8, floorM, 0, 0, 0, -Math.PI / 2);
-  plane(THREE, R.group, 10, 8, ceilM, 0, 3.2, 0, Math.PI / 2);
-
-  perimeter(THREE, R, 10, 8, 3.2, wallM, [{ side: 'S', at: 0.0, w: 2.0 }]);
+// ---------------- L1: CASA DO ZELADOR (armário secreto) ----------------
+function buildCasaZelador(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'casa_zelador', 'CASA DO ZELADOR BENTO', 10, 8, 3.0);
+  R.fog = { c: 0x070605, n: 5, f: 16 };
+  R.music = 'creepy';
+  const wallM = tm(THREE, TEX.floorWood, 4, 2, 0x8a7a5a);
+  plane(THREE, R.group, 10, 8, tm(THREE, TEX.floorWood, 4, 3), 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 10, 8, tm(THREE, TEX.ceiling, 4, 3), 0, 3.0, 0, Math.PI / 2);
+  perimeter(THREE, R, 10, 8, 3.0, wallM, [
+    { side: 'S', at: 0.0, w: 2.0 },
+    { side: 'N', at: 0.0, w: 2.0 },
+  ]);
   doorVisual(THREE, R, 'S', 0.0, 8, 10, TEX.doorWood);
+  doorVisual(THREE, R, 'N', 0.0, 8, 10, wallM);
+  pointLight(THREE, R, 0xffcc88, 2.5, 9, 0, 2.6, 0);
 
-  const woodD = flat(THREE, 0x1f140e);
-  box(THREE, R.group, 2.8, 0.9, 1.3, woodD, 0, 0.45, -2.4);
-  solid(R, -1.6, -3.2, 1.6, -1.6);
+  addDoor(R, 0.0, 3.5, 1.4, 'Voltar à Floresta', 'floresta', 5, -5.4, 0);
+  addDoor(R, 0.0, -3.5, 1.4, 'Passagem Secreta', 'passagem', 0, 7.4, 0,
+    { need: { flag: 'secretOpen' }, msg: 'Um ARMÁRIO DE FERRAMENTAS pesado cobre o vão. Empurrar não resolve — examine o armário.' });
 
-  box(THREE, R.group, 0.8, 1.8, 2.4, flat(THREE, 0x4a2a1a), 4.4, 0.9, 0);
-  solid(R, 3.8, -1.4, 4.8, 1.4);
+  // bancada de trabalho do Bento (na parede leste, livre da porta norte)
+  box(THREE, R.group, 1.0, 0.9, 2.6, wallM, 3.8, 0.45, 0.8);
+  solid(R, 3.3, -0.5, 4.3, 2.1);
+  // armário de ferramentas que esconde a passagem
+  const arm = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.2, 0.6), wallM);
+  arm.position.set(-3.6, 1.1, -0.5); R.group.add(arm);
+  solid(R, -4.4, -0.8, -2.8, -0.2);
+  makeNormalBed(THREE, TEX, R, 3.4, -1.8, Math.PI / 2); // casa residencial, não hospital
+  solid(R, 2.9, -2.6, 3.9, -1.0);
+  // rádio amador
+  box(THREE, R.group, 0.8, 0.5, 0.5, flat(THREE, 0x334455), 3.5, 1.2, 1.8);
+  solid(R, 3.1, 1.5, 3.9, 2.1);
+  addCam(R, [-5, -4, 0, 4], [-4.0, 2.6, 3.0], [0, 1.0, 0], 62);
 
-  pointLight(THREE, R, 0xffa044, 5, 8, 0, 2.2, -1.5);
-
-  addCam(R, [-5, -4, 0, 4], [-3.2, 2.6, 2.6], [0, 1.1, 0], 62);
-  addCam(R, [0, -4, 5, 4], [3.2, 2.6, 2.6], [0, 1.1, 0], 62);
-
-  addDoor(R, 0.0, 3.4, 1.4, 'Voltar ao Corredor P3', 'corredor_p3', 0, -2.5, Math.PI);
-
-  addInteract(R, 0.0, -1.5, 1.4, 'Vasculhar a mesa e o cofre executivo', 'director_safe');
-  addInteract(R, 3.8, 0.0, 1.4, 'Olhar a lareira e a pasta de couro', 'fireplace');
-
-  addPickup(THREE, R, TEX, 'terrace_key', 0.0, -2.2, 1, null, 0.95);
-  addPickup(THREE, R, TEX, 'firstaid', 3.5, 2.0, 1);
-
-  return R;
+  addInteract(R, 3.6, 0.8, 1.5, 'Vasculhar a bancada de trabalho de Bento', 'cabana_bento');
+  addInteract(R, -3.6, -0.5, 1.5, 'Examinar o armário de ferramentas', 'armario_secreto');
+  addInteract(R, 3.5, 1.8, 1.4, 'Ouvir o rádio amador', 'bento_radio');
+  addPickup(THREE, R, TEX, 'pills', -2.5, 2.2, 1);
+    addPickup(THREE, R, TEX, 'ribbon', 2.5, 2.5, 1);
+return R;
 }
 
-// ---------------- 15. FOLHA P3: TERRAÇO DO HELIPONTO ----------------
-function buildTerraco(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'terraco', 'TERRAÇO · ARENA DO HELIPONTO', 18, 16, 12);
-  R.ambient = 'terraco';
-  R.music = 'boss';
-  R.openSky = true;
-  R.fog = { c: 0x07090f, n: 6, f: 32 };
-
-  const floorM = tm(THREE, TEX.heliPad, 1, 1);
-  plane(THREE, R.group, 18, 16, floorM, 0, 0, 0, -Math.PI / 2);
-
-  const wallM = tm(THREE, TEX.wallDirty, 4, 1);
-  box(THREE, R.group, 18.0, 1.2, 0.5, wallM, 0, 0.6, -8.0);
-  box(THREE, R.group, 18.0, 1.2, 0.5, wallM, 0, 0.6, 8.0);
-  box(THREE, R.group, 0.5, 1.2, 16.0, wallM, -9.0, 0.6, 0);
-  box(THREE, R.group, 0.5, 1.2, 16.0, wallM, 9.0, 0.6, 0);
-  solid(R, -9.2, -8.2, 9.2, -7.7);
-  solid(R, -9.2, 7.7, 9.2, 8.2);
-  solid(R, -9.2, -8.0, -8.7, 8.0);
-  solid(R, 8.7, -8.0, 9.2, 8.0);
-
-  const altarM = tm(THREE, TEX.altar, 1, 1);
-  box(THREE, R.group, 1.8, 1.1, 1.8, altarM, 0, 0.55, 0);
-  solid(R, -1.0, -1.0, 1.0, 1.0);
-
-  const colors = [0x55aaff, 0xff5555, 0x55ff77, 0xffdd44];
-  for (let i = 0; i < 4; i++) {
-    const a = (i / 4) * Math.PI * 2;
-    const gem = box(THREE, R.group, 0.18, 0.18, 0.18, flat(THREE, colors[i]), Math.cos(a) * 0.7, 1.25, Math.sin(a) * 0.7);
-    gem.visible = false;
-    R.memorialGems.push(gem);
-  }
-
-  // Portal de luz final libertador
-  const portal = new THREE.Group();
-  portal.position.set(0, 1.8, -4.0);
-  const pglow = new THREE.Sprite(new THREE.SpriteMaterial({
-    map: TEX.glowWarm, color: 0xfff2cc, transparent: true, opacity: 0.8,
-    blending: THREE.AdditiveBlending, depthWrite: false,
-  }));
-  pglow.scale.set(4, 4, 1);
-  portal.add(pglow);
-  portal.visible = false;
-  R.group.add(portal);
-  R.portal = portal;
-  R.portalLight = pointLight(THREE, R, 0xfff2cc, 0, 14, 0, 1.8, -4.0);
-  R.memorialLight = pointLight(THREE, R, 0x88bbff, 2, 10, 0, 1.5, 0);
-
-  pointLight(THREE, R, 0x4a6a9a, 6, 24, 0, 6.0, 0);
-
-  const RN = 600;
-  const rpos = new Float32Array(RN * 3);
-  for (let i = 0; i < RN; i++) {
-    rpos[i * 3] = (Math.random() - 0.5) * 18;
-    rpos[i * 3 + 1] = Math.random() * 10;
-    rpos[i * 3 + 2] = (Math.random() - 0.5) * 16;
-  }
-  const rgeo = new THREE.BufferGeometry();
-  rgeo.setAttribute('position', new THREE.BufferAttribute(rpos, 3));
-  const rain = new THREE.Points(rgeo, new THREE.PointsMaterial({ color: 0x88bbff, size: 0.12, transparent: true, opacity: 0.75 }));
-  R.group.add(rain);
-  R.rain = rain;
-
-  addCam(R, [-9, -8, 0, 8], [-6.0, 4.5, 5.0], [0, 1.0, 0], 65);
-  addCam(R, [0, -8, 9, 8], [6.0, 4.5, -5.0], [0, 1.0, 0], 65);
-
-  addDoor(R, 0.0, 7.2, 1.5, 'Descer pelo Elevador ao Saguão', 'saguao', 3.5, -4.5, 0);
-
-  addInteract(R, 0.0, 0.0, 1.8, 'Colocar os Fragmentos de Memória no Memorial', 'memorial');
-
-  addPickup(THREE, R, TEX, 'grenade_rounds', -5.0, 4.0, 6);
-  addPickup(THREE, R, TEX, 'firstaid', 5.0, 4.0, 1);
-  addPickup(THREE, R, TEX, 'page', -3.0, 3.0, 1, 7, 0.06);
-
-  R.fx = (dt, t, game) => {
-    if (R.rain) {
-      const pos = R.rain.geometry.attributes.position.array;
-      for (let i = 1; i < pos.length; i += 3) {
-        pos[i] -= dt * 16;
-        if (pos[i] < 0) pos[i] = 10;
-      }
-      R.rain.geometry.attributes.position.needsUpdate = true;
-    }
-    if (game && R.portal) {
-      R.portal.visible = !!game.flags.bossDead;
-      if (R.portal.visible) {
-        R.portal.rotation.z += dt * 0.8;
-        if (R.portalLight) R.portalLight.intensity = 22 + Math.sin(t * 5) * 6;
-      }
-    }
-  };
-
-  return R;
-}
-
-// ---------------- 16. FOLHA EXTRAS: CORREDOR DO SUBSOLO SECRETO ----------------
-function buildSubsoloCorredor(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'subsolo_corredor', 'SUBSOLO SECRETO · MASMORRA', 14, 10, 3.2);
-  R.fog = { c: 0x050307, n: 5, f: 20 };
-  R.ambient = 'porao';
-
-  const floorM = tm(THREE, TEX.stoneFloor, 4, 3);
-  const wallM = tm(THREE, TEX.wallStone, 5, 2);
-  const ceilM = tm(THREE, TEX.ceiling, 4, 3);
-  plane(THREE, R.group, 14, 10, floorM, 0, 0, 0, -Math.PI / 2);
-  plane(THREE, R.group, 14, 10, ceilM, 0, 3.2, 0, Math.PI / 2);
-
-  perimeter(THREE, R, 14, 10, 3.2, wallM, [
-    { side: 'N', at: 0.0, w: 2.0 },  // Ala das Caldeiras / Porão
-    { side: 'W', at: 0.0, w: 2.0 },  // Santuário do Culto
-    { side: 'E', at: 0.0, w: 2.0 },  // Sala de Experimentos
+// ---------------- L1: PASSAGEM SECRETA ----------------
+function buildPassagem(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'passagem', 'PASSAGEM SECRETA', 7, 18, 2.8);
+  R.fog = { c: 0x030303, n: 3, f: 10 };
+  R.music = 'creepy';
+  const wallM = tm(THREE, TEX.wallStone, 3, 2);
+  plane(THREE, R.group, 7, 18, tm(THREE, TEX.stoneFloor, 3, 8), 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 7, 18, tm(THREE, TEX.ceiling, 3, 8), 0, 2.8, 0, Math.PI / 2);
+  perimeter(THREE, R, 7, 18, 2.8, wallM, [
+    { side: 'N', at: 0.0, w: 2.0 },
+    { side: 'S', at: 0.0, w: 2.0 },
   ]);
-  doorVisual(THREE, R, 'N', 0.0, 10, 14, TEX.doorMetal);
-  doorVisual(THREE, R, 'W', 0.0, 10, 14, TEX.doorWood);
-  doorVisual(THREE, R, 'E', 0.0, 10, 14, TEX.doorMetal);
+  doorVisual(THREE, R, 'N', 0.0, 18, 7, wallM);
+  doorVisual(THREE, R, 'S', 0.0, 18, 7, wallM);
+  pointLight(THREE, R, 0xff8844, 1.8, 7, 0, 2.2, 0, { amp: 0.9, speed: 9 });
 
-  pointLight(THREE, R, 0xff8833, 5, 10, -4.0, 2.0, 0, { amp: 1.5, speed: 10 });
-  pointLight(THREE, R, 0xff8833, 5, 10, 4.0, 2.0, 0, { amp: 1.5, speed: 10 });
+  addDoor(R, 0.0, 8.4, 1.4, 'Voltar à Casa do Zelador', 'casa_zelador', 0, -2.4, Math.PI);
+  addDoor(R, 0.0, -8.4, 1.4, 'Sair na Recepção Técnica', 'corredor_n', 4, 2.2, Math.PI);
 
-  addCam(R, [-7, -5, 0, 5], [-4.5, 2.6, 3.0], [0, 1.1, 0], 65);
-  addCam(R, [0, -5, 7, 5], [4.5, 2.6, -3.0], [0, 1.1, 0], 65);
+  // tubulações laterais
+  box(THREE, R.group, 0.5, 0.5, 16, tm(THREE, TEX.wallStone, 6, 4, 0x555566), -3.0, 2.2, 0);
+  box(THREE, R.group, 0.5, 0.5, 16, tm(THREE, TEX.wallStone, 6, 4, 0x555566), 3.0, 2.2, 0);
+  solid(R, -3.3, -8.2, -2.7, 8.2);
+  solid(R, 2.7, -8.2, 3.3, 8.2);
+  bloodDecal(THREE, R, TEX, 0.0, -2.0, 2.0, 2.6);
+  addCam(R, [-3.5, -9, 0, 9], [-2.0, 2.4, 3.0], [0, 1.1, 0], 64);
 
-  addDoor(R, 0.0, -4.4, 1.4, 'Subir à Ala das Caldeiras (Porão)', 'porao', 0, 4.0, Math.PI);
-  addDoor(R, -6.4, 0.0, 1.4, 'Entrar no Santuário do Culto', 'culto', 4.5, 0.0, -Math.PI / 2);
-  addDoor(R, 6.4, 0.0, 1.4, 'Entrar na Sala de Experimentos', 'experimentos', -4.5, 0.0, Math.PI / 2);
-
-  addSpawn(R, 'rastejador', 0.0, 1.0);
-
+  addPickup(THREE, R, TEX, 'frag', 0.0, -5.5, 1);
+  addPickup(THREE, R, TEX, 'ammo9', 1.5, 4.0, 8);
+  addSpawn(R, 'sombra', 0.0, 0.0);
   return R;
 }
 
-// ---------------- 17. FOLHA EXTRAS: SANTUÁRIO DO CULTO ----------------
-function buildCulto(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'culto', 'SANTUÁRIO DO CULTO ARCANO', 12, 12, 3.6);
-  R.fog = { c: 0x08020a, n: 5, f: 20 };
-  R.ambient = 'porao';
+// ---------------- L1: CORREDOR NORTE (elevador + catedral) ----------------
+function buildCorredorN(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'corredor_n', 'RECEPÇÃO TÉCNICA · CORREDOR NORTE', 18, 7, 3.4);
+  R.fog = { c: 0x05060a, n: 5, f: 18 };
+  R.music = 'creepy';
+  const wallM = tm(THREE, TEX.wallpaper, 7, 2);
+  plane(THREE, R.group, 18, 7, tm(THREE, TEX.floorWood, 7, 3), 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 18, 7, tm(THREE, TEX.ceiling, 7, 3), 0, 3.4, 0, Math.PI / 2);
+  perimeter(THREE, R, 18, 7, 3.4, wallM, [
+    { side: 'W', at: 0.0, w: 2.0 },
+    { side: 'S', at: 4.0, w: 2.0 },
+    { side: 'E', at: 0.0, w: 2.0 },
+    { side: 'N', at: 4.0, w: 2.0 },
+    { side: 'N', at: -4.0, w: 2.0 },
+  ]);
+  doorVisual(THREE, R, 'W', 0.0, 7, 18, TEX.doorMetal);
+  doorVisual(THREE, R, 'S', 4.0, 7, 18, wallM);
+  doorVisual(THREE, R, 'E', 0.0, 7, 18, TEX.doorWood);
+  doorVisual(THREE, R, 'N', 4.0, 7, 18, TEX.doorWood);
+  doorVisual(THREE, R, 'N', -4.0, 7, 18, TEX.doorMetal);
+  pointLight(THREE, R, 0xffddaa, 3, 10, -4, 3.0, 0);
+  pointLight(THREE, R, 0xffddaa, 3, 10, 6, 3.0, 0, { amp: 0.6, speed: 5 });
 
-  const floorM = tm(THREE, TEX.stoneFloor, 4, 4);
-  const wallM = tm(THREE, TEX.wallStone, 5, 2);
-  const ceilM = tm(THREE, TEX.ceiling, 4, 4);
-  plane(THREE, R.group, 12, 12, floorM, 0, 0, 0, -Math.PI / 2);
-  plane(THREE, R.group, 12, 12, ceilM, 0, 3.6, 0, Math.PI / 2);
+  addDoor(R, -8.4, 0.0, 1.4, 'Voltar ao Hall Principal', 'saguao', 0, -7.4, 0);
+  addDoor(R, 4.0, 3.0, 1.4, 'Entrar na Passagem Secreta', 'passagem', 0, -7.4, Math.PI);
+  addDoor(R, 8.4, 0.0, 1.4, 'Entrar na Sala de Experimentos', 'experimentos', -4.4, 0.0, Math.PI / 2);
+  addDoor(R, 4.0, -3.0, 1.4, 'Entrar na Catedral', 'catedral', 4, 6.4, Math.PI,
+    { need: { flag: 'chapelSignal' }, msg: 'Um selo de pedra negra veda a porta. O MEDALHÃO de Lúcia vibrou no MONÓLITO da floresta... é lá que o caminho se revela.' });
+  addDoor(R, -4.0, -3.0, 1.4, 'Subir a Escada de Serviço (2º Andar)', 'hall2', 0, 6.2, 0);
 
-  perimeter(THREE, R, 12, 12, 3.6, wallM, [{ side: 'E', at: 0.0, w: 2.0 }]);
-  doorVisual(THREE, R, 'E', 0.0, 12, 12, TEX.doorWood);
+  // nicho do ELEVADOR (painel de andares)
+  box(THREE, R.group, 2.6, 3.0, 0.5, tm(THREE, TEX.wallStone, 2, 1, 0x667788), 0.0, 1.5, -2.8);
+  solid(R, -1.4, -3.1, 1.4, -2.5);
+  box(THREE, R.group, 0.9, 1.2, 0.15, flat(THREE, 0x223322), 0.0, 1.4, -2.45);
+  addCam(R, [-9, -3.5, 0, 3.5], [-7.0, 2.8, 2.8], [0, 1.0, 0], 62);
+  addCam(R, [0, -3.5, 9, 3.5], [7.0, 2.8, 2.8], [0, 1.0, 0], 62);
 
-  // Altar Sacrificial com base de 1.6 x 1.6
-  const altarM = tm(THREE, TEX.cultAltar, 1, 1);
-  box(THREE, R.group, 1.6, 1.1, 1.6, altarM, 0, 0.55, 0);
-  solid(R, -0.85, -0.85, 0.85, 0.85);
-
-  // 4 Pilares de tochas nos cantos
-  for (const [px, pz] of [[-4.0, -4.0], [4.0, -4.0], [-4.0, 4.0], [4.0, 4.0]]) {
-    box(THREE, R.group, 0.6, 2.5, 0.6, wallM, px, 1.25, pz);
-    solid(R, px - 0.35, pz - 0.35, px + 0.35, pz + 0.35);
-  }
-
-  pointLight(THREE, R, 0xaa33ff, 6, 12, 0, 2.2, 0, { amp: 2.0, speed: 8 });
-
-  addCam(R, [-6, -6, 0, 6], [-4.0, 2.8, 3.5], [0, 1.1, 0], 65);
-  addCam(R, [0, -6, 6, 6], [4.0, 2.8, -3.5], [0, 1.1, 0], 65);
-
-  addDoor(R, 5.4, 0.0, 1.4, 'Voltar ao Corredor do Subsolo', 'subsolo_corredor', -5.5, 0.0, Math.PI / 2);
-
-  addInteract(R, 0.0, 1.3, 1.5, 'Examinar o altar do culto e os símbolos profanos', 'cult_altar');
-  addPickup(THREE, R, TEX, 'cult_symbol', 0.0, 1.1, 1, null, 1.1); // Na borda do altar para ser alcançável
-  addSpawn(R, 'carrasco', 0.0, -3.0);
-
-  return R;
+  addInteract(R, 0.0, -1.8, 1.7, 'Usar o painel do elevador', 'elevator');
+  addPickup(THREE, R, TEX, 'fuse', -4.0, -1.5, 1);
+  addPickup(THREE, R, TEX, 'ammo9', -6.0, 2.0, 8);
+  addSpawn(R, 'rastejador', 6.0, -1.5);
+    addPickup(THREE, R, TEX, 'ribbon', -6.5, 2.5, 1);
+return R;
 }
 
-// ---------------- 18. FOLHA EXTRAS: SALA DE EXPERIMENTOS ----------------
+// ---------------- L1: SALA DE EXPERIMENTOS ----------------
 function buildExperimentos(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'experimentos', 'SALA DE EXPERIMENTOS COM COBAIAS', 12, 10, 3.4);
-  R.fog = { c: 0x05080c, n: 5, f: 20 };
-  R.ambient = 'porao';
+  const R = baseRoom(THREE, TEX, 'experimentos', 'SALA DE EXPERIMENTOS', 12, 10, 3.2);
+  R.fog = { c: 0x060408, n: 5, f: 16 };
+  R.music = 'creepy';
+  const wallM = tm(THREE, TEX.wallpaper, 5, 2, 0x99aaaa);
+  plane(THREE, R.group, 12, 10, tm(THREE, TEX.stoneFloor, 5, 4, 0x99aabb), 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 12, 10, tm(THREE, TEX.ceiling, 5, 4), 0, 3.2, 0, Math.PI / 2);
+  perimeter(THREE, R, 12, 10, 3.2, wallM, [{ side: 'W', at: 0.0, w: 2.0 }]);
+  doorVisual(THREE, R, 'W', 0.0, 10, 12, TEX.doorWood);
+  pointLight(THREE, R, 0xaaffee, 2.5, 11, 0, 2.9, 0, { amp: 0.5, speed: 8 });
 
-  const floorM = tm(THREE, TEX.wallTile, 4, 3);
-  const wallM = tm(THREE, TEX.wallDirty, 5, 2);
-  const ceilM = tm(THREE, TEX.ceiling, 4, 3);
-  plane(THREE, R.group, 12, 10, floorM, 0, 0, 0, -Math.PI / 2);
-  plane(THREE, R.group, 12, 10, ceilM, 0, 3.4, 0, Math.PI / 2);
+  addDoor(R, -5.4, 0.0, 1.4, 'Voltar ao Corredor Norte', 'corredor_n', 7.4, 0.0, -Math.PI / 2);
 
-  perimeter(THREE, R, 12, 10, 3.4, wallM, [{ side: 'W', at: 0.0, w: 2.0 }]);
-  doorVisual(THREE, R, 'W', 0.0, 10, 12, TEX.doorMetal);
+  // maca de aço central e mesa
+  makeHospitalBed(THREE, TEX, R, 0.0, -2.0);
+  solid(R, -0.8, -2.8, 0.8, -1.2);
+  box(THREE, R.group, 2.4, 0.9, 1.2, tm(THREE, TEX.wallpaper, 2, 1, 0xaabbbb), 2.5, 0.45, 2.2);
+  solid(R, 1.3, 1.6, 3.7, 2.8);
+  addCam(R, [-6, -5, 0, 5], [-4.0, 2.8, 3.4], [0, 1.0, 0], 62);
 
-  const tableM = tm(THREE, TEX.examTable, 1, 1);
-  box(THREE, R.group, 2.2, 0.9, 1.1, tableM, 0, 0.45, 0);
-  solid(R, -1.2, -0.7, 1.2, 0.7);
-
-  pointLight(THREE, R, 0x88ccff, 6, 8, 0, 2.8, 0);
-
-  addCam(R, [-6, -5, 0, 5], [-3.8, 2.6, 2.8], [0, 1.0, 0], 62);
-  addCam(R, [0, -5, 6, 5], [3.8, 2.6, -2.8], [0, 1.0, 0], 62);
-
-  addDoor(R, -5.4, 0.0, 1.4, 'Voltar ao Corredor do Subsolo', 'subsolo_corredor', 5.5, 0.0, -Math.PI / 2);
-
-  addInteract(R, 0.0, 1.0, 1.4, 'Examinar a maca cirúrgica com correias de couro', 'exam_table');
-  addInteract(R, 3.5, -2.0, 1.3, 'Inspecionar os frascos com cérebros em formol', 'exam_sink');
-
-  addPickup(THREE, R, TEX, 'alencastro_dossier', 0.0, 0.0, 1, null, 0.95);
-  addPickup(THREE, R, TEX, 'antidote', 3.5, -3.0, 1);
-  addSpawn(R, 'enfermeira', 2.0, 1.5);
-
-  return R;
+  addInteract(R, 0.0, -2.0, 1.6, 'Examinar a maca com correias', 'exam_table');
+  addInteract(R, 2.5, 2.2, 1.5, 'Vasculhar as pias de formol', 'exam_sink');
+  addInteract(R, -2.5, 2.2, 1.5, 'Ler a mesa do Dr. Alencastro', 'desk_dr');
+  addPickup(THREE, R, TEX, 'alencastro_dossier', -3.0, -2.5, 1);
+  addPickup(THREE, R, TEX, 'shell', 4.0, -3.5, 4);
+  addSpawn(R, 'infectado', -2.0, 0.5);
+  addSpawn(R, 'enfermeira', 2.0, -1.0);
+    addPickup(THREE, R, TEX, 'ribbon', -1.5, 3.5, 1);
+return R;
 }
 
-// ---------------- 19. FLORESTA DOS LAMENTOS (CAMPANHA) ----------------
-function buildFloresta(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'floresta', 'FLORESTA DOS LAMENTOS', 22, 34, 14);
-  R.fog = { c: 0x040608, n: 6, f: 28 };
-  R.ambient = 'floresta';
-  R.openSky = true;
+// ---------------- L1: CATEDRAL (final da Clara) ----------------
+function buildCatedral(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'catedral', 'CATEDRAL ESQUECIDA', 22, 16, 6.0);
+  R.fog = { c: 0x04050a, n: 7, f: 24 };
+  R.music = 'creepy';
+  const wallM = tm(THREE, TEX.wallStone, 8, 3);
+  plane(THREE, R.group, 22, 16, tm(THREE, TEX.stoneFloor, 8, 6), 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 22, 16, tm(THREE, TEX.ceiling, 8, 6), 0, 6.0, 0, Math.PI / 2);
+  perimeter(THREE, R, 22, 16, 6.0, wallM, [{ side: 'S', at: 4.0, w: 2.0 }]);
+  doorVisual(THREE, R, 'S', 4.0, 16, 22, TEX.doorWood);
+  pointLight(THREE, R, 0xffbb66, 4, 16, 4.0, 4.0, 2.0, { amp: 0.5, speed: 4 });
+  pointLight(THREE, R, 0xffbb66, 3, 14, -4.0, 3.5, -3.0);
+  pointLight(THREE, R, 0xffbb66, 3, 14, 4.0, 3.5, -3.0);
 
-  const groundM = tm(THREE, TEX.forestGround, 6, 8);
-  plane(THREE, R.group, 22, 34, groundM, 0, 0, 0, -Math.PI / 2);
+  addDoor(R, 4.0, 7.4, 1.4, 'Voltar ao Corredor Norte', 'corredor_n', 4, -2.2, 0);
 
-  pointLight(THREE, R, 0x334466, 6, 32, 0, 8.0, 0);
-
-  const barkM = tm(THREE, TEX.bark, 1, 2);
-  for (let i = -8; i <= 8; i += 4) {
-    box(THREE, R.group, 0.8, 7.0, 0.8, barkM, i, 3.5, -10 + (Math.abs(i) % 3) * 4);
-    solid(R, i - 0.5, -10 + (Math.abs(i) % 3) * 4 - 0.5, i + 0.5, -10 + (Math.abs(i) % 3) * 4 + 0.5);
+  // bancos (duas colunas)
+  for (let i = 0; i < 3; i++) {
+    box(THREE, R.group, 4.2, 0.8, 1.0, wallM, -3.5, 0.4, 3.0 - i * 2.6);
+    solid(R, -5.6, 2.5 - i * 2.6, -1.4, 3.5 - i * 2.6);
+    box(THREE, R.group, 4.2, 0.8, 1.0, wallM, 6.5, 0.4, 3.0 - i * 2.6);
+    solid(R, 4.4, 2.5 - i * 2.6, 8.6, 3.5 - i * 2.6);
   }
-  for (let j = -6; j <= 6; j += 4) {
-    box(THREE, R.group, 0.8, 7.0, 0.8, barkM, j, 3.5, 6 + (Math.abs(j) % 3) * 3);
-    solid(R, j - 0.5, 6 + (Math.abs(j) % 3) * 3 - 0.5, j + 0.5, 6 + (Math.abs(j) % 3) * 3 + 0.5);
-  }
+  // altar
+  box(THREE, R.group, 3.4, 1.1, 1.4, tm(THREE, TEX.wallStone, 2, 1), 0.0, 0.55, -5.0);
+  solid(R, -1.7, -5.7, 1.7, -4.3);
+  // vitrais
+  makeGothicWindow(THREE, TEX, R, -10.8, 3.2, -3.0, Math.PI / 2, 2.4, 3.0);
+  makeGothicWindow(THREE, TEX, R, 10.8, 3.2, -3.0, -Math.PI / 2, 2.4, 3.0);
+  makeGothicWindow(THREE, TEX, R, -6.0, 3.2, -7.4, 0, 2.4, 3.0);
+  makeGothicWindow(THREE, TEX, R, 6.0, 3.2, -7.4, 0, 2.4, 3.0);
+  addCam(R, [-11, -8, 0, 8], [-8.0, 4.4, 5.5], [0, 1.2, 0], 64);
+  addCam(R, [0, -8, 11, 8], [8.0, 4.4, 5.5], [0, 1.2, 0], 64);
+  addCam(R, [8, -8, 11, 8], [9.6, 4.6, 7.0], [0, 1.2, -3], 60);
 
-  addCam(R, [-11, -17, 11, -5], [0, 4.5, -12], [0, 1.2, 0], 65);
-  addCam(R, [-11, -5, 11, 7], [0, 4.5, 0], [0, 1.2, 8], 65);
-  addCam(R, [-11, 7, 11, 17], [0, 4.5, 12], [0, 1.2, 16], 65);
-
-  addDoor(R, 0, -15.5, 1.6, 'Voltar ao Portão do Saguão', 'saguao', 2.5, 5.0, Math.PI);
-  addDoor(R, 0, 15.5, 1.6, 'Entrar na Capela Santa Lúcia', 'capela', 0.0, 8.2, 0);
-
-  addInteract(R, 0, 0, 1.5, 'Olhar o monólito sombrio no meio da mata', 'monolith');
-
-  addPickup(THREE, R, TEX, 'forest_key', 4.0, 2.0, 1);
-  addPickup(THREE, R, TEX, 'ammo9', -4.0, -5.0, 15);
-  addSpawn(R, 'sombra', 0, 3.0);
-  addSpawn(R, 'infectado', -3.0, 8.0);
-
-  return R;
-}
-
-// ---------------- 20. CAPELA SANTA LÚCIA (CAMPANHA) ----------------
-function buildCapela(THREE, TEX) {
-  const R = baseRoom(THREE, TEX, 'capela', 'CAPELA SANTA LÚCIA', 14, 22, 6.0);
-  R.fog = { c: 0x050409, n: 6, f: 26 };
-  R.ambient = 'quarto';
-
-  const floorM = tm(THREE, TEX.floorWood, 4, 6);
-  const wallM = tm(THREE, TEX.wallStone, 5, 3);
-  const ceilM = tm(THREE, TEX.ceiling, 4, 6);
-  plane(THREE, R.group, 14, 22, floorM, 0, 0, 0, -Math.PI / 2);
-  plane(THREE, R.group, 14, 22, ceilM, 0, 6.0, 0, Math.PI / 2);
-
-  perimeter(THREE, R, 14, 22, 6.0, wallM, [
-    { side: 'S', at: 0.0, w: 2.2 },
-    { side: 'N', at: 0.0, w: 2.2 },
-  ]);
-  doorVisual(THREE, R, 'S', 0.0, 22, 14, TEX.doorWood);
-  doorVisual(THREE, R, 'N', 0.0, 22, 14, TEX.doorWood);
-
-  const altarM = tm(THREE, TEX.altar, 1, 1);
-  box(THREE, R.group, 3.5, 1.2, 1.6, altarM, 0, 0.6, -8.5);
-  solid(R, -1.9, -9.5, 1.9, -7.5);
-
-  const pewM = tm(THREE, TEX.pewWood, 1, 1);
-  for (let z = -4; z <= 4; z += 2.5) {
-    box(THREE, R.group, 3.2, 0.85, 0.6, pewM, -2.8, 0.425, z);
-    box(THREE, R.group, 3.2, 0.85, 0.6, pewM, 2.8, 0.425, z);
-    solid(R, -4.5, z - 0.35, -1.1, z + 0.35);
-    solid(R, 1.1, z - 0.35, 4.5, z + 0.35);
-  }
-
-  pointLight(THREE, R, 0xc8a044, 6, 16, 0, 3.5, -4.0);
-
-  addCam(R, [-7, -11, 7, -3], [0, 3.8, -4], [0, 1.2, -8.5], 62);
-  addCam(R, [-7, -3, 7, 5], [0, 3.8, 3], [0, 1.2, -2], 62);
-  addCam(R, [-7, 5, 7, 11], [0, 3.8, 9], [0, 1.2, 2], 62);
-
-  addDoor(R, 0, 9.8, 1.5, 'Voltar à Floresta dos Lamentos', 'floresta', 0, 14.0, Math.PI);
-  addDoor(R, 0, -9.8, 1.5, 'Voltar ao Saguão Principal', 'saguao', 7.0, -4.5, -Math.PI / 2);
-
-  addInteract(R, 0, -7.5, 1.5, 'Examinar o crucifixo do altar', 'altar_capela');
-
-  addPickup(THREE, R, TEX, 'antidote', -2.0, -8.5, 1);
-  addPickup(THREE, R, TEX, 'grenade_rounds', 2.0, -8.5, 4);
-  addSpawn(R, 'carrasco', 0, 0);
-
+  addInteract(R, 0.0, -5.0, 1.8, 'Aproximar-se do altar', 'altar_capela');
+  addInteract(R, -6.5, 0.0, 1.5, 'Examinar o confessionário', 'confessionario');
+  addInteract(R, 6.5, 0.0, 1.5, 'Examinar a estátua do anjo', 'anjo_capela');
+  addPickup(THREE, R, TEX, 'shotgun', 9.7, 1.7, 1); // faixa leste entre os bancos (à vista)
+  addPickup(THREE, R, TEX, 'shell', 9.7, 1.0, 12);
+  addPickup(THREE, R, TEX, 'antidote', -8.0, 5.5, 1);
+  addPickup(THREE, R, TEX, 'antidote', 8.0, -5.0, 1);
+  addSpawn(R, 'sombra', -5.0, 2.0);
+  addSpawn(R, 'sombra', 5.0, -1.0);
   return R;
 }
 
@@ -1613,29 +1314,300 @@ function buildTitleDiorama(THREE, TEX) {
 }
 
 // ==================== DICIONÁRIO DE SALAS ====================
+// ==================== L2: HALL DO 2º ANDAR (hub) ====================
+function buildHall2(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'hall2', 'HALL DO 2º ANDAR · ALA CLÍNICA', 20, 14, 4.0);
+  R.fog = { c: 0x05060c, n: 6, f: 20 };
+  R.music = 'creepy';
+  const wallM = tm(THREE, TEX.wallpaper, 7, 2, 0xaab8b8);
+  const tileM = tm(THREE, TEX.wallTile, 6, 2);
+  plane(THREE, R.group, 20, 14, tm(THREE, TEX.floorWood, 7, 5), 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 20, 14, tm(THREE, TEX.ceiling, 7, 5), 0, 4.0, 0, Math.PI / 2);
+  perimeter(THREE, R, 20, 14, 4.0, wallM, [
+    { side: 'S', at: 0.0, w: 2.0 },
+    { side: 'E', at: 0.0, w: 2.0 },
+    { side: 'W', at: 0.0, w: 2.0 },
+    { side: 'N', at: 4.0, w: 2.0 },
+  ]);
+  doorVisual(THREE, R, 'S', 0.0, 14, 20, TEX.doorMetal);
+  doorVisual(THREE, R, 'E', 0.0, 14, 20, TEX.doorWood);
+  doorVisual(THREE, R, 'W', 0.0, 14, 20, TEX.doorWood);
+  doorVisual(THREE, R, 'N', 4.0, 14, 20, TEX.doorMetal);
+  pointLight(THREE, R, 0xffeecc, 3.5, 12, -5, 3.4, 0);
+  pointLight(THREE, R, 0xffeecc, 3, 12, 6, 3.4, 0, { amp: 0.6, speed: 6 });
+
+  addDoor(R, 0.0, 6.4, 1.4, 'Descer a Escada de Serviço (Térreo)', 'corredor_n', -4, -2.0, 0);
+  addDoor(R, -8.5, 6.4, 1.4, 'Descer a Escada Espiral (Térreo)', 'saguao', -8.4, -6.5, -Math.PI / 2, { stairs: true });
+  addDoor(R, 9.4, 0.0, 1.4, 'Entrar na Enfermaria Geral', 'enfermaria', -8.4, 0.0, Math.PI / 2);
+  addDoor(R, -9.4, 0.0, 1.4, 'Entrar no Escritório Clínico', 'escritorio2', 4.4, 0.0, -Math.PI / 2);
+  addDoor(R, 4.0, -6.4, 1.4, 'Entrar na Casa das Fornalhas', 'fornalhas', 4, 5.2, 0);
+
+  // nicho do ELEVADOR (parede norte, x=-4): painéis P1/P3
+  box(THREE, R.group, 2.8, 3.4, 0.5, tileM, -4.0, 1.7, -6.75);
+  solid(R, -5.4, -7.05, -2.6, -6.45);
+  box(THREE, R.group, 1.0, 1.3, 0.15, flat(THREE, 0x223322), -4.0, 1.5, -6.4);
+  addCam(R, [-10, -7, 0, 7], [-8.0, 3.2, 5.2], [0, 1.0, 0], 62);
+  addCam(R, [0, -7, 10, 7], [8.0, 3.2, 5.2], [0, 1.0, 0], 62);
+  addCam(R, [0, -7, 10, 7], [8.8, 3.4, 6.4], [0, 1.0, -2], 60);
+
+  // recepção da ala (balcão a leste) e bancos
+  box(THREE, R.group, 2.6, 1.0, 1.0, wallM, 5.0, 0.5, 2.0);
+  solid(R, 3.7, 1.5, 6.3, 2.5);
+  box(THREE, R.group, 2.2, 0.7, 0.8, wallM, -6.0, 0.35, 3.5);
+  solid(R, -7.1, 3.1, -4.9, 3.9);
+
+  addInteract(R, -4.0, -5.8, 1.6, 'Painel do elevador: subir ao 3º ANDAR', 'elevator_up');
+  addInteract(R, -2.6, -5.8, 1.2, 'Painel do elevador: descer ao TÉRREO', 'elevator_down');
+  addInteract(R, 5.0, 3.2, 1.5, 'Examinar a recepção da ala clínica', 'placa2');
+  addPickup(THREE, R, TEX, 'mezanino_emblem', 6.8, 2.0, 1);
+  addPickup(THREE, R, TEX, 'ammo9', -8.0, 4.5, 8);
+  addPickup(THREE, R, TEX, 'pills', 8.0, -4.5, 1);
+  addSpawn(R, 'rastejador', -6.0, -3.0);
+  return R;
+}
+
+// ==================== L2: ENFERMARIA GERAL (sala do SAVE) ====================
+function buildEnfermaria(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'enfermaria', 'ENFERMARIA GERAL', 18, 12, 3.4);
+  R.fog = { c: 0x05070a, n: 5, f: 18 };
+  R.music = 'creepy';
+  const wallM = tm(THREE, TEX.wallTile, 6, 2, 0xb8c4c0);
+  plane(THREE, R.group, 18, 12, tm(THREE, TEX.wallTile, 7, 4, 0x889494), 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 18, 12, tm(THREE, TEX.ceiling, 6, 4), 0, 3.4, 0, Math.PI / 2);
+  perimeter(THREE, R, 18, 12, 3.4, wallM, [{ side: 'W', at: 0.0, w: 2.0 }]);
+  doorVisual(THREE, R, 'W', 0.0, 12, 18, TEX.doorWood);
+  pointLight(THREE, R, 0xd8ffee, 3, 12, 0, 3.0, 0);
+  pointLight(THREE, R, 0xd8ffee, 2.5, 10, -5, 3.0, 2, { amp: 0.4, speed: 3 });
+
+  addDoor(R, -8.4, 0.0, 1.4, 'Voltar ao Hall do 2º Andar', 'hall2', 7.4, 0.0, Math.PI / 2);
+
+  // fileiras de camas
+  for (const [bx, bz] of [[-4.5, -3.0], [0.5, -3.0], [5.5, -3.0], [-4.5, 2.5], [5.5, 2.5]]) {
+    makeHospitalBed(THREE, TEX, R, bx, bz);
+    solid(R, bx - 0.85, bz - 0.85, bx + 0.85, bz + 0.85);
+  }
+  // mesinha da enfermeira-chefe com a MÁQUINA DE ESCREVER (SAVE)
+  box(THREE, R.group, 1.0, 0.8, 0.7, wallM, -7.5, 0.4, -4.6);
+  solid(R, -8.0, -4.95, -7.0, -4.25);
+  addCam(R, [-9, -6, 0, 6], [-7.0, 2.8, 4.6], [0, 1.0, 0], 62);
+  addCam(R, [0, -6, 9, 6], [7.0, 2.8, 4.6], [0, 1.0, 0], 62);
+  addCam(R, [0, -6, 9, 6], [7.8, 2.9, 5.0], [0, 1.0, -1], 60);
+
+  addInteract(R, -7.5, -3.6, 1.6, 'Usar a Máquina de Escrever da Enfermaria', 'save');
+  addInteract(R, -2.0, -5.0, 1.5, 'Ler os prontuários da ala clínica', 'prontuario_e');
+  addPickup(THREE, R, TEX, 'ribbon', -6.4, 3.6, 1);
+  addPickup(THREE, R, TEX, 'pills', 6.0, -4.6, 1);
+  addPickup(THREE, R, TEX, 'ammo38', 6.0, 4.0, 6);
+  return R; // sala LIMPA: nenhum inimigo (regra das salas de save)
+}
+
+// ==================== L2: ESCRITÓRIO CLÍNICO ====================
+function buildEscritorio2(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'escritorio2', 'ESCRITÓRIO CLÍNICO', 12, 9, 3.2);
+  R.fog = { c: 0x060508, n: 5, f: 15 };
+  R.music = 'creepy';
+  const wallM = tm(THREE, TEX.wallpaper, 4, 2, 0x99a088);
+  plane(THREE, R.group, 12, 9, tm(THREE, TEX.floorWood, 4, 3), 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 12, 9, tm(THREE, TEX.ceiling, 4, 3), 0, 3.2, 0, Math.PI / 2);
+  perimeter(THREE, R, 12, 9, 3.2, wallM, [{ side: 'E', at: 0.0, w: 2.0 }]);
+  doorVisual(THREE, R, 'E', 0.0, 9, 12, TEX.doorWood);
+  pointLight(THREE, R, 0xffddaa, 2.5, 9, 0, 2.8, 0, { amp: 0.5, speed: 7 });
+
+  addDoor(R, 5.4, 0.0, 1.4, 'Voltar ao Hall do 2º Andar', 'hall2', -7.4, 0.0, -Math.PI / 2);
+
+  box(THREE, R.group, 2.4, 0.9, 1.2, wallM, -2.0, 0.45, -2.6); // escrivaninha
+  solid(R, -3.2, -3.2, -0.8, -2.0);
+  box(THREE, R.group, 1.8, 2.4, 0.5, wallM, -4.6, 1.2, 1.0); // estante
+  solid(R, -5.0, 0.6, -4.2, 1.4);
+  addCam(R, [-6, -4.5, 0, 4.5], [-4.5, 2.7, 3.6], [0, 1.0, 0], 62);
+
+  addInteract(R, -2.0, -1.4, 1.5, 'Examinar a escrivaninha médica', 'desk2');
+  addInteract(R, -4.6, 1.8, 1.4, 'Examinar a estante de laudos', 'estante2');
+  addInteract(R, 3.6, -3.8, 1.4, 'Examinar o quadro a óleo da faculdade', 'quadro2');
+  addPickup(THREE, R, TEX, 'ammo38', -4.0, 3.2, 6);
+  addSpawn(R, 'enfermeira', -1.5, 1.5);
+  return R;
+}
+
+// ==================== L2: CASA DAS FORNALHAS (válvulas) ====================
+function buildFornalhas(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'fornalhas', 'CASA DAS FORNALHAS', 16, 12, 4.2);
+  R.fog = { c: 0x0a0503, n: 5, f: 16 };
+  R.music = 'creepy';
+  const wallM = tm(THREE, TEX.wallStone, 5, 2, 0x887766);
+  plane(THREE, R.group, 16, 12, tm(THREE, TEX.stoneFloor, 6, 4, 0x665544), 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 16, 12, tm(THREE, TEX.ceiling, 6, 4), 0, 4.2, 0, Math.PI / 2);
+  perimeter(THREE, R, 16, 12, 4.2, wallM, [{ side: 'S', at: 4.0, w: 2.0 }]);
+  doorVisual(THREE, R, 'S', 4.0, 12, 16, TEX.doorMetal);
+  pointLight(THREE, R, 0xff6633, 3, 11, 0, 2.6, -2, { amp: 0.9, speed: 4 });
+  pointLight(THREE, R, 0xff9944, 2, 9, -5, 2.4, 2);
+  pointLight(THREE, R, 0xff8844, 2, 10, 0, 3.8, 3);
+
+  addDoor(R, 4.0, 5.4, 1.4, 'Voltar ao Hall do 2º Andar', 'hall2', 4, -5.2, 0);
+
+  // caldeiras em fila + válvulas vermelhas (o poço do elevador escuta elas)
+  for (const bx of [-5.0, 0.0, 5.0]) {
+    makeIndustrialBoiler(THREE, TEX, R, bx, -2.5);
+    solid(R, bx - 0.95, -3.45, bx + 0.95, -1.55);
+  }
+  addCam(R, [-8, -6, 0, 6], [-6.5, 3.4, 4.6], [0, 1.0, 0], 62);
+  addCam(R, [0, -6, 8, 6], [6.5, 3.4, 4.6], [0, 1.0, 0], 62);
+  addCam(R, [0, -6, 8, 6], [7.2, 3.6, 5.2], [0, 1.0, -2], 60);
+
+  addInteract(R, -5.0, -1.0, 1.5, 'Girar a VÁLVULA oeste', 'valve_a');
+  addInteract(R, 0.0, -1.0, 1.5, 'Girar a VÁLVULA central', 'valve_b');
+  addInteract(R, 5.0, -1.0, 1.5, 'Girar a VÁLVULA leste', 'valve_c');
+  addPickup(THREE, R, TEX, 'frag', -6.5, 3.5, 1);
+  addPickup(THREE, R, TEX, 'shotgun', 4.8, 4.2, 1); // rack de manutenção COLADO NA ENTRADA (sweep pega primeiro)
+  addPickup(THREE, R, TEX, 'shell', 5.8, 4.2, 6);
+  addPickup(THREE, R, TEX, 'shell', 6.5, -4.0, 6);
+  addPickup(THREE, R, TEX, 'pills', 6.5, 3.5, 1);
+  addSpawn(R, 'infectado', -2.0, 2.5);
+  addSpawn(R, 'infectado', 2.5, 3.0);
+  return R;
+}
+
+// ==================== L3: CORREDOR DO 3º ANDAR ====================
+function buildCorredor3(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'corredor3', 'CORREDOR DO 3º ANDAR · ARQUIVO MORTO', 20, 6, 3.4);
+  R.fog = { c: 0x04050a, n: 4, f: 14 };
+  R.music = 'creepy';
+  const wallM = tm(THREE, TEX.wallDirty, 7, 2);
+  plane(THREE, R.group, 20, 6, tm(THREE, TEX.stoneFloor, 7, 2, 0x777788), 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 20, 6, tm(THREE, TEX.ceiling, 7, 2), 0, 3.4, 0, Math.PI / 2);
+  perimeter(THREE, R, 20, 6, 3.4, wallM, [
+    { side: 'E', at: 0.0, w: 2.0 },
+    { side: 'N', at: 2.0, w: 2.0 },
+  ]);
+  doorVisual(THREE, R, 'E', 0.0, 6, 20, TEX.doorWood);
+  doorVisual(THREE, R, 'N', 2.0, 6, 20, TEX.doorMetal);
+  doorVisual(THREE, R, 'S', 0.0, 6, 20, TEX.doorMetal); // porta do elevador (visual)
+  pointLight(THREE, R, 0xffcc88, 2.5, 10, -5, 3.0, 0, { amp: 0.7, speed: 5 });
+  pointLight(THREE, R, 0xffcc88, 2.5, 10, 6, 3.0, 0);
+
+  addDoor(R, 9.4, 0.0, 1.4, 'Entrar no Escritório do Supervisor', 'escritorio_sup', -4.4, 0.0, Math.PI / 2);
+  addDoor(R, 2.0, -2.6, 1.4, 'Subir à COBERTURA (Porta de Serviço)', 'telhado', 0, 6.2, Math.PI,
+    { need: { item: 'terrace_key' }, msg: 'A porta de serviço tem um LEITOR DE CARTÕES. O painel do elevador disse: P3 exige o CARTÃO DA COBERTURA.' });
+
+  // painel do elevador (descida) — ao lado da porta visual sul
+  box(THREE, R.group, 0.9, 1.2, 0.15, flat(THREE, 0x223322), 1.8, 1.4, 2.7);
+  addCam(R, [-10, -3, 0, 3], [-7.5, 2.8, 2.6], [0, 1.0, 0], 62);
+  addCam(R, [0, -3, 10, 3], [7.5, 2.8, 2.6], [0, 1.0, 0], 62);
+
+  addInteract(R, 0.6, 2.3, 1.6, 'Painel do elevador: descer ao 2º ANDAR', 'elevator_p3');
+  addPickup(THREE, R, TEX, 'ammo9', -8.0, -1.0, 8);
+  addSpawn(R, 'enfermeira', -6.0, 0.5);
+  return R;
+}
+
+// ==================== L3: ESCRITÓRIO DO SUPERVISOR ====================
+function buildEscritorioSup(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'escritorio_sup', 'ESCRITÓRIO DO SUPERVISOR MOROZOV', 12, 9, 3.3);
+  R.fog = { c: 0x050408, n: 5, f: 15 };
+  R.music = 'creepy';
+  const wallM = tm(THREE, TEX.wallpaper, 4, 2, 0x778088);
+  plane(THREE, R.group, 12, 9, tm(THREE, TEX.floorWood, 4, 3, 0x887766), 0, 0, 0, -Math.PI / 2);
+  plane(THREE, R.group, 12, 9, tm(THREE, TEX.ceiling, 4, 3), 0, 3.3, 0, Math.PI / 2);
+  perimeter(THREE, R, 12, 9, 3.3, wallM, [{ side: 'W', at: 0.0, w: 2.0 }]);
+  doorVisual(THREE, R, 'W', 0.0, 9, 12, TEX.doorWood);
+  pointLight(THREE, R, 0xffcc88, 2.5, 9, 0, 2.8, 0, { amp: 0.4, speed: 9 });
+
+  addDoor(R, -5.4, 0.0, 1.4, 'Voltar ao Corredor do 3º Andar', 'corredor3', 8.4, 0.0, -Math.PI / 2);
+
+  // mesa pesada ao norte + cofre aberto + quadro do sanatório
+  box(THREE, R.group, 2.6, 1.0, 1.3, wallM, 0.0, 0.5, -2.8);
+  solid(R, -1.3, -3.45, 1.3, -2.15);
+  box(THREE, R.group, 1.4, 1.0, 0.7, tm(THREE, TEX.wallStone, 1, 1, 0x556677), -4.4, 0.5, -3.2);
+  solid(R, -5.1, -3.55, -3.7, -2.85);
+  box(THREE, R.group, 1.8, 2.4, 0.5, wallM, 4.6, 1.2, -0.5); // arquivos
+  solid(R, 4.2, -1.2, 5.0, 0.2);
+  addCam(R, [-6, -4.5, 0, 4.5], [-4.5, 2.8, 3.6], [0, 1.0, 0], 62);
+
+  addInteract(R, 0.0, -1.6, 1.6, 'Examinar a mesa do supervisor', 'mesa_sup');
+  addInteract(R, -4.4, -2.4, 1.5, 'Abrir o cofre do supervisor', 'cofre_sup');
+  addInteract(R, 4.4, -1.8, 1.5, 'Examinar os arquivos confidenciais', 'arq_sup');
+  addPickup(THREE, R, TEX, 'terrace_key', 1.6, -2.6, 1);
+  addPickup(THREE, R, TEX, 'frag', -3.0, 3.0, 1);
+  addPickup(THREE, R, TEX, 'page', 3.0, 3.2, 1);
+  addPickup(THREE, R, TEX, 'pills', -3.0, -1.0, 1);
+  addSpawn(R, 'rastejador', 2.5, 1.5);
+  return R;
+}
+
+// ==================== L3: COBERTURA · HELIPONTO (final de Daniel/Bento) ====================
+function buildTelhado(THREE, TEX) {
+  const R = baseRoom(THREE, TEX, 'telhado', 'COBERTURA · HELIPONTO', 24, 16, 4.6);
+  R.fog = { c: 0x03040a, n: 6, f: 24 };
+  R.music = 'creepy';
+  const wallM = tm(THREE, TEX.wallStone, 8, 2, 0x556066);
+  plane(THREE, R.group, 24, 16, tm(THREE, TEX.stoneFloor, 8, 5, 0x4c4c56), 0, 0, 0, -Math.PI / 2);
+  // céu aberto: SEM teto (a lua da SANTA LÚCIA fica a vista)
+  perimeter(THREE, R, 24, 16, 4.6, wallM, [{ side: 'S', at: 0.0, w: 2.0 }]);
+  doorVisual(THREE, R, 'S', 0.0, 16, 24, TEX.doorMetal);
+  pointLight(THREE, R, 0xaabbff, 3.5, 18, 0, 4.2, -4);
+  pointLight(THREE, R, 0xaabbff, 2.5, 14, -8, 4.0, 4);
+  pointLight(THREE, R, 0xff3322, 2.5, 8, 4.4, 2.6, -8.2, { amp: 1.4, speed: 2 }); // farol do heliponto
+
+  addDoor(R, 0.0, 7.4, 1.4, 'Descer ao 3º Andar', 'corredor3', 2, -1.6, 0);
+
+  // HELIPONTO: círculo de asfalto + H amarelo
+  const pad = new THREE.Mesh(new THREE.CylinderGeometry(4.4, 4.4, 0.12, 22), flat(THREE, 0x2e2e34));
+  pad.position.set(0, 0.07, -4); R.group.add(pad);
+  const hm = flat(THREE, 0xd8c832);
+  box(THREE, R.group, 0.5, 0.06, 3.2, hm, -1.2, 0.16, -4);
+  box(THREE, R.group, 0.5, 0.06, 3.2, hm, 1.2, 0.16, -4);
+  box(THREE, R.group, 1.9, 0.06, 0.5, hm, 0.0, 0.16, -4);
+
+  // HELICÓPTERO de resgate (fuga)
+  const heliM = flat(THREE, 0x223326);
+  box(THREE, R.group, 2.2, 1.5, 4.8, heliM, 7.0, 1.0, 3.0);
+  box(THREE, R.group, 0.5, 0.5, 3.2, heliM, 7.0, 1.2, 5.9); // cauda (flush, antes furava o parapeito)
+  box(THREE, R.group, 0.2, 1.1, 0.9, heliM, 7.0, 1.9, 6.95);
+  box(THREE, R.group, 5.8, 0.1, 0.35, flat(THREE, 0x111111), 7.0, 2.4, 3.0);
+  box(THREE, R.group, 0.3, 0.5, 3.4, flat(THREE, 0x111111), 6.2, 0.25, 3.0);
+  box(THREE, R.group, 0.3, 0.5, 3.4, flat(THREE, 0x111111), 7.8, 0.25, 3.0);
+  solid(R, 5.9, 0.6, 8.1, 5.4);
+
+  // cabine dos mecânicos com o diário de bordo (SAVE da cobertura)
+  box(THREE, R.group, 1.1, 0.85, 0.8, wallM, -8.0, 0.42, 4.4);
+  solid(R, -8.55, 4.0, -7.45, 4.8);
+  addCam(R, [-12, -8, 0, 8], [-9.0, 3.8, 6.0], [0, 1.0, 0], 64);
+  addCam(R, [0, -8, 12, 8], [9.0, 3.8, 6.0], [0, 1.0, 0], 64);
+
+  addInteract(R, -8.0, 3.4, 1.6, 'Registrar no diário de bordo da cobertura', 'save');
+  addInteract(R, 5.2, 3.0, 2.0, 'Entrar no HELICÓPTERO', 'helicoptero');
+  addInteract(R, -10.8, -1.0, 1.6, 'Olhar a cidade lá embaixo', 'borda_telhado');
+  addPickup(THREE, R, TEX, 'shell', -4.0, -6.5, 8);
+  addPickup(THREE, R, TEX, 'pills', 8.0, -5.5, 1);
+  addPickup(THREE, R, TEX, 'antidote', -10.0, -6.0, 1);
+  addPickup(THREE, R, TEX, 'ribbon', -6.4, 4.2, 1);
+  return R;
+}
+
 const BUILDERS = {
   quarto: buildQuarto,
-  corredor_quartos: buildCorredorQuartos,
   quarto2: buildQuarto2,
+  corredor: buildCorredor,
   saguao: buildSaguao,
-  estufa: buildEstufa,
   cemiterio: buildCemiterio,
-  jardim: buildJardim,
-  casa_zelador: buildCasaZelador,
-  mezanino: buildMezanino,
-  enfermaria: buildEnfermaria,
-  consultorio: buildConsultorio,
-  porao: buildPorao,
-  corredor_p3: buildCorredorP3,
-  sala_dr_p3: buildSalaDrP3,
-  terraco: buildTerraco,
-  subsolo_corredor: buildSubsoloCorredor,
-  culto: buildCulto,
-  experimentos: buildExperimentos,
+  estufa: buildEstufa,
   floresta: buildFloresta,
-  capela: buildCapela,
+  estacionamento: buildEstacionamento,
+  casa_zelador: buildCasaZelador,
+  passagem: buildPassagem,
+  corredor_n: buildCorredorN,
+  experimentos: buildExperimentos,
+  catedral: buildCatedral,
+  hall2: buildHall2,
+  enfermaria: buildEnfermaria,
+  escritorio2: buildEscritorio2,
+  fornalhas: buildFornalhas,
+  corredor3: buildCorredor3,
+  escritorio_sup: buildEscritorioSup,
+  telhado: buildTelhado,
   title_diorama: buildTitleDiorama,
 };
+
 
 export function buildRoom(THREE, TEX, id) {
   const b = BUILDERS[id];
