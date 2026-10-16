@@ -116,7 +116,8 @@ const terraco = buildRoom(THREE, TEX, 'terraco');
 assert(corP3.doors.some(d => d.target === 'mezanino'), 'Corredor P3 conecta descendo ao Mezanino P2');
 assert(corP3.doors.some(d => d.target === 'sala_dr_p3'), 'Corredor P3 conecta com Sala do Dr. Alencastro');
 assert(corP3.doors.some(d => d.target === 'terraco'), 'Corredor P3 conecta subindo para o Terraço');
-assert(salaDrP3.pickups.some(p => p.item === 'terrace_key'), 'Sala Confidencial P3 contém o Cartão do Heliponto');
+// V2: o Cartão do Heliponto vive DENTRO do cofre executivo (act director_safe)
+assert(salaDrP3.interacts.some(i => i.act === 'director_safe'), 'Sala Confidencial P3 tem o cofre executivo (act director_safe, V2)');
 assert(terraco.interacts.some(i => i.act === 'memorial'), 'Terraço possui o Memorial e a arena do Heliponto');
 
 // 4. FOLHA EXTRAS: Subsolo Secreto & Culto

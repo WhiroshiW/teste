@@ -1,0 +1,42 @@
+══════════════════════════════════════════════════════════════════
+   REVIEW DE LAYOUT — SANATÓRIO SANTA LÚCIA (design, não colisão)
+   bot de layout v1 · build 1924_1997_v80
+══════════════════════════════════════════════════════════════════
+NOTA DE LAYOUT: 94/100 · 🔴 0 · 🟡 0 · 🔵 6
+
+VERTICAL (regra: 1 escada L1↔L2, 1 elevador L2↔L3, nada mais):
+  porta entre andares: corredor_n↔hall2 · elevador: hall2↔corredor3 (acts)
+
+CIRCUITOS POR ANDAR (ciclos = voltas inteligentes):
+  andar 1: 13 salas, 21 ligações, 9 circuito(s) ✓
+  andar 2: 4 salas, 6 ligações, 3 circuito(s) ✓
+  andar 3: 3 salas, 2 ligações, 0 circuito(s)  ⚠ árvore
+
+DISTÂNCIAS-CHAVE (saltos de sala):
+  daniel  início(quarto) → final(telhado): 6 saltos · saves: saguao:2 enfermaria:5 telhado:6
+  clara   início(floresta) → final(catedral): 4 saltos · saves: saguao:2 enfermaria:5 telhado:6
+  bento   início(casa_zelador) → final(floresta): 1 saltos · saves: saguao:3 enfermaria:4 telhado:5
+  save(saguao) → catedral: 2 saltos · save(enfermaria) → telhado: 3 saltos
+
+BECOS (1 saída — ok se arena/lore): quarto2, experimentos, escritorio_sup, telhado
+HUBS: hall2(11), corredor_n(10), saguao(7)
+SALAS DE SAVE: saguao, enfermaria, telhado
+AREAS (x quarto=80m²): quarto:1.0 · corredor:1.4 · quarto2:1.0 · saguao:5.8 · cemiterio:2.0 · estufa:1.5 · floresta:3.5 · estacionamento:2.4 · casa_zelador:1.0 · passagem:1.6 · corredor_n:1.6 · experimentos:1.5 · catedral:4.4 · hall2:3.5 · enfermaria:2.7 · escritorio2:1.4 · fornalhas:2.4 · corredor3:1.5 · escritorio_sup:1.4 · telhado:4.8
+
+──────────────────────────────────────────────────────────────────
+ACHADOS
+──────────────────────────────────────────────────────────────────
+  🔵 [BAIXO] cemiterio: tamanho intermediário (2.0x quarto) — decidir função: apoio ou arena?
+        ↳ posicionar itens/inimigos de acordo
+  🔵 [BAIXO] enfermaria: sala de save grande (216m²) — saves RE costumam ser aconchegantes
+        ↳ ok se for intencional
+  🔵 [BAIXO] estacionamento: tamanho intermediário (2.4x quarto) — decidir função: apoio ou arena?
+        ↳ posicionar itens/inimigos de acordo
+  🔵 [BAIXO] fornalhas: tamanho intermediário (2.4x quarto) — decidir função: apoio ou arena?
+        ↳ posicionar itens/inimigos de acordo
+  🔵 [BAIXO] saguao: sala de save grande (468m²) — saves RE costumam ser aconchegantes
+        ↳ ok se for intencional
+  🔵 [BAIXO] telhado: sala de save grande (384m²) — saves RE costumam ser aconchegantes
+        ↳ ok se for intencional
+
+══════════════════════════════════════════════════════════════════

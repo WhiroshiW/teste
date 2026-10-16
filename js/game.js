@@ -8,18 +8,20 @@ import {
   ITEMS, WEAPONS, ENEMIES, CAMPAIGNS, SHOP_ITEMS, GALLERY_MODELS,
   rankFor, rankForMercenaries, fmtTime, healthStatus,
   SAVE_KEY, POINTS_KEY, UNLOCKS_KEY, HISCORES_KEY, OPTS_KEY
-} from './config.js';
-import { buildTextures } from './textures.js';
-import { buildRoom, ROOM_IDS, makePickupMesh } from './world.js';
-import { Player, Enemy, NPC, TimeTotem, Particles, collideCircle, pointInSolids } from './entities.js';
-import { AudioSys } from './audio.js';
-import { createPSX } from './psx.js';
-import { UI } from './ui.js';
-import { GamepadManager } from './gamepad.js';
+} from './config.js?v=1924_1997_v94';
+import { icon } from './icons.js?v=1924_1997_v94';
+import { buildTextures } from './textures.js?v=1924_1997_v94';
+import { buildRoom, ROOM_IDS, makePickupMesh } from './world.js?v=1924_1997_v94';
+import { Player, Enemy, NPC, TimeTotem, Particles, collideCircle, pointInSolids } from './entities.js?v=1924_1997_v94';
+import { AudioSys } from './audio.js?v=1924_1997_v94';
+import { createPSX } from './psx.js?v=1924_1997_v94';
+import { UI } from './ui.js?v=1924_1997_v94';
+import { GamepadManager } from './gamepad.js?v=1924_1997_v94';
+import { isPlaytest, buildLab, DevEditor } from './devmode.js?v=1924_1997_v94';
 import {
   INTRO, INTRO_CLARA, INTRO_BENTO, D, OBJECTIVES,
   END_GOOD, END_NORMAL, END_CLARA_GOOD, END_CLARA_NORMAL, END_BENTO
-} from './story.js';
+} from './story.js?v=1924_1997_v94';
 
 export class Game {
   constructor(THREE, container) {
@@ -40,7 +42,7 @@ export class Game {
         };
       }
     }
-    this.renderer.setPixelRatio(1);
+    this.renderer.setPixelRatio(Math.min((typeof window !== 'undefined' && window.devicePixelRatio) || 1, 2));
     const initW = container.clientWidth || window.innerWidth || 320;
     const initH = container.clientHeight || window.innerHeight || 240;
     this.renderer.setSize(initW, initH, false);
@@ -52,13 +54,16 @@ export class Game {
     this.camera = new THREE.PerspectiveCamera(60, 16 / 9, 0.1, 140);
 
     // Iluminação refinada: mais clara, legível e atmosférica
-    this.ambLight = new THREE.AmbientLight(0xffffff, 0.85);
+    this.ambLight = new THREE.AmbientLight(0xffffff, 2.7); // 0.85·π — r155+ luzes físicas
+    this.ambLight.layers.enable(1); this.ambLight.layers.enable(2); // camadas das armas
     this.scene.add(this.ambLight);
-    this.hemiLight = new THREE.HemisphereLight(0xe8f0ff, 0x33283a, 0.65);
+    this.hemiLight = new THREE.HemisphereLight(0xe8f0ff, 0x33283a, 2.05); // 0.65·π
+    this.hemiLight.layers.enable(1); this.hemiLight.layers.enable(2); // idem
     this.scene.add(this.hemiLight);
 
     // Lanterna com facho mais amplo e potente
-    this.lantern = new THREE.PointLight(0xfffaed, 14, 22, 1.8);
+    this.lantern = new THREE.PointLight(0xfffaed, 18, 24, 1.7);
+    this.lantern.layers.enable(1); this.lantern.layers.enable(2); // idem
     this.scene.add(this.lantern);
 
     this.TEX = buildTextures(THREE);
@@ -72,6 +77,7 @@ export class Game {
 
     // Câmera: 'fixed' (PS1 clássico) ou 'chase' (3ª pessoa estilo GTA)
     this.camMode = 'fixed';
+    this.playtest = isPlaytest(); // MODO LABORATÓRIO (?playtest na URL)
     this.chaseCamPos = new THREE.Vector3();
 
     // Limpeza de qualquer save antigo legado
@@ -85,6 +91,7 @@ export class Game {
     if (rawPts === null) localStorage.setItem(POINTS_KEY, '500');
     this.unlocks = JSON.parse(localStorage.getItem(UNLOCKS_KEY) || '{}');
     this.hiscores = JSON.parse(localStorage.getItem(HISCORES_KEY) || '{}');
+    this.highScores = this.hiscores;
 
     // Opções
     this.opts = {
@@ -114,6 +121,9 @@ export class Game {
     this.boss = null;
     this.resetRun();
 
+    // Progresso de exploração (mapa do inventário)
+    this.visitedRooms = new Set();
+
     // Entrada
     this.keys = new Set();
     this.touch = { f: false, b: false, l: false, r: false, run: false, aim: false };
@@ -141,13 +151,26 @@ export class Game {
     // Cenário inicial do título: diorama 3D atmosférico do sanatório sob tempestade
     this.loadRoom('title_diorama', 0, 0, 0, { backdrop: true });
     this.player.group.visible = false;
-    this.audio.music('title');
-    this.ui.showTitle(this.hasSave());
-    this.ui.showHud(false);
     this.fadeTarget = 0;
 
     this.clock = new THREE.Clock();
     this.renderer.setAnimationLoop(() => this.frame());
+
+    // Se estiver em navegador real, inicia com a sequência cinematográfica dos patrocinadores!
+    const isHeadless = (typeof window !== 'undefined' && window.__SANTA_LUCIA_HEADLESS__) || (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'test');
+    if (typeof window !== 'undefined' && typeof document !== 'undefined' && !isHeadless) {
+      this.playSponsorIntro(() => {
+        this.audio.ambient('title_storm');
+        this.audio.music('title');
+        this.ui.showTitle(this.hasSave());
+        this.ui.showHud(false);
+      });
+    } else {
+      this.audio.ambient('title_storm');
+      this.audio.music('title');
+      this.ui.showTitle(this.hasSave());
+      this.ui.showHud(false);
+    }
   }
 
   // ==================== PONTOS & LOJA ====================
@@ -156,7 +179,7 @@ export class Game {
     localStorage.setItem(POINTS_KEY, String(this.points));
     if (this.ui.el.titlePointsVal) this.ui.el.titlePointsVal.textContent = this.points.toLocaleString();
     if (this.ui.el.shopPointsVal) this.ui.el.shopPointsVal.textContent = this.points.toLocaleString();
-    if (reason) this.ui.toast(`⭐ +${n} PONTOS: ${reason}`, 3.5);
+    if (reason) this.ui.toast(`${icon('star')} +${n} PONTOS: ${reason}`, 3.5);
   }
 
   buyShopItem(item) {
@@ -177,6 +200,21 @@ export class Game {
       this.infiniteAmmo = true;
       this.opts.infAmmo = true;
       this.saveOpts();
+    } else if (item.id === 'shop_medkit') {
+      if (this.player) {
+        this.player.hp = Math.min(this.player.maxHp, this.player.hp + Math.round(this.player.maxHp * 0.5));
+        this.ui.hp(this.player.hp);
+      }
+      this.addItem('pills', 2);
+    } else if (item.id === 'shop_ammo') {
+      this.addItem('ammo9', 15);
+      this.addItem('shells', 6);
+    } else if (item.id === 'shop_shield') {
+      this.tempShield = true;
+    } else if (item.id === 'shop_energy') {
+      this.staminaBoost = true;
+    } else if (item.id === 'shop_revive') {
+      this.reviveTokens = (this.reviveTokens || 0) + 1;
     }
   }
 
@@ -186,11 +224,11 @@ export class Game {
     this.opts.cam = this.camMode;
     this.saveOpts();
     this.audio.sfx('uiSelect');
-    const msg = this.camMode === 'chase' ? '📷 CÂMERA: 3ª PESSOA (LIVRE)' : '📷 CÂMERA: FIXA (PS1 CLÁSSICO)';
+    const msg = this.camMode === 'chase' ? `${icon('camera')} CÂMERA: 3ª PESSOA (LIVRE)` : `${icon('camera')} CÂMERA: FIXA (PS1 CLÁSSICO)`;
     this.ui.toast(msg, 2.5);
     if (this.ui.el.optCam) this.ui.el.optCam.value = this.camMode;
     if (this.ui.el.invCamSwitch) {
-      this.ui.el.invCamSwitch.textContent = `📷 CÂMERA: ${this.camMode === 'chase' ? '3ª PESSOA' : 'FIXA PS1'}`;
+      this.ui.el.invCamSwitch.innerHTML = `${icon('camera')} CÂMERA: ${this.camMode === 'chase' ? '3ª PESSOA' : 'FIXA PS1'}`;
     }
   }
 
@@ -229,7 +267,7 @@ export class Game {
     this.saveOpts();
     const val = level === 'normal' ? 1.25 : level === 'max' ? 1.95 : 1.55;
     this.psx.setBrightness(val);
-    this.ambLight.intensity = level === 'normal' ? 0.65 : level === 'max' ? 1.15 : 0.85;
+    this.ambLight.intensity = level === 'normal' ? 2.05 : level === 'max' ? 3.6 : 2.7; // ×π (r155+)
   }
 
   setFilter(f) {
@@ -262,6 +300,7 @@ export class Game {
       crank: false, valveOpen: false, safeOpened: false, safeEasterEgg: false,
       memorialOpen: false, bossDead: false, vase: false, forestUnlocked: false,
       chapelEncounterMet: false, claraDossierGot: false, luciaLocketGot: false,
+      secretOpen: false, hallNorthOpen: false, plantsCleared: false, statueLoot: false,
       hasForestKey: false,
     };
   }
@@ -306,6 +345,7 @@ export class Game {
   }
 
   moveInput() {
+    if (this.editor && this.editor.selected) return { f:false, b:false, l:false, r:false, run:false }; // editando: player parado
     const k = this.keys, t = this.touch;
     const gp = this.gamepad ? this.gamepad.getMoveInput() : { f: false, b: false, l: false, r: false, run: false };
     return {
@@ -338,6 +378,13 @@ export class Game {
       return;
     }
 
+    if (st === 'sponsor_intro') {
+      if (code === 'Enter' || code === 'Space' || code === 'KeyE' || code === 'Escape') {
+        if (typeof this.skipSponsorIntro === 'function') this.skipSponsorIntro();
+        return;
+      }
+    }
+
     if (st === 'intro_cutscene') {
       if (code === 'Enter' || code === 'Space' || code === 'KeyE' || code === 'Escape') {
         this.skipIntroCinematic();
@@ -348,17 +395,23 @@ export class Game {
     if (st === 'title') {
       if (code === 'Escape') {
         if (!this.ui.el.campaignSelect.classList.contains('hidden')) {
-          this.ui.hideCampaignSelect(); this.ui.showTitle(this.hasSave()); return;
+          this.ui.transitionTo(() => { this.ui.hideCampaignSelect(); this.ui.showTitle(this.hasSave()); }); return;
         }
         if (!this.ui.el.extraModes.classList.contains('hidden')) {
-          this.ui.hideExtraModes(); this.ui.showTitle(this.hasSave()); return;
+          this.ui.transitionTo(() => { this.ui.hideExtraModes(); this.ui.showTitle(this.hasSave()); }); return;
         }
         if (!this.ui.el.pointsShop.classList.contains('hidden')) {
-          this.ui.hideShop(); this.ui.showTitle(this.hasSave()); return;
+          this.ui.transitionTo(() => { this.ui.hideShop(); this.ui.showTitle(this.hasSave()); }); return;
         }
         if (!this.ui.el.modelViewer.classList.contains('hidden')) {
-          this.ui.hideGallery(); this.ui.showShop(this.points, this.unlocks); return;
+          this.ui.transitionTo(() => { this.ui.hideGallery(); this.ui.showShop(this.points, this.unlocks); }); return;
         }
+      }
+      if (!this.ui.el.campaignSelect.classList.contains('hidden')) {
+        if (code === 'KeyA' || code === 'ArrowLeft') this.ui.campNav(-1);
+        else if (code === 'KeyD' || code === 'ArrowRight') this.ui.campNav(1);
+        else if (code === 'Enter' || code === 'Space' || code === 'KeyE') this.ui.campConfirm();
+        return;
       }
       if (code === 'KeyW' || code === 'ArrowUp') this.ui.titleNav(-1);
       else if (code === 'KeyS' || code === 'ArrowDown') this.ui.titleNav(1);
@@ -374,10 +427,10 @@ export class Game {
       else if (code === 'KeyA' || code === 'ArrowLeft') this.ui.invNav(-1, 0);
       else if (code === 'KeyD' || code === 'ArrowRight') this.ui.invNav(1, 0);
       else if (code === 'Enter' || code === 'KeyE' || code === 'Space') this.ui.invConfirm();
-      else if (code === 'KeyQ') this.ui.execInvCmd('EXAMINAR', this.inv[this.ui.invSel]);
-      else if (code === 'Tab' || code === 'KeyI' || code === 'Escape') {
-        this.closeInventory();
-      }
+      else if (code === 'KeyQ' && this.ui.invTab === 'itens') { const qit = this.inv[this.ui.invSel]; if (qit) this.ui.execInvCmd('EXAMINAR', qit); }
+      else if (code === 'KeyM') this.ui.invSwitchTab(this.ui.invTab === 'mapa' ? 'itens' : 'mapa');
+      else if (code === 'Tab' || code === 'KeyI') this.closeInventory();
+      else if (code === 'Escape') this.ui.invBack();
     } else if (st === 'safe') {
       if (code === 'KeyA' || code === 'ArrowLeft') this.ui.safeNav(-1, 0);
       else if (code === 'KeyD' || code === 'ArrowRight') this.ui.safeNav(1, 0);
@@ -396,6 +449,7 @@ export class Game {
       if (code === 'KeyE' || code === 'Enter' || code === 'Space') this.ui.advanceDialog();
     } else if (st === 'play') {
       if (code === 'Tab' || code === 'KeyI') this.openInventory();
+      else if (code === 'KeyM') this.openInventory(true);
       else if (code === 'Escape' || code === 'KeyP') this.pauseGame();
       else if (code === 'KeyE') this.doPromptAction();
       else if (code === 'KeyJ' || code === 'KeyX' || code === 'KeyF') {
@@ -405,18 +459,32 @@ export class Game {
   }
 
   onCanvasClick() {
-    if (this.state === 'intro_cutscene') this.skipIntroCinematic();
-    else if (this.state === 'play' && this.aimHeld()) this.tryFire();
-    else if (this.state === 'dialog' || this.state === 'intro' || this.state === 'cutscene') this.ui.advanceDialog();
-    else if (this.state === 'banner') this.closeBanner();
+    if (this.state === 'sponsor_intro') {
+      if (typeof this.skipSponsorIntro === 'function') this.skipSponsorIntro();
+    } else if (this.state === 'intro_cutscene') {
+      this.skipIntroCinematic();
+    } else if (this.state === 'play' && this.aimHeld()) {
+      this.tryFire();
+    } else if (this.state === 'dialog' || this.state === 'intro' || this.state === 'cutscene') {
+      this.ui.advanceDialog();
+    } else if (this.state === 'banner') {
+      this.closeBanner();
+    }
   }
 
   touchFire() { if (this.state === 'play' && this.aimHeld()) this.tryFire(); }
   touchAct() {
-    if (this.state === 'intro_cutscene') this.skipIntroCinematic();
-    else if (this.state === 'play') this.doPromptAction();
-    else if (this.state === 'dialog' || this.state === 'intro' || this.state === 'cutscene') this.ui.advanceDialog();
-    else if (this.state === 'banner') this.closeBanner();
+    if (this.state === 'sponsor_intro') {
+      if (typeof this.skipSponsorIntro === 'function') this.skipSponsorIntro();
+    } else if (this.state === 'intro_cutscene') {
+      this.skipIntroCinematic();
+    } else if (this.state === 'play') {
+      this.doPromptAction();
+    } else if (this.state === 'dialog' || this.state === 'intro' || this.state === 'cutscene') {
+      this.ui.advanceDialog();
+    } else if (this.state === 'banner') {
+      this.closeBanner();
+    }
   }
   touchInv() {
     if (this.state === 'play') this.openInventory();
@@ -426,31 +494,136 @@ export class Game {
   // ==================== AÇÕES DE MENU (NOVO MENU 4 OPÇÕES) ====================
   titleAction(act) {
     if (act === 'play' || act === 'new') {
-      this.ui.hideTitle();
-      this.ui.showCampaignSelect();
-    } else if (act === 'load' || act === 'continue') {
-      if (this.hasSave()) {
+      this.ui.transitionTo(() => {
         this.ui.hideTitle();
-        this.continueGame();
-      } else {
-        this.audio.sfx('dryfire');
-        this.ui.toast('• Nenhum prontuário médico registrado no Diário.', 3);
-        this.ui.showTitle(false);
-      }
+        this.ui.showCampaignSelect();
+      });
+    } else if (act === 'load' || act === 'continue') {
+      this.ui.transitionTo(() => {
+        this.ui.hideTitle();
+        this.openLoadScreen();
+      });
     } else if (act === 'extras' || act === 'shop') {
-      this.ui.hideTitle();
-      this.ui.showShop(this.points, this.unlocks);
+      this.ui.transitionTo(() => {
+        this.ui.hideTitle();
+        this.ui.showExtraModes((this.hiscores && this.hiscores.mercenaries) || 0, (this.hiscores && this.hiscores.survivor) || 0);
+      });
     } else if (act === 'options') {
-      this.ui.hideTitle();
-      this.optionsFrom = 'title';
-      this.ui.showOptions();
+      this.ui.transitionTo(() => {
+        this.ui.hideTitle();
+        this.optionsFrom = 'title';
+        this.ui.showOptions();
+      });
     } else if (act === 'intro') {
-      this.ui.hideTitle();
-      this.playIntroCinematic(() => this.toTitle());
+      this.ui.transitionTo(() => {
+        this.ui.hideTitle();
+        this.playIntroCinematic(() => this.toTitle());
+      });
     } else if (act === 'help') {
-      this.ui.hideTitle();
-      this.helpFrom = 'title';
-      this.ui.showHelp();
+      this.ui.transitionTo(() => {
+        this.ui.hideTitle();
+        this.helpFrom = 'title';
+        this.ui.showHelp();
+      });
+    }
+  }
+
+  // ==================== INTRO DOS PATROCINADORES (ESTILO RESIDENT EVIL REMAKE) ====================
+  playSponsorIntro(onComplete) {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      if (onComplete) onComplete();
+      return;
+    }
+    this.state = 'sponsor_intro';
+    this.sponsorCallback = onComplete || (() => this.toTitle());
+    this.ui.hideAllOverlays();
+    this.ui.showSponsorSplash();
+
+    // Trilhas e efeitos de áudio estilísticos que fazem sentido com a história e a estética do Sanatório
+    const sponsors = [
+      { id: 'chatgpt', img: './assets/sponsor_chatgpt.jpg', sfx: 'sponsorChatGPT', duration: 3300 },
+      { id: 'grok', img: './assets/sponsor_grok.jpg', sfx: 'sponsorGrok', duration: 3300 },
+      { id: 'arena', img: './assets/sponsor_arena.jpg', sfx: 'sponsorArena', duration: 3500 },
+    ];
+
+    let currentIdx = 0;
+    let timerId = null;
+    let active = true;
+
+    // Desbloqueio sonoro imediato no primeiro clique ou tecla do jogador
+    const unlockOnce = () => {
+      if (this.audio) {
+        this.audio.unlock();
+        const cur = sponsors[currentIdx - 1];
+        if (cur && cur.sfx && typeof this.audio[cur.sfx] === 'function') {
+          try { this.audio[cur.sfx](); } catch (e) {}
+        }
+      }
+    };
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('pointerdown', unlockOnce, { once: true, passive: true });
+      window.addEventListener('keydown', unlockOnce, { once: true, passive: true });
+    }
+
+    const finish = () => {
+      if (!active) return;
+      active = false;
+      this._sponsorSkipFn = null;
+      if (timerId) clearTimeout(timerId);
+      this.ui.hideSponsorSplash();
+      const cb = this.sponsorCallback;
+      this.sponsorCallback = null;
+      if (cb) cb();
+      else this.toTitle();
+    };
+
+    const nextCard = () => {
+      if (!active) return;
+      if (currentIdx >= sponsors.length) {
+        finish();
+        return;
+      }
+      const item = sponsors[currentIdx];
+      currentIdx++;
+      this.ui.displaySponsorCard(item.img, () => {
+        if (this.audio) {
+          try {
+            if (item.sfx && typeof this.audio[item.sfx] === 'function') {
+              this.audio[item.sfx]();
+            } else if (item.sfx && typeof this.audio.sfx === 'function') {
+              this.audio.sfx(item.sfx);
+            }
+          } catch (e) {}
+        }
+      });
+
+      timerId = setTimeout(() => {
+        if (!active) return;
+        this.ui.fadeSponsorCard(() => {
+          if (active) timerId = setTimeout(nextCard, 280);
+        });
+      }, item.duration);
+    };
+
+    this._sponsorSkipFn = () => {
+      if (!active) return;
+      if (timerId) clearTimeout(timerId);
+      if (currentIdx < sponsors.length) {
+        nextCard();
+      } else {
+        finish();
+      }
+    };
+
+    nextCard();
+  }
+
+  skipSponsorIntro() {
+    if (this._sponsorSkipFn) {
+      this._sponsorSkipFn();
+    } else if (this.state === 'sponsor_intro') {
+      this.ui.hideSponsorSplash();
+      this.toTitle();
     }
   }
 
@@ -695,12 +868,21 @@ export class Game {
       this.ui.hidePause(); this.state = 'play';
     } else if (act === 'help') {
       this.helpFrom = 'pause'; this.state = 'help';
-      this.ui.hidePause(); this.ui.showHelp();
+      this.ui.transitionTo(() => {
+        this.ui.hidePause();
+        this.ui.showHelp();
+      });
     } else if (act === 'options') {
       this.optionsFrom = 'pause'; this.state = 'options';
-      this.ui.hidePause(); this.ui.showOptions();
+      this.ui.transitionTo(() => {
+        this.ui.hidePause();
+        this.ui.showOptions();
+      });
     } else if (act === 'title') {
-      this.ui.hidePause(); this.toTitle();
+      this.ui.transitionTo(() => {
+        this.ui.hidePause();
+        this.toTitle();
+      });
     }
   }
 
@@ -722,6 +904,7 @@ export class Game {
   }
 
   toTitle() {
+    this.ui.showHud(false);
     this.state = 'title';
     this.gameMode = 'story';
     this.audio.stopMusic();
@@ -737,6 +920,7 @@ export class Game {
     this.loadRoom('title_diorama', 0, 0, 0, { backdrop: true });
     this.fadeTarget = 0;
     this.ui.showTitle(this.hasSave());
+    this.audio.ambient('title_storm');
     this.audio.music('title');
   }
 
@@ -744,7 +928,7 @@ export class Game {
   startCampaign(campId) {
     if (campId === 'bento' && !this.unlocks.extra_bento) {
       this.audio.sfx('dryfire');
-      this.ui.toast('🔒 Turno do Bento bloqueado! Compre na Loja de Pontos por 1.200 PTS.', 3.5);
+      this.ui.toast(icon('lock') + ' Turno do Bento bloqueado! Compre na Loja de Pontos por 1.200 PTS.', 3.5);
       return;
     }
 
@@ -780,6 +964,7 @@ export class Game {
       if (invIt) invIt.equipped = true;
     }
 
+    if (this.playtest) { buildLab(this); return; } // LAB: pula mundo/história
     this.loadRoom(camp.startRoom, camp.startX, camp.startZ, camp.startRot);
     this.state = 'intro';
     this.fadeVal = 1; this.fadeTarget = 0;
@@ -804,7 +989,7 @@ export class Game {
   startMercenaries() {
     if (!this.unlocks.extra_mercenaries) {
       this.audio.sfx('dryfire');
-      this.ui.toast('🔒 Modo Mercenários bloqueado! Compre na Loja de Pontos por 1.000 PTS.', 3.5);
+      this.ui.toast(icon('lock') + ' Modo Mercenários bloqueado! Compre na Loja de Pontos por 1.000 PTS.', 3.5);
       return;
     }
 
@@ -853,7 +1038,7 @@ export class Game {
   startSurvivor() {
     if (!this.unlocks.extra_survivor) {
       this.audio.sfx('dryfire');
-      this.ui.toast('🔒 Modo Sobrevivente bloqueado! Compre na Loja de Pontos por 1.000 PTS.', 3.5);
+      this.ui.toast(icon('lock') + ' Modo Sobrevivente bloqueado! Compre na Loja de Pontos por 1.000 PTS.', 3.5);
       return;
     }
 
@@ -884,7 +1069,7 @@ export class Game {
     this.audio.ambient('floresta');
 
     this.spawnSurvivorWave();
-    this.ui.toast(`🛡️ SOBREVIVENTE: ONDA ${this.survivorWave}!`, 4);
+    this.ui.toast(`${icon('shield')} SOBREVIVENTE: ONDA ${this.survivorWave}!`, 4);
   }
 
   spawnSurvivorWave() {
@@ -906,11 +1091,21 @@ export class Game {
 
   // ==================== SALAS & TRANSIÇÕES ====================
   roomState(id) {
-    if (!this.roomVisited[id]) this.roomVisited[id] = { deadSpawns: new Set(), takenPickups: new Set() };
+    if (!this.roomVisited[id]) {
+      this.roomVisited[id] = { deadSpawns: new Set(), takenPickups: new Set() };
+    } else {
+      if (!(this.roomVisited[id].deadSpawns instanceof Set)) {
+        this.roomVisited[id].deadSpawns = new Set(Array.isArray(this.roomVisited[id].deadSpawns) ? this.roomVisited[id].deadSpawns : []);
+      }
+      if (!(this.roomVisited[id].takenPickups instanceof Set)) {
+        this.roomVisited[id].takenPickups = new Set(Array.isArray(this.roomVisited[id].takenPickups) ? this.roomVisited[id].takenPickups : []);
+      }
+    }
     return this.roomVisited[id];
   }
 
   loadRoom(id, sx, sz, angle, opts = {}) {
+    if (this.visitedRooms) this.visitedRooms.add(id); // mapa do inventário (névoa de guerra)
     if (this.room) {
       this.scene.remove(this.room.group);
     }
@@ -943,12 +1138,6 @@ export class Game {
       }
     }
 
-    // Persistência de drenagem do porão (a água não volta se a válvula já foi aberta)
-    if (id === 'porao' && this.flags.valveOpen) {
-      r.solids = r.solids.filter((s) => s.tag !== 'water');
-      if (r.waterMesh) r.waterMesh.visible = false;
-    }
-
     // Inimigos
     if (!opts.backdrop && this.gameMode === 'story') {
       for (const s of r.spawns) {
@@ -972,7 +1161,7 @@ export class Game {
       this.player.group.position.y = 0;
       this.player.moving = false;
       this.lantern.position.set(validX, 1.7, validZ);
-      this.lantern.intensity = 14;
+      this.lantern.intensity = 18;
     } else {
       this.player.group.visible = false;
       this.lantern.intensity = 0;
@@ -990,7 +1179,7 @@ export class Game {
     collideCircle(this.chaseCamPos, 0.45, r.solids);
 
     // Cutscene do encontro de Daniel & Clara na Capela
-    if (id === 'capela' && !this.flags.chapelEncounterMet && !opts.backdrop && this.gameMode === 'story') {
+    if (id === 'catedral' && !this.flags.chapelEncounterMet && !opts.backdrop && this.gameMode === 'story') {
       const npcWho = this.currentCampaign === 'daniel' ? 'clara' : 'daniel';
       const companion = new NPC(this.THREE, this.TEX, npcWho, 0, -3.5, Math.PI);
       companion.addTo(r.group);
@@ -999,8 +1188,8 @@ export class Game {
     }
 
     // Chefe Alencastro no Porão da Campanha B
-    if (id === 'porao' && this.currentCampaign === 'clara' && !this.flags.bossDead && !opts.backdrop) {
-      const boss = new Enemy(this.THREE, this.TEX, 'alencastro', 0, 0, false);
+    if (id === 'catedral' && this.currentCampaign === 'clara' && !this.flags.bossDead && !opts.backdrop) {
+      const boss = new Enemy(this.THREE, this.TEX, 'alencastro', 0, -3.0, false);
       boss.spawnIdx = -999;
       boss.addTo(r.group);
       boss.alert();
@@ -1011,27 +1200,39 @@ export class Game {
       this.startBoilerBossCutscene(boss);
     }
 
+    // Chefe VULTO na Cobertura (campanhas A e C — o pesadelo final)
+    if (id === 'telhado' && this.currentCampaign !== 'clara' && !this.flags.bossDead && !opts.backdrop) {
+      const boss = new Enemy(this.THREE, this.TEX, 'vulto', 0, -4.0, false);
+      boss.spawnIdx = -998;
+      boss.addTo(r.group);
+      this.psx.snapScene(boss.group);
+      this.enemies.push(boss);
+      this.boss = boss;
+      this.audio.music('boss');
+      this.startRoofBossCutscene(boss);
+    }
+
     const ROOM_SUBS = {
-      quarto: 'ALA DE INTERNAÇÃO · PISO 1',
-      corredor_quartos: 'ALA OESTE · CORREDOR DOS DORMITÓRIOS',
+      quarto: 'ALA DE INTERNAÇÃO · QUARTO 1',
+      corredor: 'ALA DE INTERNAÇÃO · CORREDOR',
       quarto2: 'ALA PRIVADA · SALA DO COFRE',
       saguao: 'HALL PRINCIPAL · RECEPÇÃO',
-      estufa: 'SETOR SUL · ESTUFA BOTÂNICA',
-      cemiterio: 'PÁTIO NORTE · LÁPIDES DOS FUNDADORES',
-      jardim: 'SETOR LESTE · PÁTIO, ESTACIONAMENTO & CANIL',
-      casa_zelador: 'CABANA DE SERVIÇO DE BENTO',
-      mezanino: 'MEZANINO SUPERIOR · PISO 2',
-      enfermaria: 'ALA MÉDICA CLÍNICA · PISO 2',
-      consultorio: 'ESCRITÓRIO MÉDICO DO DR. ALENCASTRO',
-      porao: 'SUBTERRÂNEO · ÁREA DAS CALDEIRAS',
-      corredor_p3: 'ALA SUPERIOR · CORREDOR P3',
-      sala_dr_p3: 'LABORATÓRIO CONFIDENCIAL DO DIRETOR',
-      terraco: 'COBERTURA · HELIPONTO DE RESGATE',
-      subsolo_corredor: 'CATACUMBAS SUBTERRÂNEAS · TÚNEIS',
-      culto: 'SANTUÁRIO OCULTO · ALTAR PROFANO',
-      experimentos: 'LABORATÓRIO DE EXPERIMENTOS HUMANOS',
-      floresta: 'JARDINS EXTERNOS & CEMITÉRIO',
-      capela: 'SANTUÁRIO ESQUECIDO',
+      cemiterio: 'PÁTIO NORTE · CEMITÉRIO',
+      estufa: 'JARDIM DE INVERNO · ESTUFA',
+      floresta: 'ARREDORES · FLORESTA DOS LAMENTOS',
+      estacionamento: 'ARREDORES · ESTACIONAMENTO',
+      casa_zelador: 'CASA DO ZELADOR BENTO',
+      passagem: 'PASSAGEM SECRETA',
+      corredor_n: 'RECEPÇÃO TÉCNICA · CORREDOR NORTE',
+      experimentos: 'LABORATÓRIO DE EXPERIMENTOS',
+      catedral: 'CATEDRAL ESQUECIDA',
+      hall2: 'ALA CLÍNICA · 2º ANDAR',
+      enfermaria: 'ENFERMARIA GERAL · 2º ANDAR',
+      escritorio2: 'ESCRITÓRIO CLÍNICO · 2º ANDAR',
+      fornalhas: 'CASA DAS FORNALHAS · 2º ANDAR',
+      corredor3: 'ARQUIVO MORTO · 3º ANDAR',
+      escritorio_sup: 'ESCRITÓRIO DO SUPERVISOR · 3º ANDAR',
+      telhado: 'COBERTURA · HELIPONTO',
     };
 
     if (!opts.backdrop) {
@@ -1153,6 +1354,7 @@ export class Game {
   }
 
   checkObjective(force = false) {
+    if (this.playtest) { this.currentObjText = 'MODO LABORATÓRIO'; return; }
     const txt = OBJECTIVES(this.flags, this.currentCampaign);
     this.currentObjText = txt;
     if (force) this.ui.toast('OBJETIVO: ' + txt, 4);
@@ -1170,7 +1372,12 @@ export class Game {
     const isStackable = ITEMS[id] && ITEMS[id].type !== 'weapon' && (ITEMS[id].type !== 'key' || id === 'frag');
     const ex = isStackable ? this.inv.find((i) => i.item === id) : null;
     if (ex) { ex.qty += qty; return; }
-    if (this.inv.length >= 12) {
+    // V2: chaves de progressão entram MESMO com inventário cheio (zerabilidade)
+    const isKeyItem = ITEMS[id] && ITEMS[id].type === 'key';
+    // armas até 3 ignoram o cap (estilo RE: armas não são miolo de bolsa;
+    // chaves transbordam o limite e travavam a escopota pra sempre)
+    const wCount = this.inv.filter((i) => ITEMS[i.item] && ITEMS[i.item].type === 'weapon').length;
+    if (this.inv.length >= 12 && !isKeyItem && !(ITEMS[id] && ITEMS[id].type === 'weapon' && wCount < 3)) {
       this.ui.toast('Inventário cheio!', 2.5);
       return;
     }
@@ -1190,14 +1397,14 @@ export class Game {
     }
   }
 
-  openInventory() {
+  openInventory(mapMode = false) {
     if (this.state !== 'play') return;
     this.state = 'inventory';
     this.player.setAim(false);
     this.ui.crosshair(false);
     this.ui.target(0, 0, false);
     this.audio.sfx('uiSelect');
-    this.ui.showInventory();
+    this.ui.showInventory(mapMode ? 'mapa' : 'itens');
   }
 
   closeInventory() {
@@ -1224,7 +1431,7 @@ export class Game {
       this.removeItem(it.item, 1);
       this.audio.sfx('heal');
       this.ui.hp(this.player.hp);
-      this.ui.toast(`❤ Vida recuperada (+${cfg.power})`, 2.5);
+      this.ui.toast(`${icon('heart')} Vida recuperada (+${cfg.power})`, 2.5);
     }
   }
 
@@ -1239,7 +1446,7 @@ export class Game {
 
   examineItem(it) {
     const cfg = ITEMS[it.item];
-    this.ui.toast(`${cfg.icon} ${cfg.name}: ${cfg.desc}`, 4.5);
+    this.ui.toast(`${icon(cfg.icon)} ${cfg.name}: ${cfg.desc}`, 4.5);
   }
 
   combineItems(srcIdx, destIdx) {
@@ -1256,7 +1463,7 @@ export class Game {
       if (dDef.ammo === src.item) {
         this.equipWeapon(dest);
         this.audio.sfx('pickupKey');
-        this.ui.toast(`⚙️ ${dDef.name} recarregada com ${sDef.name}!`, 3.5);
+        this.ui.toast(`${icon('gear')} ${dDef.name} recarregada com ${sDef.name}!`, 3.5);
         this.updateAmmoHud();
         return;
       }
@@ -1264,7 +1471,7 @@ export class Game {
       if (sDef.ammo === dest.item) {
         this.equipWeapon(src);
         this.audio.sfx('pickupKey');
-        this.ui.toast(`⚙️ ${sDef.name} recarregada com ${dDef.name}!`, 3.5);
+        this.ui.toast(`${icon('gear')} ${sDef.name} recarregada com ${dDef.name}!`, 3.5);
         this.updateAmmoHud();
         return;
       }
@@ -1275,7 +1482,7 @@ export class Game {
       dest.qty += src.qty;
       this.inv.splice(srcIdx, 1);
       this.audio.sfx('pickup');
-      this.ui.toast(`📦 Doses de ${dDef.name} agrupadas no mesmo frasco (x${dest.qty}).`, 3);
+      this.ui.toast(`${icon('box')} Doses de ${dDef.name} agrupadas no mesmo frasco (x${dest.qty}).`, 3);
       return;
     }
 
@@ -1291,10 +1498,10 @@ export class Game {
       return;
     }
     if (!def.ammo) {
-      this.ui.ammo(w.name, 'BRANCA', def.icon || '🔪', true);
+      this.ui.ammo(w.name, 'BRANCA', def.icon || 'knife', true);
     } else {
       const c = this.infiniteAmmo ? '∞' : this.countItem(def.ammo);
-      this.ui.ammo(w.name, `${c} / ${this.infiniteAmmo ? '∞' : c}`, def.icon || '🔫', true);
+      this.ui.ammo(w.name, `${c} / ${this.infiniteAmmo ? '∞' : c}`, def.icon || 'handgun', true);
     }
   }
 
@@ -1345,7 +1552,87 @@ export class Game {
     this.state = 'play';
   }
 
-  hasSave() { return !!localStorage.getItem(SAVE_KEY); }
+  // ==================== SALVAMENTO & CARREGAMENTO MULTI-SLOT (IDÊNTICO À REFERÊNCIA) ====================
+  getChapterTitle(campaign, roomId) {
+    if (campaign === 'clara') {
+      if (roomId === 'estufa' || roomId === 'cemiterio') return 'SEGREDOS ENTRE LÁPIDES';
+      if (roomId === 'floresta' || roomId === 'casa_zelador') return 'A TRILHA DO ZELADOR';
+      if (roomId === 'experimentos' || roomId === 'corredor_n') return 'O SANTUÁRIO OCULTO';
+      if (roomId === 'catedral') return 'A CATEDRAL ESQUECIDA';
+      return 'EM BUSCA DA VERDADE';
+    }
+    if (campaign === 'bento') {
+      if (roomId === 'floresta' || roomId === 'estacionamento') return 'RANGIDOS NO PÁTIO';
+      if (roomId === 'casa_zelador') return 'O REFÚGIO DO ZELADOR';
+      return 'O TURNO DA MEIA-NOITE';
+    }
+    // Daniel:
+    if (roomId === 'quarto2' || roomId === 'corredor') return 'O SILÊNCIO DOS ESQUECIDOS';
+    if (roomId === 'cemiterio' || roomId === 'estufa') return 'O QUE FICOU ENTERRADO';
+    if (roomId === 'floresta' || roomId === 'estacionamento') return 'A TRILHA SEM VOLTA';
+    if (roomId === 'catedral') return 'O SANTUÁRIO DA MORTE';
+    if (roomId === 'passagem') return 'POR TRÁS DO ARMÁRIO';
+    return 'NOITE SEM FIM';
+  }
+
+  hasSave() {
+    for (let i = 1; i <= 6; i++) {
+      if (localStorage.getItem('santa_lucia_slot_' + i)) return true;
+    }
+    return !!localStorage.getItem(SAVE_KEY);
+  }
+
+  getSaveSlots() {
+    // Migração de save legado para o Slot 1 caso exista
+    const legacy = localStorage.getItem(SAVE_KEY);
+    if (!localStorage.getItem('santa_lucia_slot_1') && legacy) {
+      try {
+        const d = JSON.parse(legacy);
+        d.slot = 1;
+        d.title = d.title || this.getChapterTitle(d.campaign, d.room);
+        d.date = d.date || '24/05/1924';
+        localStorage.setItem('santa_lucia_slot_1', JSON.stringify(d));
+      } catch (e) { /* noop */ }
+    }
+
+    const slots = [];
+    for (let i = 1; i <= 6; i++) {
+      const raw = localStorage.getItem('santa_lucia_slot_' + i);
+      if (raw) {
+        try {
+          const d = JSON.parse(raw);
+          slots.push({
+            slot: i,
+            empty: false,
+            title: d.title || this.getChapterTitle(d.campaign, d.room),
+            date: d.date || '24/05/1924',
+            roomName: d.roomName || (d.room ? d.room.toUpperCase() : 'SANATÓRIO'),
+            room: d.room,
+            campaign: d.campaign || 'daniel',
+            hero: d.hero || (d.campaign === 'clara' ? 'Dra. Clara Valente' : d.campaign === 'bento' ? 'Zelador Bento' : 'Daniel Silva'),
+            timeSec: d.timeSec || 0,
+            saves: d.saves || 1,
+            kills: d.kills || 0,
+            hp: d.hp || 100,
+            equipped: d.equipped || 'knife',
+            inv: d.inv || [],
+            flags: d.flags || {},
+            roomVisited: d.roomVisited || {},
+          });
+        } catch (e) {
+          slots.push({ slot: i, empty: true });
+        }
+      } else {
+        slots.push({ slot: i, empty: true });
+      }
+    }
+    return slots;
+  }
+
+  openLoadScreen() {
+    this.saveScreenFrom = 'title';
+    this.ui.showSaveBox({ mode: 'load', from: 'title' });
+  }
 
   openSaveBox() {
     if (!this.hasItem('ribbon') && !this.unlocks.infinite_ink) {
@@ -1353,10 +1640,13 @@ export class Game {
       return;
     }
     this.state = 'savebox';
+    this.saveScreenFrom = 'game';
     this.player.setAim(false);
     const heroCfg = CAMPAIGNS[this.currentCampaign] || CAMPAIGNS.daniel;
     const roomTitle = this.room ? (this.room.name || this.room.id) : 'SAGUÃO';
     this.ui.showSaveBox({
+      mode: 'create',
+      from: 'game',
       hero: heroCfg.name,
       room: roomTitle,
       saves: this.saves,
@@ -1366,10 +1656,11 @@ export class Game {
     });
   }
 
-  saveConfirm(yes) {
+  saveConfirm(yes, slotNum = 1) {
     if (!yes) {
       this.ui.hideSaveBox();
-      this.state = 'play';
+      this.state = (this.saveScreenFrom === 'title' ? 'title' : 'play');
+      if (this.state === 'title') this.toTitle();
       return;
     }
     this.audio.sfx('typewriter');
@@ -1377,32 +1668,72 @@ export class Game {
       this.ui.show(this.ui.el.saveStamp);
     }
     if (!this.unlocks.infinite_ink) this.removeItem('ribbon', 1);
-    this.doSave();
+    this.saveToSlot(slotNum);
     setTimeout(() => {
       this.ui.hideSaveBox();
       this.state = 'play';
-      this.ui.toast(`💾 Prontuário arquivado com sucesso no Sanatório. (${this.saves} registros)`, 4);
+      this.ui.toast(`${icon('ribbon')} Prontuário arquivado com sucesso no Sanatório. (${this.saves} registros)`, 4);
     }, 650);
   }
 
-  doSave() {
+  saveToSlot(slotNum = 1) {
+    const heroCfg = CAMPAIGNS[this.currentCampaign] || CAMPAIGNS.daniel;
+    const roomTitle = this.room ? (this.room.name || this.room.id) : 'SAGUÃO PRINCIPAL';
+    const narrativeTitle = this.getChapterTitle(this.currentCampaign, this.room ? this.room.id : 'saguao');
+
+    const day = 24 + Math.min(6, Math.floor(this.timeSec / 300));
+    const formattedDate = `${String(day).padStart(2, '0')}/05/1924`;
+
+    const serializedRoomVisited = {};
+    if (this.roomVisited) {
+      Object.keys(this.roomVisited).forEach((rid) => {
+        const rv = this.roomVisited[rid];
+        serializedRoomVisited[rid] = {
+          deadSpawns: Array.from(rv.deadSpawns || []),
+          takenPickups: Array.from(rv.takenPickups || []),
+        };
+      });
+    }
+
     const data = {
+      slot: slotNum,
+      title: narrativeTitle,
+      date: formattedDate,
       campaign: this.currentCampaign,
-      room: this.room.id,
-      x: this.player.x, z: this.player.z, angle: this.player.angle,
-      hp: this.player.hp, equipped: this.equipped,
-      inv: this.inv, flags: this.flags,
-      timeSec: this.timeSec, saves: this.saves + 1,
-      kills: this.kills, roomVisited: this.roomVisited,
+      hero: heroCfg.name,
+      room: this.room ? this.room.id : 'saguao',
+      roomName: roomTitle,
+      x: this.player ? this.player.x : 0,
+      z: this.player ? this.player.z : 0,
+      angle: this.player ? this.player.angle : 0,
+      hp: this.player ? this.player.hp : 100,
+      equipped: this.equipped,
+      inv: this.inv,
+      flags: this.flags,
+      timeSec: this.timeSec,
+      saves: this.saves + 1,
+      kills: this.kills,
+      roomVisited: serializedRoomVisited,
     };
     this.saves++;
+    localStorage.setItem('santa_lucia_slot_' + slotNum, JSON.stringify(data));
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
     this.audio.sfx('typewriter');
     this.ui.toast('✎ Progresso registrado no Diário. (' + this.saves + ' registros)', 3.5);
+    return data;
   }
 
-  doLoad() {
-    const raw = localStorage.getItem(SAVE_KEY);
+  deleteSlot(slotNum = 1) {
+    localStorage.removeItem('santa_lucia_slot_' + slotNum);
+    if (slotNum === 1) localStorage.removeItem(SAVE_KEY);
+  }
+
+  doSave() {
+    return this.saveToSlot(1);
+  }
+
+  loadFromSlot(slotNum = 1) {
+    const raw = localStorage.getItem('santa_lucia_slot_' + slotNum) || (slotNum === 1 ? localStorage.getItem(SAVE_KEY) : null);
     if (!raw) return false;
     try {
       const data = JSON.parse(raw);
@@ -1413,19 +1744,29 @@ export class Game {
       this.currentCampaign = data.campaign || 'daniel';
       this.player.setHero(this.currentCampaign, this.unlocks['tactical_skin_' + this.currentCampaign] ? 'tactical' : 'default');
 
-      this.flags = data.flags;
-      this.inv = data.inv;
+      this.flags = data.flags || {};
+      this.inv = data.inv || [];
       this.equipped = data.equipped || 'knife';
       this.timeSec = data.timeSec || 0;
       this.saves = data.saves || 0;
       this.kills = data.kills || 0;
-      this.roomVisited = data.roomVisited || {};
 
-      this.loadRoom(data.room, data.x, data.z, data.angle);
+      this.roomVisited = {};
+      if (data.roomVisited) {
+        Object.keys(data.roomVisited).forEach((rid) => {
+          const rv = data.roomVisited[rid];
+          this.roomVisited[rid] = {
+            deadSpawns: new Set(Array.isArray(rv.deadSpawns) ? rv.deadSpawns : Object.keys(rv.deadSpawns || {})),
+            takenPickups: new Set(Array.isArray(rv.takenPickups) ? rv.takenPickups : Object.keys(rv.takenPickups || {})),
+          };
+        });
+      }
+
+      this.loadRoom(data.room || 'saguao', data.x || 0, data.z || 0, data.angle || 0);
       this.player.group.visible = true;
       this.player.group.rotation.x = 0;
       this.player.group.position.y = 0;
-      this.player.hp = data.hp;
+      this.player.hp = data.hp || 100;
       this.player.dead = false;
       this.player.setWeapon(this.equipped);
 
@@ -1434,11 +1775,15 @@ export class Game {
       this.updateAmmoHud();
       this.ui.hp(this.player.hp);
       this.fadeVal = 1; this.fadeTarget = 0;
-      this.ui.toast('Jogo carregado com sucesso.', 3);
+      this.ui.toast(`Prontuário do Slot 0${slotNum} carregado com sucesso.`, 3);
       return true;
     } catch (e) {
       return false;
     }
+  }
+
+  doLoad() {
+    return this.loadFromSlot(1);
   }
 
   // ==================== PORTAS ====================
@@ -1472,6 +1817,18 @@ export class Game {
         this.audio.sfx('puzzle');
         this.say([
           { who: 'bento', text: 'Usei a Chave Mestra das saídas de emergência. A porta pesada do porão destrancou!' }
+        ], () => {
+          this.checkObjective();
+          this.doorSequence(door);
+        });
+        return;
+      }
+
+      // Chave mestra de Bento também força as comportas alagadas (escada do subsolo)
+      if (door.need.flag === 'valveOpen' && isBento && this.hasItem('bento_key')) {
+        this.audio.sfx('puzzle');
+        this.say([
+          { who: 'bento', text: 'Forcei a comporta emperrada com a chave mestra e o ozônio do alagado me bateu em cheio. Mas a escada cedeu.' }
         ], () => {
           this.checkObjective();
           this.doorSequence(door);
@@ -1525,7 +1882,8 @@ export class Game {
     this.player.setAim(false);
     this.ui.crosshair(false);
     this.ui.target(0, 0, false);
-    this.audio.sfx('doorCreak');
+    const escada = !!door.stairs;
+    this.audio.sfx(escada ? 'stairStep' : 'doorCreak');
     const rot = Number.isFinite(door.srot) ? door.srot : (Number.isFinite(door.sa) ? door.sa : 0);
     this.ui.doorAnim(door.elevator, () => {
       this.loadRoom(door.target, door.sx, door.sz, rot);
@@ -1537,7 +1895,7 @@ export class Game {
       this.curCam = null;
       this.curCamLook = null;
       this.selectCam(true);
-    });
+    }, escada ? 'stairs' : undefined);
   }
 
   // ==================== INTERAÇÕES DE CENÁRIO ====================
@@ -1582,14 +1940,13 @@ export class Game {
         } else say(D.urso_after);
         break;
       case 'clock': say(D.relogio); break;
-      case 'window_q': say(D.janela_quarto); break;
 
       // Saguão
       case 'statue':
-        if (!f.rustKey) {
-          f.rustKey = true;
-          this.addItem('rustkey');
-          say(D.estatua_key, () => this.showBanner('rustkey'));
+        if (!f.statueLoot) {
+          f.statueLoot = true;
+          this.addItem('antidote');
+          say(D.estatua_key, () => this.showBanner('antidote'));
           this.checkObjective();
         } else say(D.estatua_after);
         break;
@@ -1609,6 +1966,8 @@ export class Game {
         if (!this.hasItem('fuse')) { say(D.quadro_falta); break; }
         this.removeItem('fuse');
         f.fuseOn = true;
+        const fl = this.room && this.room.fuseLeds; // painel reage de verdade
+        if (fl) { fl.ok.material.color.setHex(0x40ff70); fl.fail.material.color.setHex(0x301010); }
         this.audio.sfx('power');
         this.audio.sfx('puzzle');
         this.addPoints(200, 'Energia Restabelecida');
@@ -1625,7 +1984,7 @@ export class Game {
           this.audio.sfx('memorial');
           say(D.armario, () => {
             this.showBanner('crank');
-            this.ui.toast('💠 +1 FRAGMENTO DE MEMÓRIA (2/4)', 4);
+            this.ui.toast(icon('shard') + ' +1 FRAGMENTO DE MEMÓRIA (2/4)', 4);
           });
           this.checkObjective();
         } else say(D.armario_after);
@@ -1636,18 +1995,21 @@ export class Game {
 
       // Consultório
       case 'desk': say(D.poema); break;
+      // V2: mesa do Dr. Alencastro — a FICHA VERMELHA com a dica do cofre
+      case 'desk_dr': say(D.ficha_vermelha, () => this.checkObjective()); break;
       case 'safe':
         if (f.safeOpened) say(D.cofre_vazio);
         else this.openSafe();
         break;
       case 'estante': say(D.estante); break;
       case 'painting':
-        if (!f.frags[2]) {
-          f.frags[2] = true;
-          this.addItem('frag');
-          this.addPoints(150, 'Fragmento do Retrato');
-          this.audio.sfx('memorial');
-          say(D.quadro_pintura, () => this.showBanner('frag'));
+        // PROGRESSÃO V2: o FUSÍVEL 30A fica escondido ATRÁS do quadro a óleo
+        if (!f.hasFuse) {
+          f.hasFuse = true;
+          this.addItem('fuse');
+          this.addPoints(100, 'Fusível Atrás do Retrato');
+          this.audio.sfx('pickupKey');
+          say(D.quadro_pintura, () => this.showBanner('fuse'));
           this.checkObjective();
         } else say(D.quadro_pintura_after);
         break;
@@ -1665,6 +2027,7 @@ export class Game {
         break;
       case 'boiler': say(D.boiler); break;
       case 'crate':
+        if (!f.valveOpen) { say(D.engradado_agua); break; }
         if (!f.frags[3]) {
           f.frags[3] = true;
           this.addItem('frag');
@@ -1675,15 +2038,97 @@ export class Game {
         } else say(D.engradado_after);
         break;
 
+      // Cemitério: CRIPTA SELADA (Progressão V2 — Daniel: Frag+Escopota · Clara: Medalhão de Lúcia)
+      case 'cripta':
+        if (f.criptaOpened) { say(D.cripta_after); break; }
+        if (!this.hasItem('cult_symbol')) { say(D.cripta_trancada); break; }
+        f.criptaOpened = true;
+        this.addPoints(300, 'Cripta da Família Aberta');
+        this.audio.sfx('memorial');
+        if (this.currentCampaign === 'clara') {
+          f.luciaLocketGot = true;
+          this.addItem('lucia_locket');
+          say(D.cripta_abre, () => this.showBanner('lucia_locket'));
+        } else {
+          f.frags[2] = true;
+          this.addItem('frag');
+          this.addItem('shotgun');
+          this.addItem('shell', 8);
+          say(D.cripta_abre, () => {
+            this.showBanner('shotgun');
+            this.ui.toast(icon('shard') + ' +1 FRAGMENTO DE MEMÓRIA (da cripta)', 4);
+          });
+        }
+        this.checkObjective();
+        break;
+
+      // Sala da Diretoria: COFRE EXECUTIVO (senha mora no Dossiê Alencastro)
+      case 'director_safe':
+        if (f.terraceKeyGot) { say(D.diretoria_after); break; }
+        if (!this.hasItem('alencastro_dossier')) { say(D.diretoria_trancado); break; }
+        f.terraceKeyGot = true;
+        this.addItem('terrace_key');
+        this.addPoints(250, 'Cofre da Diretoria Aberto');
+        this.audio.sfx('puzzle');
+        say(D.diretoria_abre, () => this.showBanner('terrace_key'));
+        this.checkObjective();
+        break;
+
+      // Enfermaria: MACA ENSANGUENTADA (flavor — 'bed' é a cama do quarto de Daniel)
+      case 'maca_enf':
+        say(D.maca_enf);
+        break;
+
+      // Jardim: CANIL (esconde a CHAVE DO PORTÃO DE FERRO — abertura da Floresta)
+      case 'kennel_search':
+        if (!this.hasItem('forest_key') && !f.forestUnlocked) {
+          this.addItem('forest_key');
+          this.addPoints(150, 'Chave no Canil');
+          this.audio.sfx('pickupKey');
+          say(D.canil_chave, () => this.showBanner('forest_key'));
+          this.checkObjective();
+        } else say(D.canil_after);
+        break;
+
+      // Floresta: MONÓLITO (Clara + Medalhão = sinal pro encontro na Capela)
+      case 'monolith':
+        // o MEDALHÃO responde ao monólito em QUALQUER campanha (D. e C.
+        // são irmãos: é o mesmo vínculo de sangue que revela a capela)
+        if (this.hasItem('lucia_locket') && !f.chapelEncounterMet) {
+          f.chapelSignal = true;
+          this.addPoints(250, 'Sinal de Lúcia no Monólito');
+          say(this.currentCampaign === 'clara' ? D.monolito_clara : D.monolito_daniel, () => this.checkObjective());
+        } else say(D.monolito);
+        break;
+
+      // Floresta: PORTÃO DE FERRO (final do Bento)
+      case 'gate_final':
+        if (this.currentCampaign === 'bento') {
+          say(D.portao_bento, () => this.startEnding());
+        } else {
+          say(D.portao_flavor);
+        }
+        break;
+
       // Floresta & Capela
       case 'carro_clara': say(D.carro_clara); break;
       case 'tumulo_lucia':
-        say(D.tumulo_lucia, () => {
+        if (!f.luciaLocketGot) {
+          f.luciaLocketGot = true;
+          f.frags[1] = true;
+          this.addItem('lucia_locket');
+          this.addItem('frag');
+          this.audio.sfx('memorial');
+          say(D.tumulo_lucia, () => { this.showBanner('frag'); this.checkObjective(); });
           this.addPoints(300, 'Túmulo de Lúcia Descoberto');
-        });
+        } else say(D.cripta_after);
         break;
       case 'cabana_bento': say(D.cabana_bento); break;
-      case 'altar_capela': say(D.altar_capela); break;
+      case 'altar_capela':
+        if (this.currentCampaign === 'clara' && f.bossDead) {
+          say(D.altar_luz, () => this.startEnding());
+        } else say(D.altar_capela);
+        break;
       case 'confessionario':
         say(D.confessionario, () => {
           this.addPoints(200, 'Confissão Secreta Revelada');
@@ -1693,7 +2138,17 @@ export class Game {
 
       // Novas Salas da Planta Remasterizada
       case 'greenhouse_bench': say(D.greenhouse_bench); break;
-      case 'greenhouse_plants': say(D.greenhouse_plants); break;
+      case 'greenhouse_plants':
+        if (!f.plantsCleared && this.hasItem('herbicide')) {
+          f.plantsCleared = true;
+          this.removeItem('herbicide');
+          this.addItem('forest_key');
+          this.addPoints(150, 'Trilha Aberta');
+          say(D.greenhouse_plants_ok, () => this.showBanner('forest_key'));
+          this.checkObjective();
+        } else if (!f.plantsCleared) say(D.greenhouse_plants);
+        else say(D.greenhouse_plants_after);
+        break;
       case 'mausoleum': say(D.mausoleum); break;
       case 'kennel': say(D.kennel); break;
       case 'bento_locker': say(D.bento_locker); break;
@@ -1720,6 +2175,67 @@ export class Game {
         break;
       case 'edge': say(D.beirada); break;
 
+      // ===== PLANTA NOVA (L1) =====
+      case 'armario_secreto':
+        if (!f.secretOpen) {
+          f.secretOpen = true;
+          this.audio.sfx('door');
+          this.addPoints(200, 'Passagem Secreta Descoberta');
+          say(D.armario_secreto, () => this.checkObjective());
+        } else say(D.armario_secreto_after);
+        break;
+      case 'elevator':
+        if (!f.fuseOn) say(D.elevador_off);
+        else say(D.elevador_subir, () => { this.loadRoom('hall2', 0, -5.2, 0); });
+        break;
+      case 'elevator_down':
+        say(D.elevador_descer, () => { this.loadRoom('corredor_n', 0, -1.6, 0); });
+        break;
+      case 'elevator_up':
+        if (!f.valveOpen) say(D.poco_travado);
+        else say(D.elevador_subir3, () => { this.loadRoom('corredor3', 0.6, -1.4, 0); });
+        break;
+      case 'elevator_p3':
+        say(D.elevador_descer, () => { this.loadRoom('hall2', 0, -5.2, 0); });
+        break;
+
+      // Fornalhas: três válvulas destravam o poço do elevador (P3)
+      case 'valve_a':
+      case 'valve_b':
+      case 'valve_c': {
+        if (f.valveOpen) { say(D.valve_after); break; }
+        const vk = act === 'valve_a' ? 'valveA' : act === 'valve_b' ? 'valveB' : 'valveC';
+        if (f[vk]) { say(D.valve_ja); break; }
+        f[vk] = true;
+        this.audio.sfx('puzzle');
+        if (f.valveA && f.valveB && f.valveC) {
+          f.valveOpen = true;
+          this.addPoints(200, 'Vapor Sob Controle');
+          say(D.valvulas_ok, () => this.checkObjective());
+        } else {
+          const faltam = 3 - [f.valveA, f.valveB, f.valveC].filter(Boolean).length;
+          say([{ who: 'n', text: `O volante range e cede. O vapor muda de tom... falta(m) ${faltam} válvula(s).` }]);
+        }
+        break;
+      }
+
+      // 3º andar / cobertura
+      case 'mesa_sup': say(D.mesa_sup); break;
+      case 'cofre_sup': say(D.cofre_sup); break;
+      case 'arq_sup': say(D.arq_sup); break;
+      case 'quadro_sup': say(D.quadro_sup); break;
+      case 'quadro2': say(D.quadro2); break;
+      case 'desk2': say(D.desk2); break;
+      case 'estante2': say(D.estante2); break;
+      case 'placa2': say(D.placa2); break;
+      case 'prontuario_e': say(D.prontuario_e); break;
+      case 'borda_telhado': say(D.borda_telhado); break;
+      case 'helicoptero':
+        if (!f.bossDead) say(D.heli_locked);
+        else say(D.heli_escape, () => this.startEnding());
+        break;
+      case 'carro_zelador': say(D.carro_zelador); break;
+
       default: break;
     }
   }
@@ -1738,7 +2254,12 @@ export class Game {
 
     const itDef = ITEMS[p.item];
     const canStack = itDef && itDef.type !== 'weapon' && (itDef.type !== 'key' || p.item === 'frag') && this.inv.some((i) => i.item === p.item);
-    if (!canStack && this.inv.length >= 12) {
+    // V2: ITENS-CHAVE de progressão NUNCA recusam entrada (bug do terrace_key
+    // com inventário 12/12 travava a zerabilidade). O cap de 12 vale pra arma/
+    // munição/cura; chave abre espaço sempre (estilo RE: key items à parte).
+    const isKeyItem = itDef && itDef.type === 'key';
+    const wCount2 = this.inv.filter((i) => ITEMS[i.item] && ITEMS[i.item].type === 'weapon').length;
+    if (!canStack && this.inv.length >= 12 && !isKeyItem && !(itDef && itDef.type === 'weapon' && wCount2 < 3)) {
       this.ui.toast('Inventário cheio! Não é possível carregar mais itens.', 3);
       this.audio.sfx('dryfire');
       return;
@@ -1751,11 +2272,12 @@ export class Game {
     this.addItem(p.item, p.qty);
     if (p.item === 'fuse') this.flags.hasFuse = true;
     if (p.item === 'alencastro_dossier') this.flags.claraDossierGot = true;
+    if (p.item === 'terrace_key') this.flags.hasTerraceKey = true;
     if (p.item === 'lucia_locket') this.flags.luciaLocketGot = true;
     if (p.item === 'forest_key') this.flags.hasForestKey = true;
 
     this.audio.sfx(itDef && itDef.type === 'key' ? 'pickupKey' : 'pickup');
-    this.ui.toast(`Coletou: ${itDef ? itDef.icon : ''} ${itDef ? itDef.name : p.item}${p.qty > 1 ? ` x${p.qty}` : ''}`, 2.5);
+    this.ui.toast(`Coletou: ${itDef ? icon(itDef.icon) : ''} ${itDef ? itDef.name : p.item}${p.qty > 1 ? ` x${p.qty}` : ''}`, 2.5);
     this.updateAmmoHud();
     this.checkObjective();
   }
@@ -1780,6 +2302,34 @@ export class Game {
     this.audio.music('boss');
   }
 
+  startRoofBossCutscene(boss) {
+    this.state = 'cutscene';
+    this.cutsceneTimer = 0;
+    this.cutsceneMode = 'boiler';
+    this.player.setAim(false);
+    this.ui.crosshair(false);
+    this.ui.target(0, 0, false);
+
+    this.camera.position.set(0, 0.6, 4.0);
+    this.camera.lookAt(0, 1.6, 0);
+    this.flashBoost = 0.5;
+    this.audio.sfx('bossRoar');
+
+    const isBento = this.currentCampaign === 'bento';
+    const lines = [
+      { who: 'n', text: 'A noite inteira pesa sobre o heliponto. O farol vermelho pulsa como um coração...' },
+      { who: isBento ? 'bento' : 'daniel', text: isBento ? 'Vinte e cinco anos cuidando deste lugar... e o lugar cuidando de mim. Chega.' : 'Você esteve comigo a noite toda. Mas o céu... o céu é meu.' },
+      { who: 'vulto', text: 'SEM... SAÍDA... O SANATÓRIO... É... VOCÊ...' },
+    ];
+
+    setTimeout(() => {
+      this.say(lines, () => {
+        this.state = 'play';
+        this.selectCam(true);
+      });
+    }, 900);
+  }
+
   onBossDead() {
     this.flags.bossDead = true;
     this.audio.stopMusic();
@@ -1788,14 +2338,19 @@ export class Game {
     this.ui.boss(null);
     this.addPoints(1000, 'Chefe Derrotado');
 
-    if (this.room.portal) {
-      this.room.portal.visible = true;
-      if (this.room.portalLight) this.room.portalLight.intensity = 20;
+    if (this.room.id === 'telhado') {
+      this.ui.toast('O VULTO se desfez! O HELICÓPTERO está livre — termine isso.', 6);
+    } else {
+      if (this.room.portal) {
+        this.room.portal.visible = true;
+        if (this.room.portalLight) this.room.portalLight.intensity = 20;
+      }
+      this.ui.toast('A luz se abriu! Atravesse o portal.', 6);
     }
-    this.ui.toast('A luz se abriu! Atravesse o portal.', 6);
   }
 
   startEnding() {
+    this.ui.showHud(false); // final é cinema: HUD some
     this.state = 'ending';
     this.endingPhase = 1;
     this.whiteTarget = 1;
@@ -1878,6 +2433,7 @@ export class Game {
     // Armas Brancas: Faca, Bisturi, Chave Inglesa
     if (def.type === 'weapon' && !def.ammo) {
       p.spendCooldown(w.rate);
+      if (p.playAttack) p.playAttack(w.rate); // ANIMAÇÃO da facada
       this.audio.sfx('knife');
       this.camShake = Math.min(1, this.camShake + w.kick);
       let hitAny = false;
@@ -2057,7 +2613,7 @@ export class Game {
       const bonus = c.ref.smash();
       this.mercTimer += bonus;
       this.audio.sfx('totem');
-      this.ui.toast(`💎 +${bonus} SEGUNDOS!`, 2.5);
+      this.ui.toast(`${icon('gem')} +${bonus} SEGUNDOS!`, 2.5);
     } else if (c.kind === 'pickup') {
       this.pickupAt(c.ref);
     } else if (c.kind === 'door') {
@@ -2078,6 +2634,9 @@ export class Game {
       this.updatePlay(dt);
       if (this.gameMode === 'mercenaries') this.updateMercenaries(dt);
       else if (this.gameMode === 'survivor') this.updateSurvivor(dt);
+    } else if (st === 'sponsor_intro') {
+      this.updateTitleCam(dt);
+      if (this.room && this.room.fx) this.room.fx(dt, this.clock.elapsedTime, this);
     } else if (st === 'intro_cutscene') {
       this.updateIntroCinematic(dt);
       if (this.room && this.room.fx) this.room.fx(dt, this.clock.elapsedTime, this);
@@ -2123,11 +2682,13 @@ export class Game {
     this.particles.update(dt);
     if (this.player && this.player.group && this.player.group.visible) {
       this.lantern.position.set(this.player.x, 1.7, this.player.z);
-      this.lantern.intensity = 14;
+      this.lantern.intensity = 18;
     } else {
       this.lantern.intensity = 0;
     }
-    this.psx.render(this.scene, this.camera, dt);
+    if (this.editor) this.editor.update(dt);
+    if (this.playtest) this.renderer.render(this.scene, this.camera); // LAB: PS1 filter OFF, full-res
+    else this.psx.render(this.scene, this.camera, dt);
   }
 
   updateTitleCam(dt) {
@@ -2163,7 +2724,24 @@ export class Game {
     p.setAim(aiming);
     this.ui.crosshair(aiming);
 
+    p.renderCamera = this.camera; // faca vertical NA TELA da câmera atual
     const ev = p.update(dt, this.moveInput(), this.room);
+    // DEBUG FACA: ângulo APARENT na TELA (o que os olhos julgam) + no mundo
+    if (typeof window !== 'undefined' && p.knifeM && p.knifeM.visible) {
+      const T = p.THREE;
+      if (!p._dbgV) { p._dbgV = new T.Vector3(); p._dbgA = new T.Vector3(); p._dbgB = new T.Vector3(); }
+      p.knifeM.updateWorldMatrix(true, false);
+      p._dbgV.set(0, 0, 1).transformDirection(p.knifeM.matrixWorld);
+      p.knifeM.getWorldPosition(p._dbgA);
+      p._dbgB.copy(p._dbgA).addScaledVector(p._dbgV, 0.3);
+      p._dbgA.project(this.camera); p._dbgB.project(this.camera);
+      const dx = (p._dbgB.x - p._dbgA.x) * 16 / 9, dy = p._dbgB.y - p._dbgA.y;
+      window.__dbgFaca = {
+        tela: Math.abs(Math.atan2(dx, dy)) * 180 / Math.PI, // 0 grau = vertical NA TELA
+        mundo: Math.acos(Math.max(-1, Math.min(1, p._dbgV.y))) * 180 / Math.PI,
+        aim: p.aiming ? 1 : 0,
+      };
+    }
     if (ev.step) this.audio.sfx(ev.run ? 'stepRun' : 'step');
 
     // Inimigos
@@ -2245,7 +2823,7 @@ export class Game {
     else if (c.kind === 'pickup') {
       const it = ITEMS[c.ref.item];
       const extra = c.ref.item === 'page' ? ` (Pág. ${this.flags.pages.filter(Boolean).length + 1}/8)` : c.ref.qty > 1 ? ` x${c.ref.qty}` : '';
-      this.ui.prompt(`<b>E</b> — Pegar ${it.icon} ${it.name}${extra}`);
+      this.ui.prompt(`<b>E</b> — Pegar ${icon(it.icon)} ${it.name}${extra}`);
     }
 
     // Barra de chefe
@@ -2301,7 +2879,7 @@ export class Game {
       this.addItem(this.currentCampaign === 'clara' ? 'ammo38' : 'ammo9', 15);
       this.updateAmmoHud();
 
-      this.ui.toast(`🎉 ONDA ${this.survivorWave - 1} CONCLUÍDA! (+${bonus} Pts • Recursos Reabastecidos)`, 3.5);
+      this.ui.toast(`${icon('sparkle')} ONDA ${this.survivorWave - 1} CONCLUÍDA! (+${bonus} Pts • Recursos Reabastecidos)`, 3.5);
       setTimeout(() => this.spawnSurvivorWave(), 3000);
     }
   }

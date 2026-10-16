@@ -2,38 +2,120 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0, post-check=0, pre-check=0">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>SANTA LÚCIA — survival horror estilo PS1</title>
+<title>SANTA LÚCIA v94 — survival horror PS1</title>
 <link rel="icon" href="data:,">
 <script>
   // REGRA: Limpeza agressiva contínua de caches locais do navegador
   try {
     if ('caches' in window) {
-      caches.keys().then(names => names.forEach(name => caches.delete(name)));
+      caches.keys().then(names => Promise.all(names.map(name => caches.delete(name))));
     }
     if (window.navigator && navigator.serviceWorker) {
-      navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+      navigator.serviceWorker.getRegistrations().then(regs => Promise.all(regs.map(r => r.unregister())));
+    }
+    const currentBuild = '1924_1997_v94'; // bump: sed -i s/1924_1997_vXX/1924_1997_vYY/g index.html js/*.js
+    const lastBuild = localStorage.getItem('SANTA_LUCIA_VER');
+    if (lastBuild !== currentBuild) {
+      localStorage.setItem('SANTA_LUCIA_VER', currentBuild);
     }
   } catch (e) {}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&display=swap" rel="stylesheet">
-<script>
-  // Injeção de CSS com cache-buster em tempo real
-  const _tsCss = Date.now();
-  document.write('<link rel="stylesheet" href="./css/style.css?t=' + _tsCss + '">');
-</script>
+<link rel="stylesheet" href="./css/style.css?v=1924_1997_v94">
 <script type="importmap">
-{ "imports": { "three": "./vendor/three.module.min.js" } }
+{ "imports": { "three": "./vendor/three.module.min.js?v=1924_1997_v94" } }
 </script>
 </head>
 <body>
+<!-- ============ BIBLIOTECA DE ÍCONES SVG (traço gótico — substitui emojis) ============ -->
+<svg id="iconSprite" xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><defs>
+<symbol id="i-hand" viewBox="0 0 24 24"><path d="M8 12V5.5a1.5 1.5 0 0 1 3 0V11m0-5.5v-1a1.5 1.5 0 0 1 3 0V11m0-5a1.5 1.5 0 0 1 3 0v6m0-3a1.5 1.5 0 0 1 3 0v6c0 4-2.5 7-6.5 7S8 19 6.5 16L4.6 12.4c-.6-1.1.8-2.3 1.8-1.4L8 12.5"/></symbol>
+  <symbol id="i-lupa" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21M7.5 10.5a3 3 0 0 1 3-3"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6.5 7l1 13h9l1-13M10 11v5M14 11v5"/></symbol>
+  <symbol id="i-puzzle" viewBox="0 0 24 24"><path d="M9 4h6v3.2a2.2 2.2 0 1 0 4.4 0V7H21v6h-2.8a2.2 2.2 0 1 0 0 4.4H21V20h-6v-2.8a2.2 2.2 0 1 0-4.4 0V20H4v-6h2.8a2.2 2.2 0 1 0 0-4.4H4V7h5V4z"/></symbol>
+  <symbol id="i-knife" viewBox="0 0 24 24"><path d="M4 17 15.5 5.5c2-.6 3.6 1 3 3L7.5 19.5Z"/><path d="M4.5 21.5 7.5 18.5"/></symbol>
+<symbol id="i-scalpel" viewBox="0 0 24 24"><path d="M5 19 15 9l2.5-4L20 7.5 16 10 6 20Z"/><path d="M3.5 20.5 6 18"/></symbol>
+<symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a4.6 4.6 0 0 0-6.2 5.8L3 17.6V21h3.4l5.5-5.5a4.6 4.6 0 0 0 5.8-6.2l-3 3-2.9-.7-.7-2.9Z"/></symbol>
+<symbol id="i-crowbar" viewBox="0 0 24 24"><path d="M7 3.5C4.9 3.5 3.5 5 3.5 7h3L7 8.3l12.5 12 2-2L9.3 6.5V6c0-1.5-.8-2.5-2.3-2.5Z"/></symbol>
+<symbol id="i-handgun" viewBox="0 0 24 24"><path d="M3 8.5h17.5v3.2h-6.2l-1.5 6.3H8.2l1.6-6.3H3Z"/><path d="M6.5 11.7h4.5"/></symbol>
+<symbol id="i-revolver" viewBox="0 0 24 24"><path d="M2.5 8.5h18v3h-4"/><circle cx="13" cy="10" r="2.6"/><path d="M9 11.5 7 20H4.5l2-8.5"/></symbol>
+<symbol id="i-shotgun" viewBox="0 0 24 24"><path d="M3 9.8h18M3 12.2h18"/><path d="M3 9.8 2 16.5h4l1-4.3"/><path d="M21 9.8v2.4"/></symbol>
+<symbol id="i-launcher" viewBox="0 0 24 24"><rect x="3" y="9.5" width="18" height="5" rx="2.5"/><circle cx="17.3" cy="12" r="1.3"/></symbol>
+<symbol id="i-magnum" viewBox="0 0 24 24"><path d="M2.5 9h19v2.6h-8l-1.4 8.4H7.7l1.6-8.4H2.5Z"/><circle cx="13.2" cy="10.3" r="2"/><path d="M18.5 5.5l.7 1.5 1.5.7-1.5.7-.7 1.5-.7-1.5-1.5-.7 1.5-.7Z"/></symbol>
+<symbol id="i-ammo9" viewBox="0 0 24 24"><path d="M8 6.5C6.7 8.2 6 9.7 6 11.3V17.5h4v-6.2C10 9.7 9.3 8.2 8 6.5Z"/><path d="M15.5 6.5C14.2 8.2 13.5 9.7 13.5 11.3V17.5h4v-6.2c0-1.6-.7-3.1-2-4.8Z"/><path d="M5 20.5h14"/></symbol>
+<symbol id="i-shell" viewBox="0 0 24 24"><rect x="9" y="9" width="6" height="11" rx="1"/><path d="M9 9V6.5C9 5.7 9.7 5 10.5 5h3c.8 0 1.5.7 1.5 1.5V9"/><path d="M9 13h6"/></symbol>
+<symbol id="i-grenade" viewBox="0 0 24 24"><circle cx="11" cy="14" r="5.8"/><path d="M8.6 6h4.8M11 6v2.2M14.2 4.6l3.4 2-2 1.8"/></symbol>
+<symbol id="i-pills" viewBox="0 0 24 24"><rect x="3.5" y="9.5" width="10.5" height="6" rx="3" transform="rotate(-18 8.75 12.5)"/><path d="M8.9 8.4l1.3 8.2" transform="rotate(-18 8.75 12.5)"/><circle cx="17.5" cy="16.5" r="3.2"/><path d="M15.5 18.5l4-4"/></symbol>
+<symbol id="i-flask" viewBox="0 0 24 24"><path d="M9.5 3.5h5M10.5 3.5V9l5 9.5a1.8 1.8 0 0 1-1.6 2.8H6.1A1.8 1.8 0 0 1 4.5 18.5L9.5 9V3.5"/><path d="M6.8 14.5h9.4"/></symbol>
+<symbol id="i-syringe" viewBox="0 0 24 24"><path d="M16.5 4 20 7.5M18.2 5.8 8 16l-4.2 1.2L5 13 15.2 3.8M12.5 8l3.5 3.5M5.5 18.5 3.5 20.5"/></symbol>
+<symbol id="i-ribbon" viewBox="0 0 24 24"><circle cx="7" cy="8.5" r="3"/><circle cx="17" cy="8.5" r="3"/><path d="M7 11.5v4h10v-4"/><path d="M4 18.5h16"/></symbol>
+<symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="12" r="3.5"/><path d="M11 12h9.5M17.5 12v3.2M20.5 12v2.4"/></symbol>
+<symbol id="i-key-master" viewBox="0 0 24 24"><circle cx="7" cy="12" r="4.2"/><circle cx="7" cy="12" r="1.3"/><path d="M11.2 12H21.5M17.5 12v3.6M21 12v2.6"/></symbol>
+<symbol id="i-key-cross" viewBox="0 0 24 24"><circle cx="7.5" cy="12" r="3.5"/><path d="M7.5 10.2v3.6M5.7 12h3.6M11 12h9.5M17.5 12v3.2"/></symbol>
+<symbol id="i-key-ornate" viewBox="0 0 24 24"><path d="M7.5 8.4c2.7 0 4.3 1.7 4.3 3.6s-1.6 3.6-4.3 3.6S3.2 13.9 3.2 12s1.6-3.6 4.3-3.6Z"/><path d="M11.8 12h9.7M17.5 12v3.4M20.5 12v2.5"/></symbol>
+<symbol id="i-keycard" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="1.6"/><path d="M3 10h18M6 14.5h5.5"/></symbol>
+<symbol id="i-fuse" viewBox="0 0 24 24"><rect x="9" y="4.5" width="6" height="15" rx="1"/><path d="M9 8.5h6M9 15.5h6M12 2v2.5M12 19.5V22"/></symbol>
+<symbol id="i-crank" viewBox="0 0 24 24"><circle cx="7.5" cy="16.5" r="3.6"/><path d="M9.9 14 17 6.9"/><path d="M17 6.9h4v3.2"/></symbol>
+<symbol id="i-page" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6Z"/><path d="M14 3v4h4M9 12h6M9 15.5h6"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6.5h6l2 2.5h10v10H3Z"/></symbol>
+<symbol id="i-shard" viewBox="0 0 24 24"><path d="M12 3l5 6-5 12L7 9Z"/><path d="M7 9h10M12 3v18"/></symbol>
+<symbol id="i-locket" viewBox="0 0 24 24"><circle cx="12" cy="14" r="5.5"/><path d="M12 8.5V5.5M9.5 5.5h5"/><path d="M12 11.5v5M9.5 14h5"/></symbol>
+<symbol id="i-talisman" viewBox="0 0 24 24"><path d="M12 3.5 19.5 9 16.5 19.5h-9L4.5 9Z"/><circle cx="12" cy="11.5" r="2.2"/></symbol>
+<symbol id="i-crest" viewBox="0 0 24 24"><path d="M6 4h12v9c0 4.5-6 7.5-6 7.5S6 17.5 6 13Z"/><path d="M12 7.5v7M8.8 10.5h6.4"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M6 4h12v9c0 4.5-6 7.5-6 7.5S6 17.5 6 13Z"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 4.5V2.5M12 21.5v-2M19.5 12h2M2.5 12h2M17.3 6.7l1.4-1.4M5.3 18.7l1.4-1.4M17.3 17.3l1.4 1.4M5.3 5.3l1.4 1.4"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2.5 5.5 13.5h5L10 21.5 18.5 10h-5Z"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4 21 19.5H3Z"/><path d="M12 10v4.5M12 17.1v.5"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5.5" y="10.5" width="13" height="9.5" rx="1.5"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/></symbol>
+<symbol id="i-unlock" viewBox="0 0 24 24"><rect x="5.5" y="10.5" width="13" height="9.5" rx="1.5"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 6.8-1.3"/></symbol>
+<symbol id="i-camera" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8.5 7 10 4.5h4L15.5 7"/><circle cx="12" cy="13.5" r="3.5"/></symbol>
+<symbol id="i-gamepad" viewBox="0 0 24 24"><rect x="2.5" y="8" width="19" height="9" rx="4.5"/><path d="M8 10.5v4M6 12.5h4"/><circle cx="15.8" cy="11.4" r=".4"/><circle cx="18.2" cy="13.6" r=".4"/></symbol>
+<symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2.5" y="6.5" width="19" height="11" rx="1.6"/><path d="M6 10h.5M9.5 10h.5M13 10h.5M16.5 10h.5M6 13.5h.5M9.5 13.5h5M17.5 13.5h.5"/></symbol>
+<symbol id="i-speaker" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 19V5L7.5 9.5Z"/><path d="M15.5 9.5a4 4 0 0 1 0 5M18 7a7.5 7.5 0 0 1 0 10"/></symbol>
+<symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="12.5" rx="1.5"/><path d="M9.5 20.5h5M12 17v3.5"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c-5.5 5-5.5 12 0 17 5.5-5 5.5-12 0-17Z"/></symbol>
+<symbol id="i-sync" viewBox="0 0 24 24"><path d="M4.5 12a7.5 7.5 0 0 1 12.8-5.3L20 9.5M20 4.5v5h-5"/><path d="M19.5 12a7.5 7.5 0 0 1-12.8 5.3L4 14.5M4 19.5v-5h5"/></symbol>
+<symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9.5 18h5M10.5 21h3"/><path d="M12 3.5a6 6 0 0 1 3.5 10.8c-.8.6-1 1.2-1 2.2h-5c0-1-.2-1.6-1-2.2A6 6 0 0 1 12 3.5Z"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.8Z"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20S4 14.8 4 9.4C4 6.6 6.2 4.5 8.8 4.5c1.3 0 2.5.6 3.2 1.6.7-1 1.9-1.6 3.2-1.6 2.6 0 4.8 2.1 4.8 4.9C20 14.8 12 20 12 20Z"/></symbol>
+<symbol id="i-fire" viewBox="0 0 24 24"><path d="M12 3.5c.5 3-1 4.5-2.5 6C8 11 7 12.5 7 14.5a5 5 0 0 0 10 0c0-2.5-1.5-4-2.5-5.5-.3 1-.8 1.6-1.5 2C13.5 8.5 13 5.5 12 3.5Z"/></symbol>
+<symbol id="i-box" viewBox="0 0 24 24"><path d="M3.5 8 12 4l8.5 4v8L12 20l-8.5-4Z"/><path d="M3.5 8 12 12l8.5-4M12 12v8"/></symbol>
+<symbol id="i-gem" viewBox="0 0 24 24"><path d="M7 4h10l4 5-9 11L3 9Z"/><path d="M3 9h18M12 20 8.5 9l3.5-5 3.5 5"/></symbol>
+<symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.8 7.2L21 12l-7.2 1.8L12 21l-1.8-7.2L3 12l7.2-1.8Z"/></symbol>
+<symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7"/><path d="M12 9.5v4l2.8 1.6M9.5 3h5M12 3v3.5"/></symbol>
+<symbol id="i-infinity" viewBox="0 0 24 24"><path d="M9.3 9.3a3.8 3.8 0 1 0 0 5.4c1.5-1.5 3.9-3.9 5.4-5.4a3.8 3.8 0 1 1 0 5.4c-1.5-1.5-3.9-3.9-5.4-5.4Z"/></symbol>
+<symbol id="i-bust" viewBox="0 0 24 24"><path d="M9 4.5c0-1 1.2-2 3-2s3 1 3 2v4c0 2 1.5 3.5 1.5 5.5H7.5C7.5 12 9 10.5 9 8.5Z"/><path d="M5.5 17.5h13l1 3h-15Z"/></symbol>
+<symbol id="i-vhs" viewBox="0 0 24 24"><rect x="2.5" y="6.5" width="19" height="11" rx="1.5"/><circle cx="8" cy="12" r="2.2"/><circle cx="16" cy="12" r="2.2"/><path d="M8 9.8v4.4M16 9.8v4.4"/></symbol>
+<symbol id="i-outfit" viewBox="0 0 24 24"><path d="M8.5 4 12 6.5 15.5 4l5 2.5-1.8 4-1.7-.7V20h-10V9.8l-1.7.7-1.8-4Z"/></symbol>
+</defs></svg>
+<!-- Aviso de orientação para celulares em retrato -->
+<div id="rotateHint" class="rotateHint" aria-hidden="true">
+  <svg class="ic lg"><use href="#i-sync"></use></svg>
+  <span>GIRE O APARELHO PARA A EXPERIÊNCIA COMPLETA</span>
+</div>
+<!-- Cortina cinemática para transição suave de telas (estilo Resident Evil Remake) -->
+<div id="screenCurtain" class="screenCurtain"></div>
+
 <div id="screen"></div>
 <div id="scan"></div>
+
+<!-- ============ INTRO DOS PATROCINADORES (ESTILO RESIDENT EVIL REMAKE) ============ -->
+<div id="sponsorSplash" class="overlay hidden">
+  <div class="sponsorContainer">
+    <div id="sponsorImg" class="sponsorImage"></div>
+    <div class="sponsorVignette"></div>
+    <div class="sponsorGrain"></div>
+    <div id="sponsorSkipBtn" class="sponsorSkipPrompt">
+      <span>[ ESPAÇO / CLIQUE ] PULAR</span>
+    </div>
+  </div>
+</div>
 
 <!-- ============ TÍTULO (REMASTER IDÊNTICO À IMAGEM DE REFERÊNCIA) ============ -->
 <div id="title" class="overlay hidden">
@@ -57,6 +139,7 @@
       </svg>
     </div>
     <div id="titleMenu" class="menu"></div>
+    <div id="titlePointsVal" class="menu">0 PTS</div>
     <div id="titleSaveInfo" class="saveInfo"></div>
   </div>
 </div>
@@ -75,127 +158,282 @@
   </div>
 </div>
 
-<!-- ============ SELEÇÃO DE CAMPANHA (RE2 STYLE) ============ -->
+<!-- ============ SELEÇÃO DE CAMPANHA — CINEMÁTICA (MOCKUP NAKAMURA) ============ -->
 <div id="campaignSelect" class="overlay hidden">
-  <div class="panel large">
-    <h2>ESCOLHA O PROTAGONISTA</h2>
-    <p class="tip">Duas histórias que se cruzam e revelam a verdade completa do Sanatório Santa Lúcia.</p>
+  <div class="menuBackdropLayer">
+    <div class="backdropImage bgCamp"></div>
+    <canvas class="backdropWeatherCanvas" id="campWeatherCanvas"></canvas>
+    <div class="backdropVignette"></div>
+  </div>
+  <div class="campScreenContainer">
+    <div class="campHeaderBlock">
+      <svg viewBox="0 0 260 34" class="campCrossDeco" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="10" y1="17" x2="104" y2="17" stroke="#5d6878" stroke-width="1" stroke-linecap="round"/>
+        <line x1="156" y1="17" x2="250" y2="17" stroke="#5d6878" stroke-width="1" stroke-linecap="round"/>
+        <circle cx="106" cy="17" r="1.4" fill="#9aa6b4"/><circle cx="154" cy="17" r="1.4" fill="#9aa6b4"/>
+        <line x1="130" y1="3" x2="130" y2="31" stroke="#c9cdbf" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="121" y1="10" x2="139" y2="10" stroke="#c9cdbf" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="130" cy="6.5" r="1.2" fill="#c9cdbf"/>
+        <path d="M127 31 L130 27.5 L133 31" stroke="#c9cdbf" stroke-width="1" stroke-linecap="round"/>
+      </svg>
+      <h1 class="campMainTitle">ESCOLHA O PROTAGONISTA</h1>
+      <p class="campSubTitle">DUAS HISTÓRIAS QUE SE CRUZAM E REVELAM A VERDADE<br>COMPLETA DO SANATÓRIO SANTA LÚCIA.</p>
+    </div>
     <div class="campGrid">
       <!-- Campanha A: Daniel -->
       <div class="campCard" id="campDaniel">
-        <canvas id="campPortDaniel" width="96" height="96" class="campPort"></canvas>
+        <i class="cCorner tl"></i><i class="cCorner tr"></i><i class="cCorner bl"></i><i class="cCorner br"></i>
+        <div class="campPortFrame"><canvas id="campPortDaniel" width="128" height="128" class="campPort"></canvas></div>
         <div class="campInfo">
-          <h3>CAMPANHA A</h3>
+          <div class="campTag">CAMPANHA A</div>
           <h4>DANIEL SILVA</h4>
           <div class="campSub">O Irmão em Luto</div>
-          <p>Acorda no sanatório onde foi internado há 10 anos. Busca a irmã Lúcia seguindo ecos do passado.</p>
-          <div class="campGear"><b>Início:</b> Faca, Pistola M9, Comprimidos</div>
-          <button class="btn campBtn" id="btnSelectDaniel">JOGAR COM DANIEL</button>
+          <p class="campDesc">Acorda no sanatório onde foi internado há 10 anos. Busca a irmã Lúcia seguindo ecos do passado.</p>
+          <div class="campDivider"></div>
+          <div class="campGear"><svg class="ic"><use href="#i-page"></use></svg><span><b>Início:</b> Faca, Pistola M9, Comprimidos</span></div>
+          <button class="campBtn" id="btnSelectDaniel">JOGAR COM DANIEL</button>
         </div>
       </div>
 
       <!-- Campanha B: Clara -->
       <div class="campCard" id="campClara">
-        <canvas id="campPortClara" width="96" height="96" class="campPort"></canvas>
+        <i class="cCorner tl"></i><i class="cCorner tr"></i><i class="cCorner bl"></i><i class="cCorner br"></i>
+        <div class="campPortFrame"><canvas id="campPortClara" width="128" height="128" class="campPort"></canvas></div>
         <div class="campInfo">
-          <h3>CAMPANHA B</h3>
+          <div class="campTag">CAMPANHA B</div>
           <h4>DRA. CLARA MENDES</h4>
           <div class="campSub">A Médica Investigadora</div>
-          <p>Chega através da floresta sob chuva para expor os experimentos cruéis do Dr. Alencastro e salvar sobreviventes.</p>
-          <div class="campGear"><b>Início:</b> Bisturi, Revólver .38, Cartão Médico</div>
-          <button class="btn campBtn" id="btnSelectClara">JOGAR COM CLARA</button>
+          <p class="campDesc">Chega através da floresta sob chuva para expor os experimentos cruéis do Dr. Alencastro e salvar sobreviventes.</p>
+          <div class="campDivider"></div>
+          <div class="campGear"><svg class="ic"><use href="#i-page"></use></svg><span><b>Início:</b> Bisturi, Revólver .38, Cartão Médico</span></div>
+          <button class="campBtn" id="btnSelectClara">JOGAR COM CLARA</button>
         </div>
       </div>
     </div>
-    <div class="rowBtns">
-      <button id="campBack" class="btn">◀ VOLTAR</button>
+    <div class="campFooterBlock">
+      <button id="campBack" class="campBackGothicBtn">❮ VOLTAR</button>
     </div>
   </div>
 </div>
 
-<!-- ============ EXTRAS: LOJA DE PONTOS & MODELOS 3D (FOLHA DO MEIO) ============ -->
+<!-- ============ EXTRAS: LOJA DE PONTOS (IDÊNTICO À REFERÊNCIA) ============ -->
 <div id="pointsShop" class="overlay hidden">
-  <div class="extraContainer">
-    <!-- Estante de Prateleiras com Colecionáveis (Lado Esquerdo) -->
-    <div class="extraShelfCol">
-      <div class="shelfTitle">ESTANTE DE COLECIONÁVEIS</div>
-      <div class="shelfFrame">
-        <div id="shopList" class="shopList"></div>
+  <div class="menuBackdropLayer">
+    <div class="backdropImage bgShop"></div>
+    <canvas class="backdropWeatherCanvas" id="shopWeatherCanvas"></canvas>
+    <div class="backdropVignette"></div>
+  </div>
+  <div class="shopScreenContainer">
+    <!-- Título Cinzelado & Ornamentos em Cruz/Losango -->
+    <div class="shopHeaderBlock">
+      <div class="shopTitleDeco top">
+        <svg viewBox="0 0 180 20" class="shopDecoSvg" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="20" y1="10" x2="72" y2="10" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="62,7 72,10 62,13" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="50,8 58,10 50,12" stroke="#5d6878" stroke-width="0.8" stroke-linecap="round"/>
+          <line x1="108" y1="10" x2="160" y2="10" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="118,7 108,10 118,13" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="130,8 122,10 130,12" stroke="#5d6878" stroke-width="0.8" stroke-linecap="round"/>
+          <polygon points="90,1 98,10 90,19 82,10" stroke="#b6c2d0" stroke-width="1.4" fill="#0d1218"/>
+          <polygon points="90,4 95,10 90,16 85,10" stroke="#717e90" stroke-width="0.8" fill="none"/>
+          <circle cx="90" cy="10" r="1.6" fill="#e2e8f0"/>
+          <line x1="90" y1="1" x2="90" y2="0" stroke="#b6c2d0" stroke-width="1.2"/>
+          <line x1="90" y1="19" x2="90" y2="20" stroke="#b6c2d0" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <h1 class="shopMainTitle">LOJA DE PONTOS</h1>
+      <div class="shopTitleDeco btm">
+        <svg viewBox="0 0 180 20" class="shopDecoSvg" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="20" y1="10" x2="72" y2="10" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="62,7 72,10 62,13" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="50,8 58,10 50,12" stroke="#5d6878" stroke-width="0.8" stroke-linecap="round"/>
+          <line x1="108" y1="10" x2="160" y2="10" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="118,7 108,10 118,13" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="130,8 122,10 130,12" stroke="#5d6878" stroke-width="0.8" stroke-linecap="round"/>
+          <polygon points="90,1 98,10 90,19 82,10" stroke="#b6c2d0" stroke-width="1.4" fill="#0d1218"/>
+          <polygon points="90,4 95,10 90,16 85,10" stroke="#717e90" stroke-width="0.8" fill="none"/>
+          <circle cx="90" cy="10" r="1.6" fill="#e2e8f0"/>
+          <line x1="90" y1="1" x2="90" y2="0" stroke="#b6c2d0" stroke-width="1.2"/>
+          <line x1="90" y1="19" x2="90" y2="20" stroke="#b6c2d0" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div class="shopSubTitle">
+        <div class="shopSubLine">
+          <span class="subFlourish">─── ❖ ───</span> GASTE SEUS PONTOS EM MELHORIAS <span class="subFlourish">─── ❖ ───</span>
+        </div>
+        <div class="shopSubLine">
+          <span class="subFlourish">─── ❖ ───</span> E VANTAGENS <span class="subFlourish">─── ❖ ───</span>
+        </div>
       </div>
     </div>
 
-    <!-- Mesa de Investigação com Vela e Expositor 3D (Lado Direito) -->
-    <div class="extraRightCol">
-      <div class="extraHeader">
-        <div class="extraMainTitle">LOJA DE PONTOS · MODELOS 3D</div>
-        <div class="extraPointsTag">⭐ SEUS PONTOS: <span class="shopPointsVal" id="shopPointsVal">0</span></div>
+    <!-- Bloco de Pontos do Jogador -->
+    <div class="shopPointsPlate">
+      <svg viewBox="0 0 24 24" class="shopGemSvg" width="22" height="22" fill="none">
+        <polygon points="6,3 18,3 23,9 12,21 1,9" stroke="#9bb2cc" stroke-width="1.3" fill="rgba(30,45,65,0.6)"/>
+        <line x1="1" y1="9" x2="23" y2="9" stroke="#9bb2cc" stroke-width="1.1"/>
+        <polyline points="6,3 9,9 12,21 15,9 18,3" stroke="#9bb2cc" stroke-width="1"/>
+        <line x1="9" y1="9" x2="15" y2="9" stroke="#9bb2cc" stroke-width="1"/>
+      </svg>
+      <div class="shopPointsData">
+        <div class="shopPointsLabel">SEUS PONTOS:</div>
+        <div class="shopPointsNum" id="shopPointsVal">0</div>
       </div>
+    </div>
 
-      <div class="extraTable">
-        <!-- Vela acesa no canto esquerdo da mesa -->
-        <div class="extraCandle">
-          <div class="candleStick"></div>
-          <div class="candleFlame"></div>
-          <div class="candleWax"></div>
-        </div>
+    <!-- Abas / Categorias da Loja -->
+    <div class="shopCategoryTabs">
+      <button class="shopCatBtn active" data-cat="upgrades">MELHORIAS (5)</button>
+      <button class="shopCatBtn" data-cat="modes">MODOS EXTRAS (3)</button>
+      <button class="shopCatBtn" data-cat="weapons">ARMAS & EXTRAS (8)</button>
+    </div>
 
-        <!-- Pedestal Giratório 3D no centro da mesa -->
-        <div class="extraPedestal">
-          <canvas id="galleryCanvas" width="300" height="220"></canvas>
-          <div class="galleryHint">Arraste para girar em 360°</div>
-        </div>
-      </div>
+    <!-- Lista Dinâmica de Cards Estilizados (Cards idênticos à referência) -->
+    <div id="shopList" class="shopCardList"></div>
 
-      <!-- Detalhes do item/modo selecionado embaixo da mesa -->
-      <div class="extraDetailsPanel">
-        <h3 id="galleryName">DANIEL SILVA</h3>
-        <div id="gallerySub" class="campSub">O Irmão em Luto</div>
-        <p id="galleryBio" class="galleryBio"></p>
-        <div id="extraActionRow" class="extraActionRow">
-          <!-- Botão dinâmico (Comprar, Jogar Modo, ou Ver 3D) -->
-        </div>
-      </div>
-
-      <div class="rowBtns">
-        <button id="shopBack" class="btn">◀ VOLTAR AO MENU</button>
-      </div>
+    <!-- Rodapé: Botão Voltar Gótico à Esquerda -->
+    <div class="shopFooterBar">
+      <button id="shopBack" class="optBackGothicBtn">❮ VOLTAR</button>
     </div>
   </div>
 </div>
 
-<!-- ============ MODOS EXTRAS (COMPATIBILIDADE) ============ -->
+<!-- ============ EXTRAS: MENU DE MODOS & LOJA (IDÊNTICO À REFERÊNCIA) ============ -->
 <div id="extraModes" class="overlay hidden">
-  <div class="panel large">
-    <h2>MODOS EXTRAS DESBLOQUEÁVEIS</h2>
-    <p class="tip">Desbloqueie modos extras na Loja de Pontos Secretos acumulando pontos em suas jornadas.</p>
-    <div class="extraGrid">
-      <div class="extraCard">
-        <h3>⏱️ MODO MERCENÁRIOS</h3>
-        <div class="extraStatus locked" id="statusMercenaries">🔒 BLOQUEADO (1.000 PTS)</div>
-        <p>Enfrente hordas de aberrações contra o relógio! Quebre cristais de tempo, faça combos e conquiste Ranks S e SS para ganhar pontos.</p>
-        <div class="extraScore" id="scoreMercenaries">RECORDE: 0 PTS</div>
-        <button id="btnPlayMercenaries" class="btn" data-play-text="JOGAR MERCENÁRIOS">JOGAR MERCENÁRIOS</button>
-      </div>
-
-      <div class="extraCard">
-        <h3>🛡️ MODO SOBREVIVENTE</h3>
-        <div class="extraStatus locked" id="statusSurvivor">🔒 BLOQUEADO (1.000 PTS)</div>
-        <p>Resistência claustrofóbica com recursos extremamente limitados. Quantas ondas você consegue suportar antes da escuridão engolir tudo?</p>
-        <div class="extraScore" id="scoreSurvivor">RECORDE: ONDA 0</div>
-        <button id="btnPlaySurvivor" class="btn" data-play-text="JOGAR SOBREVIVENTE">JOGAR SOBREVIVENTE</button>
-      </div>
-
-      <div class="extraCard">
-        <h3>🗝️ O TURNO DA NOITE</h3>
-        <div class="extraStatus locked" id="statusBento">🔒 BLOQUEADO (1.200 PTS)</div>
-        <p>Campanha curta jogando como o <b>Zelador Bento</b> na noite em que o laboratório ruiu. Tranque os portões e sobreviva ao porão!</p>
-        <div class="extraScore">HISTÓRIA DE BENTO</div>
-        <button id="btnPlayBento" class="btn" data-play-text="JOGAR TURNO DO BENTO">JOGAR TURNO DO BENTO</button>
+  <div class="menuBackdropLayer">
+    <div class="backdropImage bgExtras"></div>
+    <canvas class="backdropWeatherCanvas" id="extrasWeatherCanvas"></canvas>
+    <div class="backdropVignette"></div>
+  </div>
+  <div class="extrasScreenContainer">
+    <!-- Título Cinzelado & Ornamento em Cruz -->
+    <div class="extrasHeaderBlock">
+      <h1 class="extrasMainTitle">EXTRAS</h1>
+      <div class="extrasTitleDeco">
+        <svg viewBox="0 0 180 18" class="extrasDecoSvg" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="10" y1="9" x2="72" y2="9" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="62,6 72,9 62,12" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="108" y1="9" x2="170" y2="9" stroke="#5d6878" stroke-width="1.2" stroke-linecap="round"/>
+          <polyline points="118,6 108,9 118,12" stroke="#828f9f" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <polygon points="90,1 98,9 90,17 82,9" stroke="#b6c2d0" stroke-width="1.4" fill="#0d1218"/>
+          <polygon points="90,4 95,9 90,14 85,9" stroke="#717e90" stroke-width="0.8" fill="none"/>
+          <circle cx="90" cy="9" r="1.5" fill="#e2e8f0"/>
+          <line x1="90" y1="1" x2="90" y2="0" stroke="#b6c2d0" stroke-width="1.2"/>
+          <line x1="90" y1="17" x2="90" y2="18" stroke="#b6c2d0" stroke-width="1.2"/>
+        </svg>
       </div>
     </div>
-    <div class="rowBtns">
-      <button id="extraToShop" class="btn">⭐ IR PARA A LOJA DE PONTOS</button>
-      <button id="extraBack" class="btn">◀ VOLTAR</button>
+
+    <!-- Lista de 4 Opções Góticas com Indicador Animado (Idêntica à Imagem) -->
+    <div class="extrasMenuCol">
+      <!-- 1. Loja de Pontos -->
+      <div class="extrasCardBtn" id="extraToShop">
+        <div class="extrasCardLeft">
+          <span class="btnSelGlowIcon">❖</span>
+          <svg class="extrasCardIcon" viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <polygon points="12,2 15,9 22,12 15,15 12,22 9,15 2,12 9,9" stroke="#b4c2d2" stroke-width="1.3" fill="rgba(24,32,44,0.6)"/>
+            <circle cx="12" cy="12" r="1.5" fill="#e0e8f4"/>
+          </svg>
+          <span class="extrasCardText">LOJA DE PONTOS</span>
+        </div>
+        <div class="extrasCardRight">
+          <span class="extrasCardChevron">❯</span>
+        </div>
+      </div>
+
+      <!-- 2. The Mercenaries -->
+      <div class="extrasCardBtn" id="btnPlayMercenaries" data-play-text="THE MERCENARIES">
+        <div class="extrasCardLeft">
+          <span class="btnSelGlowIcon">❖</span>
+          <svg class="extrasCardIcon" viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <path d="M 5 4 L 19 4 L 19 12 C 19 18 12 21 12 21 C 12 21 5 18 5 12 Z" stroke="#a0acbc" stroke-width="1.3" fill="rgba(20,28,38,0.7)"/>
+            <path d="M 12 4 L 12 20 M 5 10 L 19 10" stroke="#687688" stroke-width="1"/>
+          </svg>
+          <span class="extrasCardText">THE MERCENARIES</span>
+        </div>
+        <div class="extrasCardRight">
+          <span class="extraStatus" id="statusMercenaries">
+            <svg class="extrasLockSvg" viewBox="0 0 16 16" width="14" height="14" fill="none">
+              <rect x="3" y="7" width="10" height="8" rx="1" stroke="#8a96a6" stroke-width="1.2" fill="#141a22"/>
+              <path d="M 5 7 L 5 4 C 5 2.5 6.3 1.5 8 1.5 C 9.7 1.5 11 2.5 11 4 L 11 7" stroke="#8a96a6" stroke-width="1.2"/>
+              <circle cx="8" cy="11" r="1" fill="#8a96a6"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <!-- 3. Sobrevivente -->
+      <div class="extrasCardBtn" id="btnPlaySurvivor" data-play-text="SOBREVIVENTE">
+        <div class="extrasCardLeft">
+          <span class="btnSelGlowIcon">❖</span>
+          <svg class="extrasCardIcon" viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <path d="M 12 2 L 12 22 M 6 8 L 18 8 M 8 7 L 8 9 M 16 7 L 16 9" stroke="#a6b2c2" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="12" cy="8" r="1.5" fill="#e0e8f4"/>
+          </svg>
+          <span class="extrasCardText">SOBREVIVENTE</span>
+        </div>
+        <div class="extrasCardRight">
+          <span class="extraStatus" id="statusSurvivor">
+            <svg class="extrasLockSvg" viewBox="0 0 16 16" width="14" height="14" fill="none">
+              <rect x="3" y="7" width="10" height="8" rx="1" stroke="#8a96a6" stroke-width="1.2" fill="#141a22"/>
+              <path d="M 5 7 L 5 4 C 5 2.5 6.3 1.5 8 1.5 C 9.7 1.5 11 2.5 11 4 L 11 7" stroke="#8a96a6" stroke-width="1.2"/>
+              <circle cx="8" cy="11" r="1" fill="#8a96a6"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <!-- 4. O Turno da Noite -->
+      <div class="extrasCardBtn" id="btnPlayBento" data-play-text="O TURNO DA NOITE">
+        <div class="extrasCardLeft">
+          <span class="btnSelGlowIcon">❖</span>
+          <svg class="extrasCardIcon" viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <path d="M 15 4 C 8.5 4 4.5 9.5 5 15 C 5.5 20.5 11 22 15 20 C 10 18 9 12 13 8 C 14 7 14.8 5.5 15 4 Z" stroke="#a6b2c2" stroke-width="1.4" fill="rgba(24,32,44,0.6)"/>
+            <polygon points="18,5 19,7 21,7.5 19.5,9 20,11 18,10 16,11 16.5,9 15,7.5 17,7" stroke="#8a98a8" stroke-width="0.8" fill="#c0cce0"/>
+          </svg>
+          <span class="extrasCardText">O TURNO DA NOITE</span>
+        </div>
+        <div class="extrasCardRight">
+          <span class="extraStatus" id="statusBento">
+            <svg class="extrasLockSvg" viewBox="0 0 16 16" width="14" height="14" fill="none">
+              <rect x="3" y="7" width="10" height="8" rx="1" stroke="#8a96a6" stroke-width="1.2" fill="#141a22"/>
+              <path d="M 5 7 L 5 4 C 5 2.5 6.3 1.5 8 1.5 C 9.7 1.5 11 2.5 11 4 L 11 7" stroke="#8a96a6" stroke-width="1.2"/>
+              <circle cx="8" cy="11" r="1" fill="#8a96a6"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <!-- 5. Intro dos Patrocinadores -->
+      <div class="extrasCardBtn" id="btnPlaySponsors">
+        <div class="extrasCardLeft">
+          <span class="btnSelGlowIcon">❖</span>
+          <svg class="extrasCardIcon" viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <rect x="3" y="4" width="18" height="16" rx="2" stroke="#a6b2c2" stroke-width="1.3" fill="rgba(24,32,44,0.6)"/>
+            <polygon points="10,8 16,12 10,16" fill="#e0e8f4"/>
+          </svg>
+          <span class="extrasCardText">INTRO PATROCINADORES</span>
+        </div>
+        <div class="extrasCardRight">
+          <span class="extrasCardChevron">❯</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rodapé: Inscrição Santa Lúcia & Botão Voltar -->
+    <div class="extrasFooterBlock">
+      <div class="extrasFooterDeco">
+        <svg viewBox="0 0 120 12" class="extrasFooterSvg" fill="none">
+          <line x1="10" y1="6" x2="50" y2="6" stroke="#485362" stroke-width="1"/>
+          <polygon points="60,3 63,6 60,9 57,6" stroke="#768394" stroke-width="1" fill="#0d1218"/>
+          <line x1="70" y1="6" x2="110" y2="6" stroke="#485362" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="extrasFooterTitle">SANTA LÚCIA</div>
+      <div class="extrasFooterSubtitle">SANATÓRIO • 1921</div>
+      <div class="extrasBackRow">
+        <button id="extraBack" class="optBackGothicBtn">❮ VOLTAR</button>
+      </div>
     </div>
   </div>
 </div>
@@ -206,10 +444,14 @@
     <h2>GALERIA 3D DE PERSONAGENS & MONSTROS</h2>
     <div class="galleryBody">
       <div class="gallery3d">
+        <canvas id="galleryCanvas" class="galleryCanvas" width="480" height="520"></canvas>
         <div class="galleryHint">Arraste para girar em 360°</div>
       </div>
       <div class="gallerySide">
         <select id="gallerySelect" class="gallerySelect"></select>
+        <div id="galleryName" class="galleryName"></div>
+        <div id="gallerySub" class="gallerySub"></div>
+        <div id="galleryBio" class="galleryBio"></div>
       </div>
     </div>
     <div class="rowBtns">
@@ -230,6 +472,11 @@
 
 <!-- ============ OPÇÕES: PAINEL ELÉTRICO INDUSTRIAL (LAYOUT IDÊNTICO À REFERÊNCIA) ============ -->
 <div id="options" class="overlay hidden">
+  <div class="menuBackdropLayer">
+    <div class="backdropImage bgOptions"></div>
+    <canvas class="backdropWeatherCanvas" id="optionsWeatherCanvas"></canvas>
+    <div class="backdropVignette"></div>
+  </div>
   <div class="optCabinetContainer">
     <!-- Cabeçalho com Título Cinzelado e Ornamentos em Cruz -->
     <div class="optHeaderTitleBlock">
@@ -268,31 +515,36 @@
 
     <!-- Gabinete Central Dividido em Duas Colunas (Abas à Esquerda, Conteúdo à Direita) -->
     <div class="optCabinet">
-      <!-- Coluna da Esquerda: Abas de Categoria com Ícones -->
+      <!-- Coluna da Esquerda: Abas de Categoria com Ícones e Indicador Animado -->
       <div class="optTabsCol">
         <div class="optTabItem active" data-tab="gameplay">
-          <span class="optTabIcon">⚙</span>
+          <span class="btnSelGlowIcon">❖</span>
+          <span class="optTabIcon"><svg class="ic"><use href="#i-gear"></use></svg></span>
           <span class="optTabText">JOGABILIDADE</span>
         </div>
         <div class="optTabItem" data-tab="audio">
-          <span class="optTabIcon">🔊</span>
+          <span class="btnSelGlowIcon">❖</span>
+          <span class="optTabIcon"><svg class="ic"><use href="#i-speaker"></use></svg></span>
           <span class="optTabText">ÁUDIO</span>
         </div>
         <div class="optTabItem" data-tab="video">
-          <span class="optTabIcon">🖥</span>
+          <span class="btnSelGlowIcon">❖</span>
+          <span class="optTabIcon"><svg class="ic"><use href="#i-monitor"></use></svg></span>
           <span class="optTabText">VÍDEO</span>
         </div>
         <div class="optTabItem" data-tab="language">
-          <span class="optTabIcon">🌐</span>
+          <span class="btnSelGlowIcon">❖</span>
+          <span class="optTabIcon"><svg class="ic"><use href="#i-globe"></use></svg></span>
           <span class="optTabText">IDIOMA</span>
         </div>
         <div class="optTabItem" data-tab="controls">
-          <span class="optTabIcon">🎮</span>
+          <span class="btnSelGlowIcon">❖</span>
+          <span class="optTabIcon"><svg class="ic"><use href="#i-gamepad"></use></svg></span>
           <span class="optTabText">CONTROLES</span>
         </div>
 
         <button id="optRestoreBtn" class="optRestoreBtn">
-          <span class="optRestoreIcon">🔄</span> RESTAURAR PADRÕES
+          <span class="optRestoreIcon"><svg class="ic"><use href="#i-sync"></use></svg></span> RESTAURAR PADRÕES
         </button>
       </div>
 
@@ -322,6 +574,38 @@
             <div class="optSettingControl" data-opt="hints">
               <button class="optArrowBtn prev">❮</button>
               <span class="optSettingVal" id="val_hints">Ativado</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Brilho</span>
+            <div class="optSettingControl" data-opt="brilho">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_brilho">Normal</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Volume Geral</span>
+            <div class="optSettingControl" data-opt="volMaster">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_volMaster">8</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Volume da Música</span>
+            <div class="optSettingControl" data-opt="volMusic">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_volMusic">7</span>
+              <button class="optArrowBtn next">❯</button>
+            </div>
+          </div>
+          <div class="optSettingRow">
+            <span class="optSettingLabel">Volume dos Efeitos</span>
+            <div class="optSettingControl" data-opt="volSfx">
+              <button class="optArrowBtn prev">❮</button>
+              <span class="optSettingVal" id="val_volSfx">9</span>
               <button class="optArrowBtn next">❯</button>
             </div>
           </div>
@@ -446,8 +730,8 @@
         <div class="optTabContent hidden" id="tabContent_controls">
           <div class="optSectionHeader">ESQUEMA DE CONTROLES</div>
           <div class="optCtrlTabs">
-            <button class="optCtrlTabBtn active" data-ctrl="gamepad">🎮 PS4 & XBOX</button>
-            <button class="optCtrlTabBtn" data-ctrl="keyboard">⌨ TECLADO & MOUSE</button>
+            <button class="optCtrlTabBtn active" data-ctrl="gamepad"><svg class="ic"><use href="#i-gamepad"></use></svg> PS4 &amp; XBOX</button>
+            <button class="optCtrlTabBtn" data-ctrl="keyboard"><svg class="ic"><use href="#i-keyboard"></use></svg> TECLADO &amp; MOUSE</button>
           </div>
 
           <div id="ctrlScheme_gamepad" class="ctrlSchemeView">
@@ -481,7 +765,9 @@
 
     <!-- Rodapé: Botão Voltar Gótico à Esquerda e Dica de Controle ao Centro (IDÊNTICO À REFERÊNCIA) -->
     <div class="optFooterBar">
-      <button id="optBack" class="optBackGothicBtn">❮ VOLTAR</button>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button id="optBack" class="optBackGothicBtn">❮ VOLTAR</button>
+      </div>
       <div class="optFooterCenterHint">
         <svg viewBox="0 0 60 12" class="optFooterFlourish" fill="none">
           <line x1="0" y1="6" x2="26" y2="6" stroke="#485362" stroke-width="1"/>
@@ -508,6 +794,8 @@
 </div>
 
 <!-- ============ HUD ============ -->
+<div id="scoreMercenaries" class="overlay hidden"></div>
+<div id="scoreSurvivor" class="overlay hidden"></div>
 <div id="hud" class="hidden">
   <div id="roomName" class="roomNameBanner hidden">
     <div class="roomStamp">SANATÓRIO SANTA LÚCIA · 1997</div>
@@ -530,7 +818,7 @@
       <span id="ammoWeaponName" class="hudWeaponName">PISTOLA M9</span>
     </div>
     <div class="hudTacticalMain">
-      <span id="ammoIcon" class="hudAmmoIcon">🔫</span>
+      <span id="ammoIcon" class="hudAmmoIcon"><svg class="ic"><use href="#i-handgun"></use></svg></span>
       <span id="ammoText" class="hudAmmoVal">15 / 60</span>
     </div>
   </div>
@@ -542,25 +830,26 @@
 
   <!-- HUD Modos Extras -->
   <div id="extraHud" class="hidden">
-    <div class="extraHudItem">⏱️ <span id="extraTimer">02:00</span></div>
-    <div class="extraHudItem">⭐ <span id="extraScore">0</span></div>
+    <div class="extraHudItem"><svg class="ic"><use href="#i-timer"></use></svg> <span id="extraTimer">02:00</span></div>
+    <div class="extraHudItem"><svg class="ic"><use href="#i-star"></use></svg> <span id="extraScore">0</span></div>
     <div class="extraHudItem"><span id="extraCombo">COMBO x0</span></div>
   </div>
 
   <!-- Botão rápido de câmera -->
-  <button id="hudCamBtn" class="hudCamBtn">📷 CÂMERA</button>
+  <button id="hudCamBtn" class="hudCamBtn"><svg class="ic"><use href="#i-camera"></use></svg> CÂMERA</button>
 </div>
 
 <!-- ============ BANNER DE ITEM ============ -->
 <div id="banner" class="hidden">
-  <div id="bannerIcon">🔑</div>
+  <div id="bannerIcon"><svg class="ic lg"><use href="#i-key"></use></svg></div>
   <div><div id="bannerName">Item</div><div id="bannerDesc">Descrição</div></div>
   <div class="bannerHint">[E] continuar</div>
 </div>
 
-<!-- ============ DIÁLOGO ============ -->
+<!-- ============ DIÁLOGO (BALÃO GÓTICO — MOCKUP NAKAMURA) ============ -->
 <div id="dialog" class="hidden">
-  <canvas id="dlgPortrait" width="96" height="96"></canvas>
+  <i class="dCorner tl"></i><i class="dCorner tr"></i><i class="dCorner bl"></i><i class="dCorner br"></i>
+  <div class="dlgPortFrame"><canvas id="dlgPortrait" width="128" height="128"></canvas></div>
   <div class="dlgBody">
     <div id="dlgName">DANIEL</div>
     <div id="dlgText"></div>
@@ -571,52 +860,87 @@
 <!-- ============ INVENTÁRIO (ESTILO RESIDENT EVIL CLÁSSICO) ============ -->
 <div id="inventory" class="overlay hidden">
   <div class="panel inv reInv">
+    <div class="invTitleOrn"><span class="ornLine"></span><span class="ornCross">✟</span><h2>INVENTÁRIO</h2><span class="ornCross">✟</span><span class="ornLine"></span></div>
     <div class="invHeader">
-      <div class="invHeaderLeft">
-        <div class="panelStamp">SANATÓRIO SANTA LÚCIA · MALETA DE SOBREVIVÊNCIA</div>
-        <h2>PRONTUÁRIO & EQUIPAMENTO</h2>
+      <div class="invTabs">
+        <button id="invTabItens" class="invTab sel">MALETA</button>
+        <button id="invTabMapa" class="invTab">MAPA</button>
       </div>
-      <!-- ECG Cardíaco animado estilo Resident Evil clássico -->
-      <div class="ecgMonitor">
-        <div class="ecgBezel">
-          <canvas id="ecgCanvas" width="160" height="40"></canvas>
-          <div class="ecgScanlines"></div>
-        </div>
-        <div class="ecgData">
-          <span id="ecgBpm" class="ecgBpm">72 BPM</span>
-          <span id="ecgStatus" class="ecgStatus">FINE</span>
-        </div>
-      </div>
+      <div class="invHeaderHint">SANATÓRIO SANTA LÚCIA · 1997</div>
     </div>
 
     <!-- Aviso de Modo de Combinação (RE style) -->
     <div id="invCombineNotice" class="invCombineNotice hidden">
-      <span>⚙️ SELECIONE O SEGUNDO ITEM PARA COMBINAR (ESC PARA CANCELAR)</span>
+      <span><svg class="ic"><use href="#i-gear"></use></svg> SELECIONE O SEGUNDO ITEM PARA COMBINAR (ESC PARA CANCELAR)</span>
     </div>
 
-    <div class="invMain">
-      <div id="invGrid"></div>
-      <div class="invSide">
-        <div class="invDetail">
-          <div class="invIconWrap">
-            <div id="invIcon">—</div>
+    <div id="invPaneItens" class="invPane">
+      <div class="invMain v2">
+        <div class="invProfile">
+          <div class="invPortraitWrap">
+            <img id="invPortrait" alt="" draggable="false">
+            <div id="invPortraitFallback" class="hidden"><svg class="ic" style="width:64px;height:64px"><use href="#i-bust"></use></svg></div>
           </div>
-          <div id="invName">Vazio</div>
-          <div id="invDesc">Espaço livre na maleta de sobrevivência.</div>
-          <div id="invCmds"></div>
+          <div id="invHeroName" class="invHeroLabel">DESCONHECIDO</div>
+          <div class="invEstado">ESTADO<br><span id="invEstadoTxt" class="ecgStatus">FINE</span></div>
+          <!-- ECG Cardíaco animado estilo Resident Evil clássico -->
+          <div class="ecgMonitor">
+            <div class="ecgBezel">
+              <canvas id="ecgCanvas" width="160" height="40"></canvas>
+              <div class="ecgScanlines"></div>
+            </div>
+            <div class="ecgData">
+              <span id="ecgBpm" class="ecgBpm">72 BPM</span>
+              <span id="ecgStatus" class="ecgStatus">FINE</span>
+            </div>
+          </div>
+          <div class="invData">SANATÓRIO SANTA LÚCIA<br>— 13 DE NOVEMBRO DE 1998 —</div>
         </div>
-        <div class="invMeta">
-          <div id="invHeroName">DANIEL SILVA</div>
-          <div id="invWeapon">ARMA: Nenhuma</div>
-          <div id="invPages">PÁGINAS: 0/8</div>
-          <div id="invTime">TEMPO: 00:00:00</div>
+        <div class="invGridWrap"><div id="invGrid"></div></div>
+        <div class="invSide">
+          <div class="invDetail">
+            <div class="invSideTitle">ITEM SELECIONADO</div>
+            <div class="invIconWrap">
+              <div id="invIcon">—</div>
+            </div>
+            <div id="invName">Vazio</div>
+            <div id="invDesc">Espaço livre na maleta de sobrevivência.</div>
+            <div id="invCmds"></div>
+          </div>
+          <div class="invMeta">
+            <div id="invWeapon">ARMA: Nenhuma</div>
+            <div id="invPages">PÁGINAS: 0/8</div>
+            <div id="invTime">TEMPO: 00:00:00</div>
+          </div>
         </div>
       </div>
     </div>
+    <div id="invPaneMapa" class="invPane hidden">
+      <div class="mapWrap">
+        <canvas id="mapCanvas" width="620" height="380"></canvas>
+        <div class="mapSide">
+          <div class="mapSideTitle">SELECIONAR ANDAR</div>
+          <button class="mapFloor sel" data-floor="L1">L1<small>TÉRREO</small></button>
+          <button class="mapFloor" data-floor="L2">L2<small>CLÍNICA</small></button>
+          <button class="mapFloor" data-floor="L3">L3<small>ARQUIVO</small></button>
+          <button class="mapFloor" data-floor="TX">TX<small>TELHADO</small></button>
+        </div>
+      </div>
+      <div class="mapLegend">
+        <span><svg class="ic"><use href="#i-ribbon"></use></svg> PONTO DE SAVE</span>
+        <span class="mapElevGlyph">E</span><span>ELEVADOR</span>
+        <span><svg class="ic"><use href="#i-lock"></use></svg> PORTA TRANCADA</span>
+        <span class="mapDotLegend"></span><span>VOCÊ ESTÁ AQUI</span>
+        <span class="mapFogLegend">?</span><span>NÃO EXPLORADO</span>
+      </div>
+      <div class="mapQuote">"A verdade vos libertará" — Santa Lúcia Sanatório</div>
+    </div>
+
+    <button id="invVoltar" class="invVoltar"><span class="voltX">✕</span> VOLTAR</button>
     <div class="invObj">◎ <span id="invObjective"></span></div>
     <div class="invFoot">
-      <div class="invHelpTip">💡 [2 Cliques / ENTER] Usar ou Equipar rápido</div>
-      <button id="invCamSwitch" class="btn small">📷 CÂMERA (V)</button>
+      <div class="invHelpTip"><svg class="ic"><use href="#i-bulb"></use></svg> [2 Cliques / ENTER] Usar ou Equipar rápido</div>
+      <button id="invCamSwitch" class="btn small"><svg class="ic"><use href="#i-camera"></use></svg> CÂMERA (V)</button>
       <button id="invClose" class="btn">FECHAR [TAB / ESC]</button>
     </div>
   </div>
@@ -630,67 +954,157 @@
     <p class="tip">Digite o código confidencial de 4 dígitos.<br>← → seleciona dígito • ↑ ↓ altera número • ENTER confirma</p>
     <div id="safeDigits"></div>
     <div class="rowBtns">
-      <button id="safeOk" class="btn">🔓 ABRIR COFRE</button>
+      <button id="safeOk" class="btn"><svg class="ic"><use href="#i-unlock"></use></svg> ABRIR COFRE</button>
       <button id="safeCancel" class="btn">CANCELAR</button>
     </div>
   </div>
 </div>
 
-<!-- ============ SALVAMENTO (ESTILO RESIDENT EVIL / MÁQUINA DE ESCREVER) ============ -->
+<!-- ============ MENU CARREGAR E SALVAR (IDÊNTICO À REFERÊNCIA DO SANATÓRIO) ============ -->
 <div id="saveBox" class="overlay hidden">
-  <div class="panel typewriterPanel">
-    <div class="typewriterHeader">
-      <div class="panelStamp">SANATÓRIO SANTA LÚCIA · SALA DE ARQUIVO & REGISTRO CLÍNICO</div>
-      <h2>MÁQUINA DE ESCREVER</h2>
+  <div class="menuBackdropLayer">
+    <div class="backdropImage bgSave"></div>
+    <canvas id="saveWeatherCanvas" class="backdropWeatherCanvas"></canvas>
+    <div class="backdropVignette"></div>
+  </div>
+
+  <div class="saveScreenContainer">
+    <!-- Cabeçalho com Título Cinzelado e Adorno em Cruz -->
+    <div class="saveHeaderBlock">
+      <h1 class="saveMainTitle">MENU CARREGAR E SALVAR</h1>
+      <div class="saveTitleDeco">
+        <svg class="saveDecoSvg" viewBox="0 0 160 16" fill="none">
+          <line x1="0" y1="8" x2="60" y2="8" stroke="#8a96a6" stroke-width="1.2"/>
+          <line x1="100" y1="8" x2="160" y2="8" stroke="#8a96a6" stroke-width="1.2"/>
+          <polygon points="80,1 84,7 90,8 84,9 80,15 76,9 70,8 76,7" fill="#8a96a6"/>
+          <circle cx="65" cy="8" r="1.5" fill="#8a96a6"/>
+          <circle cx="95" cy="8" r="1.5" fill="#8a96a6"/>
+        </svg>
+      </div>
     </div>
 
-    <div class="typewriterDocket">
-      <div class="docketHeader">
-        <span class="docketBadge">PRONTUÁRIO CLÍNICO & REGISTRO DE MEMÓRIA</span>
-        <span class="docketStampDate">ARQUIVO MORTO · 1997</span>
+    <!-- Barra de Abas Superiores: CRIAR | DELETAR | SAVES -->
+    <div class="saveModeTabsBar">
+      <button id="saveTabCreate" class="saveModeTabBtn" data-mode="create">
+        <span class="btnSelGlowIcon">❖</span>
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" class="saveTabIcon">
+          <path d="M 17 3 C 14 3 9 7 6 12 L 4 17 L 9 15 C 14 12 17 7 17 3 Z" stroke="currentColor" stroke-width="1.3" fill="rgba(255,255,255,0.08)"/>
+          <path d="M 6 12 L 11 17" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+        <span>CRIAR</span>
+      </button>
+
+      <button id="saveTabDelete" class="saveModeTabBtn" data-mode="delete">
+        <span class="btnSelGlowIcon">❖</span>
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" class="saveTabIcon">
+          <path d="M 5 9 C 5 5 8 3 10 3 C 12 3 15 5 15 9 C 15 12 13 13 13 15 L 7 15 C 7 13 5 12 5 9 Z" stroke="currentColor" stroke-width="1.3" fill="rgba(255,255,255,0.08)"/>
+          <circle cx="8" cy="9" r="1.5" fill="currentColor"/>
+          <circle cx="12" cy="9" r="1.5" fill="currentColor"/>
+          <line x1="8" y1="13" x2="8" y2="15" stroke="currentColor" stroke-width="1.2"/>
+          <line x1="12" y1="13" x2="12" y2="15" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+        <span>DELETAR</span>
+      </button>
+
+      <button id="saveTabLoad" class="saveModeTabBtn active" data-mode="load">
+        <span class="btnSelGlowIcon">❖</span>
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" class="saveTabIcon">
+          <path d="M 10 5 C 7 3 3 3.5 2 4 L 2 15 C 3 14.5 7 14 10 16 C 13 14 17 14.5 18 15 L 18 4 C 17 3.5 13 3 10 5 Z" stroke="currentColor" stroke-width="1.3" fill="rgba(255,255,255,0.08)"/>
+          <line x1="10" y1="5" x2="10" y2="16" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+        <span>SAVES</span>
+      </button>
+    </div>
+
+    <!-- Grid dos 6 Slots de Salvamento (01 a 06) -->
+    <div id="saveSlotsGrid" class="saveSlotsGrid"></div>
+
+    <!-- Informações de Contexto (Fita de Tinta e Prontuário) -->
+    <div id="saveStatusInfoBar" class="saveStatusInfoBar">
+      <div class="saveInfoPill">
+        <span class="saveInfoDot"></span>
+        <span id="saveRibbonVal" class="saveRibbonVal">x2 RESTANTES</span>
       </div>
-      <div class="docketBody">
-        <div class="docketRow">
-          <span class="docketLabel">SOBREVIVENTE / AGENTE:</span>
-          <span id="saveHeroName" class="docketVal highlight">DANIEL SILVA</span>
-        </div>
-        <div class="docketRow">
-          <span class="docketLabel">LOCAL DO REGISTRO:</span>
-          <span id="saveRoomName" class="docketVal">SAGUÃO PRINCIPAL</span>
-        </div>
-        <div class="docketRow">
-          <span class="docketLabel">REGISTROS EFETUADOS:</span>
-          <span id="saveCountVal" class="docketVal">00 VEZES</span>
-        </div>
-        <div class="docketRow">
-          <span class="docketLabel">TEMPO DECORRIDO:</span>
-          <span id="saveTimeVal" class="docketVal">00:15:30</span>
-        </div>
-        <div class="docketRow ribbonRow">
-          <span class="docketLabel">FITA DE TINTA DISPONÍVEL:</span>
-          <span id="saveRibbonVal" class="docketVal ribbonVal">x2 RESTANTES</span>
-        </div>
+      <div class="saveInfoHero">
+        <span id="saveHeroName" class="saveHeroName">DANIEL SILVA</span>
+        <span class="saveInfoSep">·</span>
+        <span id="saveRoomName" class="saveRoomName">SAGUÃO PRINCIPAL</span>
+        <span class="saveInfoSep">·</span>
+        <span id="saveTimeVal" class="saveTimeVal">00:15:30</span>
       </div>
+      <span id="saveCountVal" class="hidden">00 VEZES</span>
+    </div>
+
+    <!-- Rodapé: SELECIONAR | CONFIRMAR | VOLTAR -->
+    <div class="saveFooterBar">
+      <div class="saveFooterHint">
+        <svg viewBox="0 0 16 16" width="13" height="13" fill="none">
+          <rect x="4" y="2" width="8" height="12" rx="4" stroke="#788496" stroke-width="1.2"/>
+          <line x1="8" y1="4" x2="8" y2="7" stroke="#788496" stroke-width="1.2"/>
+        </svg>
+        <span>SELECIONAR</span>
+      </div>
+
+      <div class="saveFooterHint">
+        <svg viewBox="0 0 16 16" width="13" height="13" fill="none">
+          <circle cx="6" cy="6" r="3" stroke="#ffd700" stroke-width="1.2"/>
+          <line x1="8.5" y1="8.5" x2="14" y2="14" stroke="#ffd700" stroke-width="1.3"/>
+          <line x1="11" y1="11" x2="13" y2="9" stroke="#ffd700" stroke-width="1.2"/>
+        </svg>
+        <span>CONFIRMAR</span>
+      </div>
+
+      <button id="saveBackBtn" class="saveBackGothicBtn">
+        <span class="btnSelGlowIcon">❖</span>
+        <span class="saveKeyTag">ESC</span>
+        <span>VOLTAR</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmação Gótico -->
+  <div id="saveConfirmModal" class="saveConfirmModal hidden">
+    <div class="saveModalPanel">
+      <div class="saveModalHeader">
+        <span class="saveModalBadge">PRONTUÁRIO CLÍNICO & REGISTRO DE MEMÓRIA</span>
+        <h3 id="saveModalTitle">DATILOGRAFAR PRONTUÁRIO</h3>
+      </div>
+      <p id="saveModalMsg">Deseja registrar o seu prontuário nesta máquina de escrever no Slot 01?</p>
       <div id="saveStamp" class="saveStamp hidden">ARQUIVADO</div>
-    </div>
-
-    <div class="typewriterQuestion">
-      <p>Deseja registrar o seu prontuário nesta máquina de escrever?<br>
-      <span class="typewriterTip">Cada salvamento consome 1 Fita de Tinta da sua maleta de sobrevivência.</span></p>
-    </div>
-
-    <div class="typewriterBtns">
-      <button id="saveYes" class="btn typewriterBtn confirm">► SIM (DATILOGRAFAR PRONTUÁRIO)</button>
-      <button id="saveNo" class="btn typewriterBtn cancel">NÃO (RETORNAR)</button>
+      <div class="saveModalBtns">
+        <button id="saveYes" class="saveModalActionBtn confirm">► SIM (CONFIRMAR)</button>
+        <button id="saveNo" class="saveModalActionBtn cancel">NÃO (RETORNAR)</button>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- ============ PAUSE ============ -->
 <div id="pause" class="overlay hidden">
-  <div class="panel small">
-    <h2>PAUSADO</h2>
-    <div id="pauseMenu" class="menu"></div>
+  <div class="pauseScrim" id="pauseScrim"></div>
+  <div class="pauseParchment">
+    <i class="pCorner tl"></i><i class="pCorner tr"></i><i class="pCorner bl"></i><i class="pCorner br"></i>
+    <svg class="pOrnamentTop" viewBox="0 0 120 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M60 3 C56 8 56 13 60 17 C64 13 64 8 60 3Z" stroke="#8a2a2a" stroke-width="1.2"/>
+      <path d="M60 17 C55 21 50 21 45 18 M60 17 C65 21 70 21 75 18" stroke="#7a2424" stroke-width="1"/>
+      <path d="M38 13 C48 10 54 12.5 60 12.5 C66 12.5 72 10 82 13" stroke="#6b2020" stroke-width="0.9"/>
+      <circle cx="60" cy="21" r="1.4" fill="#8a2a2a"/>
+      <circle cx="45" cy="18" r="1" fill="#7a2424"/><circle cx="75" cy="18" r="1" fill="#7a2424"/>
+    </svg>
+    <h2 class="pauseTitle">PAUSADO</h2>
+    <svg class="pDivider" viewBox="0 0 200 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="18" y1="7" x2="86" y2="7" stroke="#7a2424" stroke-width="1"/>
+      <polygon points="100,2 106,7 100,12 94,7" stroke="#8a2a2a" stroke-width="1.1" fill="none"/>
+      <line x1="114" y1="7" x2="182" y2="7" stroke="#7a2424" stroke-width="1"/>
+      <circle cx="86" cy="7" r="1.2" fill="#7a2424"/><circle cx="114" cy="7" r="1.2" fill="#7a2424"/>
+    </svg>
+    <div id="pauseMenu" class="pauseMenu"></div>
+    <svg class="pOrnamentBottom" viewBox="0 0 160 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M80 4 C75 9 75 14 80 19 C85 14 85 9 80 4Z" stroke="#7a2424" stroke-width="1.1"/>
+      <path d="M18 12 C40 7 60 13.5 80 11.5 C100 13.5 120 7 142 12" stroke="#5f1c1c" stroke-width="0.9"/>
+      <circle cx="80" cy="21" r="1.2" fill="#7a2424"/>
+      <circle cx="18" cy="12" r="1" fill="#5f1c1c"/><circle cx="142" cy="12" r="1" fill="#5f1c1c"/>
+    </svg>
   </div>
 </div>
 

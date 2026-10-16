@@ -2,7 +2,7 @@
 // SANTA LÚCIA - Equipe Nakamura - Entidades: colisão, partículas, jogador, inimigos, NPCs
 // Modelos low-poly construídos com primitivas (estilo PS1 autêntico).
 // ============================================================
-import { WEAPONS, ENEMIES, CAMPAIGNS } from './config.js';
+import { WEAPONS, ENEMIES, CAMPAIGNS } from './config.js?v=1924_1997_v94';
 
 // Colisão círculo x lista de AABBs {x0,z0,x1,z1}. Ajusta p in-place.
 export function collideCircle(p, r, solids) {
@@ -139,6 +139,10 @@ export class Particles {
 }
 
 // ------------------------------- JOGADOR -------------------------------
+import { CLARA_MODEL } from './model_clara_data.js?v=1924_1997_v94';
+import { DANIEL_MODEL } from './model_daniel_data.js?v=1924_1997_v94';
+import { WEAPON_MODELS } from './model_weapons_data.js?v=1924_1997_v94';
+
 export class Player {
   constructor(THREE, TEX) {
     this.THREE = THREE;
@@ -156,40 +160,77 @@ export class Player {
     this.lam = lam;
 
     this.skinMat = lam(0xc8a080);
-    this.coatMat = lam(0x2a3448);
-    this.coatDMat = lam(0x1c2434);
-    this.pantsMat = lam(0x3a3a40);
+    this.coatMat = lam(0x2a3448, this.TEX.facet);   // facetas de tecido tingidas pela cor
+    this.coatDMat = lam(0x1c2434, this.TEX.facet);
+    this.armMat = lam(0x2a3448, this.TEX.facet);    // mangas (Bento usa camisa creme)
+    this.pantsMat = lam(0x3a3a40, this.TEX.facet);
     this.hairMat = lam(0x241812);
     this.shoesMat = lam(0x1a1412);
+    this.soleMat = lam(0x0e0e10);
 
+    this._bxAll = [];
     const bx = (w, h, d, m, x, y, z, parent = this.group) => {
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
       mesh.position.set(x, y, z);
       parent.add(mesh);
+      this._bxAll.push(mesh);
       return mesh;
     };
 
-    // pernas
+    // pernas (calça facetada + bota com sola, como na turnaround)
     this.legL = new THREE.Group(); this.legL.position.set(-0.13, 0.78, 0);
     this.legR = new THREE.Group(); this.legR.position.set(0.13, 0.78, 0);
     this.group.add(this.legL, this.legR);
     this.legMeshL = bx(0.2, 0.78, 0.24, this.pantsMat, 0, -0.39, 0, this.legL);
     this.legMeshR = bx(0.2, 0.78, 0.24, this.pantsMat, 0, -0.39, 0, this.legR);
-    bx(0.22, 0.12, 0.34, this.shoesMat, 0, -0.72, 0.04, this.legL);
-    bx(0.22, 0.12, 0.34, this.shoesMat, 0, -0.72, 0.04, this.legR);
+    bx(0.22, 0.13, 0.34, this.shoesMat, 0, -0.715, 0.04, this.legL);
+    bx(0.22, 0.13, 0.34, this.shoesMat, 0, -0.715, 0.04, this.legR);
+    bx(0.24, 0.05, 0.36, this.soleMat, 0, -0.755, 0.05, this.legL);
+    bx(0.24, 0.05, 0.36, this.soleMat, 0, -0.755, 0.05, this.legR);
 
-    // tronco
+    // quadril (continuidade calça/jaqueta)
+    bx(0.46, 0.12, 0.3, this.pantsMat, 0, 0.82, 0);
+
+    // tronco (jaqueta facetada com barra mais larga)
     this.torso = bx(0.52, 0.72, 0.32, this.coatMat, 0, 1.14, 0);
-    this.torsoTrim = bx(0.56, 0.3, 0.36, this.coatDMat, 0, 0.72, 0);
+    this.torsoTrim = bx(0.56, 0.32, 0.36, this.coatDMat, 0, 0.78, 0);
+    // fenda central da jaqueta
+    bx(0.045, 0.66, 0.012, this.coatDMat, 0, 1.16, 0.165);
+    // gola alta levantada (silhueta da turnaround)
+    this.collarMesh = bx(0.3, 0.1, 0.3, this.coatMat, 0, 1.53, -0.01);
+    bx(0.3, 0.09, 0.05, this.coatDMat, 0, 1.55, -0.16);
+    // banda dos ombros
+    bx(0.58, 0.09, 0.34, this.coatMat, 0, 1.47, 0);
 
-    // braços
+    // braços (2 segmentos: ombro->cotovelo->mão, rig estilo RE2/RE3)
     this.armL = new THREE.Group(); this.armL.position.set(-0.33, 1.42, 0);
     this.armR = new THREE.Group(); this.armR.position.set(0.33, 1.42, 0);
     this.group.add(this.armL, this.armR);
-    this.armMeshL = bx(0.14, 0.62, 0.16, this.coatMat, 0, -0.28, 0, this.armL);
-    this.armMeshR = bx(0.14, 0.62, 0.16, this.coatMat, 0, -0.28, 0, this.armR);
+    this.armMeshL = bx(0.14, 0.62, 0.16, this.armMat, 0, -0.28, 0, this.armL);
+    this.armMeshR = bx(0.14, 0.62, 0.16, this.armMat, 0, -0.28, 0, this.armR);
     bx(0.13, 0.14, 0.14, this.skinMat, 0, -0.62, 0, this.armL);
     bx(0.13, 0.14, 0.14, this.skinMat, 0, -0.62, 0, this.armR);
+    // antebraços e canelas (juntas de cotovelo/joelho p/ animação clássica)
+    this.foreL = new THREE.Group(); this.foreL.position.set(0, -0.36, 0); this.armL.add(this.foreL);
+    this.foreR = new THREE.Group(); this.foreR.position.set(0, -0.36, 0); this.armR.add(this.foreR);
+    // punhos: mão FECHADA segurando (RE2/RE3) — a mão aberta do modelo é
+    // ocultada no corte do pulso e o punho entra no lugar
+    this.wristL = new THREE.Group(); this.foreL.add(this.wristL);
+    this.wristR = new THREE.Group(); this.foreR.add(this.wristR);
+    const fistGeo = new THREE.BoxGeometry(0.10, 0.115, 0.10);
+    this.fistMat = lam(0xb29c8e); // pele PÁLIDA (a pintada no atlas é mais clara que o skinMat)
+    this.fistL = new THREE.Mesh(fistGeo, this.fistMat);
+    this.fistL.visible = false; // MÃO REAL do modelo em cena (punho só p/ modo arma)
+    this.fistL.position.set(0, -0.05, 0); this.wristL.add(this.fistL);
+    this.fistR = new THREE.Mesh(fistGeo, this.fistMat);
+    this.fistR.visible = false;
+    this.fistR.position.set(0, -0.05, 0); this.wristR.add(this.fistR);
+    this.shinL = new THREE.Group(); this.shinL.position.set(0, -0.40, 0); this.legL.add(this.shinL);
+    this.shinR = new THREE.Group(); this.shinR.position.set(0, -0.40, 0); this.legR.add(this.shinR);
+
+    // extras específicos de herói (tufos de cabelo, cabelo longo, bib do macacão)
+    this.heroExtras = new THREE.Group();
+    this.group.add(this.heroExtras);
 
     // cabeça
     this.head = new THREE.Group(); this.head.position.set(0, 1.62, 0);
@@ -200,9 +241,16 @@ export class Player {
       this.hairMat, this.hairMat, this.hairMat, this.skinMat, this.faceMat, this.hairMat,
     ]);
     this.head.add(this.headMesh);
+    this._bxAll.push(this.headMesh); // esconde junto quando o modelo 3D IA está ativo
     this.hairMesh = bx(0.32, 0.1, 0.32, this.hairMat, 0, 0.18, -0.01, this.head);
 
+    // peças procedurais do corpo (para alternar com o modelo IA)
+    this._boxParts = this._bxAll;
+    this.aiModelData = CLARA_MODEL || null; // MODELO: Dra. Clara (dr.glb) no slot do Daniel, temporariamente
+    this.aiMeshes = null;
+
     // armas na mão direita
+    this.atkT = 0; this.atkDur = 0.28; // animação de facada (jab)
     this.gunPivot = new THREE.Group();
     this.gunPivot.position.set(0, -0.62, 0.05);
     this.armR.add(this.gunPivot);
@@ -218,6 +266,13 @@ export class Player {
     const grip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.16, 0.08), darkWood);
     grip.position.set(0, -0.1, 0.02); pistol.add(grip);
     this.pistolM = pistol;
+    pistol.rotation.x = 1.57; // cano segue o eixo dos dedos: baixo no descanso, frente na mira
+    if (WEAPON_MODELS.pistola) { // prop IA substitui o procedural (escala near-camera)
+      const g = this.buildPropMesh(WEAPON_MODELS.pistola);
+      g.scale.setScalar(0.55);
+      pistol.add(g);
+      pm.visible = false; grip.visible = false;
+    }
 
     // 2. Espingarda Cal.12
     this.shotgunM = new THREE.Group();
@@ -232,6 +287,14 @@ export class Player {
     kb.position.set(0, 0, 0.2); this.knifeM.add(kb);
     const kh = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.07, 0.12), darkWood);
     kh.position.set(0, 0, 0); this.knifeM.add(kh);
+    this.knifeM.rotation.set(1.57, 0, -0.25); // lâmina alinhada ao eixo dos DEDOS (local -Y):
+    this.knifeM.position.set(0, -0.02, 0.04);  // desce no descanso e aponta pra frente na mira sozinha
+    kb.visible = false; kh.visible = false; // RECALIBRAÇÃO (produtor): mão VAZIA até aprovar o novo modelo
+    // if (WEAPON_MODELS.faca) { // (volta após a recalibração das armas)
+    //   const f = this.buildPropMesh(WEAPON_MODELS.faca);
+    //   f.scale.setScalar(1.35);
+    //   this.knifeM.add(f);
+    // }
 
     // 4. Revólver .38 (Clara)
     this.revolverM = new THREE.Group();
@@ -241,11 +304,25 @@ export class Player {
     revCyl.rotation.x = Math.PI / 2; revCyl.position.set(0, 0.01, 0.04); this.revolverM.add(revCyl);
     const revGrip = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.14, 0.07), darkWood);
     revGrip.position.set(0, -0.09, -0.02); this.revolverM.add(revGrip);
+    this.revolverM.rotation.x = 1.57; // cano segue o eixo dos dedos
+    if (WEAPON_MODELS.revolver) { // prop IA (Dra. Clara)
+      const r = this.buildPropMesh(WEAPON_MODELS.revolver);
+      r.scale.setScalar(0.55);
+      this.revolverM.add(r);
+      revB.visible = false; revCyl.visible = false; revGrip.visible = false;
+    }
 
     // 5. Bisturi Cirúrgico (Clara)
     this.scalpelM = new THREE.Group();
     const scB = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.03, 0.24), metalM);
     scB.position.set(0, 0, 0.12); this.scalpelM.add(scB);
+    this.scalpelM.rotation.x = 1.57; // lâmina segue o eixo dos dedos
+    if (WEAPON_MODELS.bisturi) { // prop IA (Dra. Clara)
+      const s = this.buildPropMesh(WEAPON_MODELS.bisturi);
+      s.scale.setScalar(0.7);
+      this.scalpelM.add(s);
+      scB.visible = false;
+    }
 
     // 6. Chave Inglesa (Bento)
     this.wrenchM = new THREE.Group();
@@ -253,6 +330,13 @@ export class Player {
     wrB.position.set(0, 0, 0.22); this.wrenchM.add(wrB);
     const wrH = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.08, 0.12), lam(0x4a5058));
     wrH.position.set(0, 0.02, 0.44); this.wrenchM.add(wrH);
+    this.wrenchM.rotation.x = 1.57; // cabeça segue o eixo dos dedos
+    if (WEAPON_MODELS.chave_inglesa) { // prop IA (Bento)
+      const c = this.buildPropMesh(WEAPON_MODELS.chave_inglesa);
+      c.scale.setScalar(0.6);
+      this.wrenchM.add(c);
+      wrB.visible = false; wrH.visible = false;
+    }
 
     // 7. Lança-Granadas
     this.grenadeM = new THREE.Group();
@@ -286,6 +370,8 @@ export class Player {
     this.hp = 100; this.maxhp = 100;
     this.speedMult = 1.0;
     this.angle = 0;
+    this.gunPivot.traverse((o) => { if (o.isMesh) o.layers.set(2); }); // armas na passada leve (camada 2)
+    this.group.traverse((o) => { if (o.isMesh && !o.userData.arma) o.layers.enable(1); }); // corpo = oclusor
     this.weapon = 'knife';
     this.aiming = false;
     this.fireCd = 0;
@@ -299,6 +385,346 @@ export class Player {
     this.setWeapon('knife');
   }
 
+  // ==================== MODELO 3D IA (Daniel — fatiado em peças PS1) ====================
+  // O GLB do produtor é fatiado em 6 peças (build script) e cada peça é
+  // rigidamente parentada aos grupos do rig procedural — as animações
+  // existentes (walk/attack/hurt/death) funcionam sem alteração.
+  applyAIModel(enabled) {
+    this.aiActive = false;
+    if (!enabled || !this.aiModelData) {
+      // restaura os bonecos procedurais
+      if (this.aiMeshes) for (const m of this.aiMeshes) m.visible = false;
+      for (const m of this._boxParts || []) m.visible = true;
+      if (this.heroExtras) this.heroExtras.visible = true;
+      if (this.legL) this.legL.position.set(-0.13, 0.78, 0);
+      if (this.legR) this.legR.position.set(0.13, 0.78, 0);
+      if (this.armL) { this.armL.position.set(-0.33, 1.42, 0); this.armL.rotation.z = 0.05; }
+      if (this.armR) { this.armR.position.set(0.33, 1.42, 0); this.armR.rotation.z = -0.05; }
+      if (this.gunPivot) this.gunPivot.position.set(0, -0.62, 0.05);
+      if (this.knifeM) { this.knifeM.rotation.set(1.57, 0, 0); this.knifeM.position.set(0, 0, 0); }
+      if (this.head) this.head.position.set(0, 1.62, 0);
+      if (this.gunPivot) this.gunPivot.position.set(0, -0.62, 0.05);
+      return;
+    }
+    if (!this.aiMeshes || this._aiBuiltFor !== this.aiModelData) {
+      if (this.aiMeshes) for (const m of this.aiMeshes) if (m.parent) m.parent.remove(m);
+      this.aiMeshes = [];
+      this._aiBuiltFor = this.aiModelData;
+      const canTex = typeof document !== 'undefined' && typeof document.createElementNS === 'function' && this.THREE.TextureLoader;
+      let tex = null;
+      if (canTex) {
+        try {
+          tex = new this.THREE.TextureLoader().load(this.aiModelData.tex);
+          if ('colorSpace' in tex && this.THREE.SRGBColorSpace) tex.colorSpace = this.THREE.SRGBColorSpace;
+          tex.magFilter = this.THREE.NearestFilter;  // pixels crocantes PS1
+          tex.minFilter = this.THREE.NearestFilter;
+          tex.generateMipmaps = false;
+          if ('wrapS' in tex) { tex.wrapS = this.THREE.RepeatWrapping; tex.wrapT = this.THREE.RepeatWrapping; }
+        } catch (e) { tex = null; }
+      }
+      const decB64 = (b64) => {
+        const bin = atob(b64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return bytes.buffer;
+      };
+      for (const [name, part] of Object.entries(this.aiModelData.parts)) {
+        const i16 = new Int16Array(decB64(part.p));
+        const u16 = new Uint16Array(decB64(part.u));
+        const pos = new Float32Array(part.n * 3);
+        const uv = new Float32Array(part.n * 2);
+        for (let i = 0; i < part.n; i++) {
+          pos[i * 3] = i16[i * 3] / 2048; pos[i * 3 + 1] = i16[i * 3 + 1] / 2048; pos[i * 3 + 2] = i16[i * 3 + 2] / 2048;
+          // wrap UV (Tripo exporta fora de [0,1]) — clamp pegava a borda do atlas
+          let uu = u16[i * 2] / 65535, vv = u16[i * 2 + 1] / 65535;
+          uv[i * 2] = uu - Math.floor(uu); uv[i * 2 + 1] = vv - Math.floor(vv);
+        }
+        const geo = new this.THREE.BufferGeometry();
+        geo.setAttribute('position', new this.THREE.BufferAttribute(pos, 3));
+        geo.setAttribute('uv', new this.THREE.BufferAttribute(uv, 2));
+        geo.computeVertexNormals(); // normais de face = facetado PS1 autêntico
+        const mat = tex ? new this.THREE.MeshLambertMaterial({ map: tex }) : new this.THREE.MeshLambertMaterial({ color: 0x8a94a2 });
+        this.mats.push(mat);
+        const mesh = new this.THREE.Mesh(geo, mat);
+        mesh.frustumCulled = false;
+        mesh.visible = false;
+        this.aiMeshes.push(mesh);
+        // parentea na peça do rig correspondente
+        const parentMap = { torso: this.group, head: this.head, armL: this.armL, armR: this.armR, legL: this.legL, legR: this.legR };
+        const g = parentMap[name];
+        if (g) g.add(mesh);
+        mesh.userData.part = name;
+      }
+    }
+    // ativa as peças AI e desliga os boxes
+    for (const m of this.aiMeshes) m.visible = true;
+    for (const m of this._boxParts || []) m.visible = false;
+    if (this.heroExtras) this.heroExtras.visible = false;
+    // reposiciona os pivôs para a anatomia do modelo AI
+    const J = {};
+    for (const [name, part] of Object.entries(this.aiModelData.parts)) J[name] = part.j;
+    if (this.legL) this.legL.position.set(...J.legL);
+    if (this.legR) this.legR.position.set(...J.legR);
+    if (this.armL) this.armL.position.set(...J.armL);
+    if (this.armR) this.armR.position.set(...J.armR);
+    if (this.head) this.head.position.set(...J.head);
+    this._aiHeadY = J.head[1];
+    // RIG RE2/RE3: corta os soups dos membros em cotovelo/joelho.
+    // COPIA da lista: splitPartMesh empilha os pedaços em aiMeshes — iterar
+    // a lista viva cortava os pedaços em cascata (membros triturados).
+    const rigList = this.aiMeshes.slice();
+    this.foreR.position.set(0, -0.36, 0); this.foreL.position.set(0, -0.36, 0);
+    this.shinR.position.set(0, -0.40, 0); this.shinL.position.set(0, -0.40, 0);
+    for (const m of rigList) {
+      if (!m.isMesh || m.userData.split) continue;
+      const part = m.userData.part;
+      if (part === 'armR') this.splitPartMesh(m, 0.55, this.foreR);
+      else if (part === 'armL') this.splitPartMesh(m, 0.55, this.foreL);
+      else if (part === 'legR') this.splitPartMesh(m, 0.52, this.shinR);
+      else if (part === 'legL') this.splitPartMesh(m, 0.52, this.shinL);
+    }
+    // arma segue a MÃO (agora no antebraço): re-parenta o pivô
+    const gp = this.aiModelData.pose && this.aiModelData.pose.gun ? this.aiModelData.pose.gun : [0, -0.6, 0.08];
+    if (this.foreR.children.includes(this.gunPivot) === false) {
+      this.armR.remove(this.gunPivot);
+      this.foreR.add(this.gunPivot);
+    }
+    this.gunPivot.position.set(gp[0], gp[1] - this.foreR.position.y, gp[2]);
+    // pose por modelo: fecha braços abertos (A-pose) via rotação Z do pivô
+    const pose = this.aiModelData.pose || { armOpen: 0, gun: [0, -0.6, 0.08] };
+    // fechamento parcial: braços ficam VISÍVEIS ao lado do corpo (fechar
+    // 100% os afunda dentro do torso do modelo)
+    const restZ = Math.max(0.14, (pose.armOpen || 0) * 0.62);
+    this._aiArmZ = { L: restZ, R: -restZ };
+    if (this.armL) { this.armL.rotation.z = restZ; this.armL.position.x = this.aiModelData.parts.armL.j[0] - 0.022; }
+    if (this.armR) { this.armR.rotation.z = -restZ; this.armR.position.x = this.aiModelData.parts.armR.j[0] + 0.022; }
+    // arma no frame da MÃO (antebraço após o rig RE2/RE3): compensa o pivô
+    // do cotovelo (foreR.position.y) — SEM isso a faca pende 0.36m abaixo do punho
+    if (this.gunPivot) this.gunPivot.position.set(pose.gun[0], pose.gun[1] - (this.foreR ? this.foreR.position.y : 0), pose.gun[2]);
+    // MÃO REAL do modelo em cena (v73, pedido do produtor) — sem manga/punho
+    // procedural; o _cutWrist (saga do punho v70-72) fica guardado no histórico
+    // p/ quando as armas voltarem (aí a faca preenche a mão de novo)
+    // lâmina/cano presos ao EIXO DO BRAÇO (ombro->palma): desce no descanso,
+    // aponta pra frente na mira — a rotação do braço transporta o prop
+    if (this.knifeM) {
+      // lâmina segue o EIXO DOS DEDOS (medido da geometria real, frame local)
+      // faca DE PÉ na mão fechada (ref. do produtor): cabo na palma,
+      // lâmina pra CIMA; a rotação Z de descanso não tumba o +Y (fica ereta)
+      this.knifeM.position.set(-0.03, 0, 0);
+      // Y=-0.49 cancela EXATAMENTE o tombamento do braço de descanso
+      // (derivado: tan(phi)=-tan(restZ)) -> lâmina VERTICAL no mundo; Z=-0.45 = roll do flat
+      this.knifeM.rotation.set(-1.57, -0.49, -0.45);
+    }
+    this.aiActive = true;
+  }
+
+  // PULSO: a mão aberta do modelo AI tem DEDOS FUNDIDOS no soup (impossível
+  // fatiar) e o atlas pinta DEDOS na ponta do braço superior. RE2/RE3: corta
+  // a ponta contaminada do braço, esconde o antebraço AI e coloca MANGA do
+  // casaco + punho fechado. ÂNCORAS 100% CALIBRADAS: cotovelo = seção do
+  // corte (janela densa, sem flap); punho = posição do gunPivot (mão
+  // aprovada no v69) — NADA de medir direção no soup com dedos.
+  _cutWrist(side, defer) {
+    const arm = side === 'R' ? this.armR : this.armL;
+    const fore = side === 'R' ? this.foreR : this.foreL;
+    const wrist = side === 'R' ? this.wristR : this.wristL;
+    const fist = side === 'R' ? this.fistR : this.fistL;
+    const T = this.THREE;
+    // seção transversal ROBUSTA: janela densa de 2cm (centróide cru era
+    // arrastado pelos flaps do casaco). Escolhe a janela mais próxima da
+    // âncora (topo do braço é limpo); retorna centro+largura do TUBO.
+    const tubeAt = (mesh, y0, tol, anchorX) => {
+      const p = mesh.geometry.attributes.position;
+      const xs = [], zs = [];
+      for (let i = 0; i < p.count; i++) {
+        if (Math.abs(p.getY(i) - y0) > tol) continue;
+        xs.push(p.getX(i)); zs.push(p.getZ(i));
+      }
+      if (xs.length < 8) return null;
+      const B = 0.02, lo = Math.min(...xs), hi = Math.max(...xs);
+      const nb = Math.max(1, Math.ceil((hi - lo) / B));
+      const h = new Array(nb).fill(0);
+      for (const a of xs) h[Math.min(nb - 1, Math.floor((a - lo) / B))]++;
+      const maxH = Math.max(...h);
+      let best = null;
+      for (let i = 0; i < nb; i++) {
+        if (h[i] < maxH * 0.5) continue;
+        let a = i, b = i;
+        while (a > 0 && h[a - 1] >= h[i] * 0.25 && (b - a + 2) * B <= 0.16) a--;
+        while (b < nb - 1 && h[b + 1] >= h[i] * 0.25 && (b - a + 2) * B <= 0.16) b++;
+        const cxw = lo + (a + b + 1) / 2 * B;
+        const dist = anchorX === undefined ? 0 : Math.abs(cxw - anchorX);
+        if (!best || dist < best.dist) best = { a, b, dist };
+      }
+      const x0 = lo + best.a * B, x1 = lo + (best.b + 1) * B;
+      const zs2 = [];
+      for (let i = 0; i < xs.length; i++) if (xs[i] >= x0 && xs[i] <= x1) zs2.push(zs[i]);
+      let zlo = Infinity, zhi = -Infinity;
+      for (const z of zs2) { if (z < zlo) zlo = z; if (z > zhi) zhi = z; }
+      return { cx: (x0 + x1) / 2, cz: (zlo + zhi) / 2, w: Math.min(0.16, x1 - x0), d: Math.min(0.16, zhi - zlo) };
+    };
+    // 1) ANTEBRAÇO AI FORA (dedos fundidos no soup) — em toda passagem, pois
+    // o "ativa as peças" do setHero religa os meshes
+    for (const c of fore.children.slice()) {
+      if (!c.isMesh || c.userData.sleeve) continue;
+      c.userData.isFore = true;
+      c.visible = false;
+    }
+    // 2) braço superior: corta os últimos 7cm (UV da mão) e mede o cotovelo
+    let cut = null;
+    for (const c of arm.children.slice()) {
+      if (!c.isMesh || c.userData.isHand) continue;
+      if (!(c.geometry.attributes.position && c.geometry.attributes.position.count >= 1200)) continue;
+      c.geometry.computeBoundingBox();
+      const b = c.geometry.boundingBox;
+      const cutY = b.min.y + 0.07;
+      const top = tubeAt(c, b.max.y - 0.10, 0.02);
+      cut = { y: cutY, sec: top ? tubeAt(c, cutY, 0.012, top.cx) : tubeAt(c, cutY, 0.012) };
+      if (c.userData.isUpper) continue; // já cortado numa passada anterior — só medir
+      c.userData.isUpper = true;
+      const frac = (b.max.y - cutY) / Math.max(1e-6, b.max.y - b.min.y);
+      if (frac > 0.02 && frac < 0.98) this.splitPartMesh(c, frac, wrist, true);
+    }
+    if (defer) { // chamada de dentro do rig loop: gunPivot ainda não posicionado
+      for (const c of wrist.children) {
+        if (c.isMesh && c !== fist) { c.visible = false; c.userData.isHand = true; }
+      }
+      if (fist) fist.visible = true;
+      return;
+    }
+    const hasSleeve = fore.children.some((s) => s.isMesh && s.userData.sleeve);
+    // 3) manga + punho: cotovelo (corte) → punho (gunPivot calibrado), tudo
+    // no frame do fore (rígido com o braço em qualquer pose)
+    if (cut && cut.sec && !hasSleeve && this.gunPivot && (this.gunPivot.position.x || this.gunPivot.position.y)) {
+      const gp = this.gunPivot.position; // âncora da MÃO (frame do fore, lado R)
+      const hx = side === 'R' ? gp.x : -gp.x; // mão ESQUERDA = espelho (o pivot é único, na direita)
+      const ex = cut.sec.cx, ey = cut.y - fore.position.y, ez = cut.sec.cz; // cotovelo
+      const d = new T.Vector3(hx - ex, gp.y - ey, gp.z - ez);
+      const dist = Math.max(0.12, d.length());
+      d.normalize();
+      d.add(new T.Vector3(0, -0.95, 0)).normalize(); // endireita: box aberto 28° lia galinha
+      const topY = ey + d.y * 0.03, topX = ex + d.x * 0.03, topZ = ez + d.z * 0.03;
+      const botD = dist - 0.10; // manga para 10cm antes da mão (punho aparece)
+      const botX = ex + d.x * botD, botY = ey + d.y * botD, botZ = ez + d.z * botD;
+      const g = this._frustumGeo(topX, topZ, Math.max(0.11, cut.sec.w * 1.05), Math.max(0.10, cut.sec.d * 1.1), botX, botZ, 0.115, 0.115, topY, botY);
+      const sleeve = new T.Mesh(g, this.armMat);
+      sleeve.userData.sleeve = true;
+      fore.add(sleeve);
+      wrist.position.set(botX + d.x * 0.085, botY + d.y * 0.085, botZ + d.z * 0.085); // punho BEM pra fora (meio bloco de pele visível)
+      wrist.rotation.set(0, 0, 0);
+    } else if (!hasSleeve) {
+      wrist.position.set(0, -0.21, 0); // fallback (modelo sem âncoras)
+    }
+    // 4) no wrist só fica o PUNHO (pedaços da mão/corte: ocultos sempre)
+    for (const c of wrist.children) {
+      if (c.isMesh && c !== fist) { c.visible = false; c.userData.isHand = true; }
+    }
+    if (fist) fist.visible = true;
+  }
+
+  // GEOMETRIA de frusto quadrado (manga RE2/RE3): topo costurado no corte do
+  // braço → base na barra do punho. Winding duplo (visível dos 2 lados)
+  _frustumGeo(tcx, tcz, tw, td, bcx, bcz, bw, bd, topY, botY) {
+    const T = this.THREE;
+    const c1 = [tcx - tw / 2, topY, tcz - td / 2], c2 = [tcx + tw / 2, topY, tcz - td / 2];
+    const c3 = [tcx + tw / 2, topY, tcz + td / 2], c4 = [tcx - tw / 2, topY, tcz + td / 2];
+    const b1 = [bcx - bw / 2, botY, bcz - bd / 2], b2 = [bcx + bw / 2, botY, bcz - bd / 2];
+    const b3 = [bcx + bw / 2, botY, bcz + bd / 2], b4 = [bcx - bw / 2, botY, bcz + bd / 2];
+    const v = [];
+    const quad = (a, b, c, d) => {
+      v.push(...a, ...b, ...c, ...a, ...c, ...d); // frente
+      v.push(...d, ...c, ...b, ...d, ...b, ...a); // verso
+    };
+    quad(c1, c2, b2, b1); quad(c2, c3, b3, b2); quad(c3, c4, b4, b3);
+    quad(c4, c1, b1, b4); quad(c1, c2, c3, c4); quad(b1, b2, b3, b4);
+    const uv = [];
+    for (let i = 0; i < v.length / 3; i++) uv.push((i % 2) * 0.5, (i % 4) / 3 % 1);
+    const g = new T.BufferGeometry();
+    g.setAttribute('position', new T.BufferAttribute(new Float32Array(v), 3));
+    g.setAttribute('uv', new T.BufferAttribute(new Float32Array(uv), 2));
+    g.computeVertexNormals();
+    return g;
+  }
+
+  // CORTA um soup (não-indexado) na altura frac da peça: triângulos abaixo
+  // do corte vão p/ childGroup (pivô na junta) — cotovelo/joelho do rig RE2/RE3
+  splitPartMesh(mesh, frac, childGroup, force = false) {
+    if (!mesh || !mesh.geometry || (mesh.userData.split && !force)) return null;
+    if (mesh.geometry.index) mesh.geometry = mesh.geometry.toNonIndexed();
+    mesh.userData.split = true;
+    const T = this.THREE;
+    const pos = mesh.geometry.attributes.position;
+    const uvA = mesh.geometry.attributes.uv;
+    let minY = 1e9, maxY = -1e9;
+    for (let i = 0; i < pos.count; i++) { const y = pos.getY(i); if (y < minY) minY = y; if (y > maxY) maxY = y; }
+    const cutY = maxY - (maxY - minY) * frac;
+    const up = { p: [], u: [] }, lo = { p: [], u: [] };
+    for (let t = 0; t < pos.count; t += 3) {
+      const cy = (pos.getY(t) + pos.getY(t + 1) + pos.getY(t + 2)) / 3;
+      const dst = cy <= cutY ? lo : up;
+      for (let k = 0; k < 3; k++) {
+        dst.p.push(pos.getX(t + k), pos.getY(t + k), pos.getZ(t + k));
+        if (uvA) dst.u.push(uvA.getX(t + k), uvA.getY(t + k));
+      }
+    }
+    if (!lo.p.length || !up.p.length) return null; // corte caiu fora da peça
+    const gUp = new T.BufferGeometry();
+    gUp.setAttribute('position', new T.BufferAttribute(new Float32Array(up.p), 3));
+    if (uvA) gUp.setAttribute('uv', new T.BufferAttribute(new Float32Array(up.u), 2));
+    gUp.computeVertexNormals();
+    mesh.geometry.dispose();
+    mesh.geometry = gUp;
+    const gLo = new T.BufferGeometry();
+    const lp = lo.p.slice();
+    for (let i = 1; i < lp.length; i += 3) lp[i] -= cutY; // pivô na junta
+    gLo.setAttribute('position', new T.BufferAttribute(new Float32Array(lp), 3));
+    if (uvA) gLo.setAttribute('uv', new T.BufferAttribute(new Float32Array(lo.u), 2));
+    gLo.computeVertexNormals();
+    const lower = new T.Mesh(gLo, mesh.material);
+    lower.frustumCulled = false;
+    lower.userData.part = mesh.userData.part;
+    lower.userData.split = true; // pedaço NUNCA é re-cortado (bug da cascata)
+    lower.layers.mask = mesh.layers.mask;
+    childGroup.position.set(0, cutY, 0);
+    childGroup.add(lower);
+    this.aiMeshes.push(lower);
+    return cutY;
+  }
+
+  buildPropMesh(data) {
+    const bin = atob(data.geo), bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const i16 = new Int16Array(bytes.buffer, 0, data.n * 3);
+    const u16 = new Uint16Array(bytes.buffer, data.n * 6, data.n * 2);
+    const pos = new Float32Array(data.n * 3), uv = new Float32Array(data.n * 2);
+    for (let i = 0; i < data.n; i++) {
+      pos[i*3] = i16[i*3]/2048; pos[i*3+1] = i16[i*3+1]/2048; pos[i*3+2] = i16[i*3+2]/2048;
+      let uu = u16[i*2]/65535, vv = u16[i*2+1]/65535;
+      uv[i*2] = uu - Math.floor(uu); uv[i*2+1] = vv - Math.floor(vv);
+    }
+    const geo = new this.THREE.BufferGeometry();
+    geo.setAttribute('position', new this.THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('uv', new this.THREE.BufferAttribute(uv, 2));
+    geo.computeVertexNormals();
+    let mat = null;
+    if (typeof document !== 'undefined' && this.THREE.TextureLoader) {
+      try {
+        const tex = new this.THREE.TextureLoader().load(data.tex);
+        if ('colorSpace' in tex && this.THREE.SRGBColorSpace) tex.colorSpace = this.THREE.SRGBColorSpace;
+        tex.magFilter = this.THREE.NearestFilter; tex.minFilter = this.THREE.NearestFilter; tex.generateMipmaps = false;
+        mat = new this.THREE.MeshLambertMaterial({ map: tex });
+      } catch (e) { mat = null; }
+    }
+    if (!mat) mat = new this.THREE.MeshLambertMaterial({ color: data.color || 0x777777 });
+    mat.userData.noPsx = true;      // fora do vertex-snap
+    if (mat.emissive) mat.emissive.setHex(0x232833); // brilho sutil p/ a arma ler no escuro
+    this.mats.push(mat);
+    const mesh = new this.THREE.Mesh(geo, mat);
+    mesh.layers.set(2); // passada full-res: efeito PS1 leve só nas armas
+    mesh.frustumCulled = false;
+    return mesh;
+  }
+
   setHero(heroId, skinId = 'default') {
     this.heroId = heroId;
     this.skinId = skinId;
@@ -310,28 +736,94 @@ export class Player {
     if (skinId === 'tactical') {
       this.coatMat.color.setHex(0x1c221a);
       this.coatDMat.color.setHex(0x141812);
+      this.armMat.color.setHex(0x1c221a);
       this.pantsMat.color.setHex(0x1a1e18);
+      this.shoesMat.color.setHex(0x141416);
     } else if (heroId === 'clara') {
-      this.coatMat.color.setHex(0xd8d8d4); // jaleco médico
-      this.coatDMat.color.setHex(0x6b1d28); // vinho
-      this.pantsMat.color.setHex(0x222228);
+      this.coatMat.color.setHex(0xd8d8d4); // jaleco médico (turnaround: manchas na barra)
+      this.coatDMat.color.setHex(0x6b1d28); // blusa vinho
+      this.armMat.color.setHex(0xd8d8d4);
+      this.pantsMat.color.setHex(0x465064); // jeans azul-acinzentado
+      this.shoesMat.color.setHex(0xcfcfc8); // tênis brancos
       this.hairMat.color.setHex(0x4a2c18);
-      this.faceMat.map = this.TEX.claraBody || this.TEX.faceDaniel;
+      this.faceMat.map = this.TEX.faceClara || this.TEX.faceDaniel;
     } else if (heroId === 'bento') {
-      this.coatMat.color.setHex(0x223854); // macacão azul
-      this.coatDMat.color.setHex(0x1a283a);
-      this.pantsMat.color.setHex(0x223854);
-      this.hairMat.color.setHex(0x484848);
-      this.faceMat.map = this.TEX.bentoBody || this.TEX.faceDaniel;
+      this.coatMat.color.setHex(0x2c4666); // macacão jeans azul (turnaround)
+      this.coatDMat.color.setHex(0xd8d0c0); // camisa creme por baixo
+      this.armMat.color.setHex(0xd8d0c0); // mangas da camisa arregaçadas
+      this.pantsMat.color.setHex(0x2c4666);
+      this.shoesMat.color.setHex(0x141416); // botas de borracha
+      this.hairMat.color.setHex(0x8a8a88);
+      this.faceMat.map = this.TEX.faceBento || this.TEX.faceDaniel;
     } else {
       // Daniel
       this.coatMat.color.setHex(0x2a3448);
       this.coatDMat.color.setHex(0x1c2434);
+      this.armMat.color.setHex(0x2a3448);
       this.pantsMat.color.setHex(0x3a3a40);
+      this.shoesMat.color.setHex(0x1a1412);
       this.hairMat.color.setHex(0x241812);
       this.faceMat.map = this.TEX.faceDaniel;
     }
+    this.aiModelData = (heroId === 'daniel' && DANIEL_MODEL) ? DANIEL_MODEL
+      : (heroId === 'clara' && CLARA_MODEL) ? CLARA_MODEL : null;
+    this.applyAIModel(!!this.aiModelData && skinId === 'default');
+    this.updateHeroExtras(heroId);
+    this.group.traverse((o) => { if (o.isMesh && !o.userData.arma) o.layers.enable(1); }); // oclusor p/ peças novas
     this.faceMat.needsUpdate = true;
+  }
+
+  // Detalhes visuais por herói: tufos de cabelo, cabelo longo, bib do macacão
+  updateHeroExtras(heroId) {
+    if (!this.heroExtras) return;
+    while (this.heroExtras.children.length) {
+      const ch = this.heroExtras.children[0];
+      this.heroExtras.remove(ch);
+    }
+    const bx = (w, h, d, m, x, y, z, rx = 0, rz = 0) => {
+      const mesh = new this.THREE.Mesh(new this.THREE.BoxGeometry(w, h, d), m);
+      mesh.position.set(x, y, z);
+      mesh.rotation.x = rx;
+      mesh.rotation.z = rz;
+      this.heroExtras.add(mesh);
+      return mesh;
+    };
+    if (heroId === 'clara') {
+      // cabelo longo da turnaround: costas + laterais até o peito
+      bx(0.27, 0.7, 0.12, this.hairMat, 0, -0.26, -0.16);
+      bx(0.09, 0.6, 0.14, this.hairMat, -0.14, -0.2, 0.02);
+      bx(0.09, 0.6, 0.14, this.hairMat, 0.14, -0.2, 0.02);
+      // jaleco LONGO até o joelho (turnaround)
+      bx(0.54, 0.52, 0.34, this.coatMat, 0, 0.56, 0);
+      // abas dos bolsos frontais do jaleco
+      bx(0.12, 0.06, 0.02, this.coatDMat, -0.13, 0.88, 0.175);
+      bx(0.12, 0.06, 0.02, this.coatDMat, 0.13, 0.88, 0.175);
+      // tênis brancos com sola
+      bx(0.24, 0.04, 0.36, this.soleMat, 0, -0.775, 0.05, this.legL);
+      bx(0.24, 0.04, 0.36, this.soleMat, 0, -0.775, 0.05, this.legR);
+    } else if (heroId === 'bento') {
+      // barriga saliente do zelador (turnaround)
+      bx(0.5, 0.42, 0.38, this.coatMat, 0, 1.08, 0.04);
+      // bib do macacão + bolso frontal + alças com fivelas metálicas
+      bx(0.4, 0.32, 0.02, this.coatMat, 0, 1.24, 0.165);
+      bx(0.18, 0.14, 0.012, this.coatDMat, 0, 1.2, 0.178);
+      bx(0.06, 0.38, 0.02, this.coatMat, -0.13, 1.4, 0.168);
+      bx(0.06, 0.38, 0.02, this.coatMat, 0.13, 1.4, 0.168);
+      const buckle = this.lam(0x9aa2ac);
+      bx(0.07, 0.05, 0.028, buckle, -0.13, 1.52, 0.168);
+      bx(0.07, 0.05, 0.028, buckle, 0.13, 1.52, 0.168);
+      // chaveiro grosso pendurado na alça (turnaround)
+      bx(0.05, 0.16, 0.03, this.soleMat, -0.16, 1.02, 0.18);
+      bx(0.09, 0.06, 0.022, buckle, -0.16, 0.93, 0.18);
+      bx(0.02, 0.1, 0.022, buckle, -0.13, 0.96, 0.18);
+    } else {
+      // Daniel: franja bagunçada da turnaround
+      bx(0.26, 0.06, 0.05, this.hairMat, 0, 0.155, 0.145, 0.35);
+      bx(0.07, 0.05, 0.07, this.hairMat, -0.1, 0.17, 0.1, 0, -0.3);
+      bx(0.07, 0.05, 0.07, this.hairMat, 0.11, 0.165, 0.09, 0, 0.35);
+      // tufo no topo
+      bx(0.08, 0.06, 0.1, this.hairMat, 0.02, 0.25, -0.04, -0.25);
+    }
   }
 
   addTo(scene) { scene.add(this.group); }
@@ -347,8 +839,10 @@ export class Player {
     this.group.rotation.set(0, validAngle, 0);
     if (this.legL) this.legL.rotation.set(0, 0, 0);
     if (this.legR) this.legR.rotation.set(0, 0, 0);
-    if (this.armL) this.armL.rotation.set(0, 0, 0);
-    if (this.armR) this.armR.rotation.set(0, 0, 0);
+    if (this.armL) this.armL.rotation.set(0, 0, (this.aiActive && this._aiArmZ) ? this._aiArmZ.L : 0.05);
+    if (this.armR) this.armR.rotation.set(0, 0, (this.aiActive && this._aiArmZ) ? this._aiArmZ.R : -0.05);
+    if (this.foreR) { this.foreR.rotation.set(0, 0, 0); this.foreL.rotation.set(0, 0, 0); }
+    if (this.shinR) { this.shinR.rotation.set(0, 0, 0); this.shinL.rotation.set(0, 0, 0); }
     if (this.torso) this.torso.rotation.set(0, 0, 0);
     if (this.head) this.head.position.set(0, 1.62, 0);
     for (const m of this.mats) {
@@ -360,6 +854,15 @@ export class Player {
   get x() { return this.group.position.x; }
   get z() { return this.group.position.z; }
 
+  // classe da arma p/ animação RE2/RE3: leve (2 mãos à frente), pesada
+  // (encostada no ombro, mais abaixado) ou faca (stance aprovado)
+  _weaponClass() {
+    const w = this.weapon;
+    if (w === 'pistol' || w === 'revolver' || w === 'magnum') return 'light';
+    if (w === 'shotgun' || w === 'grenade_launcher') return 'heavy';
+    return 'knife';
+  }
+
   setWeapon(w) {
     this.weapon = w;
     this.pistolM.visible = w === 'pistol';
@@ -370,12 +873,14 @@ export class Player {
     this.wrenchM.visible = w === 'wrench';
     this.grenadeM.visible = w === 'grenade_launcher';
     this.magnumM.visible = w === 'magnum';
-    this.gunPivot.visible = this.aiming;
+    // arma SEMPRE na mão (estilo survival horror) — some só ao morrer
+    this.gunPivot.visible = !this.dead;
   }
 
   setAim(b) {
     this.aiming = b;
-    this.gunPivot.visible = b;
+    this.gunPivot.visible = !this.dead; // arma sempre na mão
+    if (!b && this.gunPivot) this.gunPivot.rotation.x = 0;
   }
 
   update(dt, input, room) {
@@ -396,13 +901,63 @@ export class Player {
     const WALK = 2.3 * this.speedMult;
     const RUN = 4.2 * this.speedMult;
 
+    if (this.atkT > 0) this.atkT = Math.max(0, this.atkT - dt); // SEMPRE decai (antes só decaia mirando — ataque sem mira congelava o timer)
     if (this.aiming) {
       if (input.l) this.angle += TURN * 0.8 * dt;
       if (input.r) this.angle -= TURN * 0.8 * dt;
       this.moving = false;
-      this.armR.rotation.set(-1.45, 0.18, 0);
-      this.armL.rotation.set(-1.40, -0.22, 0);
+      if (this.aiActive) { // mira: pose por CLASSE de arma (RE2/RE3)
+        const wcls = this._weaponClass();
+        if (wcls === 'light') {
+          // pistola/revólver: duas mãos estendidas à frente, leve abaixada
+          this.armR.rotation.set(-1.42, 0.15, -0.08);
+          this.armL.rotation.set(-1.30, -0.28, 0.10);
+          this.foreR.rotation.x = 0.22; this.foreL.rotation.x = 0.35;
+          this.shinR.rotation.x = 0.12; this.shinL.rotation.x = 0.12;
+          this.torso.position.y = 1.11;
+        } else if (wcls === 'heavy') {
+          // escopeta/lança: arma no ombro, mais recolhido e abaixado
+          this.armR.rotation.set(-1.30, 0.22, -0.15);
+          this.armL.rotation.set(-1.20, -0.38, 0.18);
+          this.foreR.rotation.x = 0.55; this.foreL.rotation.x = 0.60;
+          this.shinR.rotation.x = 0.18; this.shinL.rotation.x = 0.18;
+          this.torso.position.y = 1.08;
+        } else {
+          // faca: stance APROVADO (intocado)
+          this.armR.rotation.set(-1.52, -0.04, -0.05);
+          this.armL.rotation.set(-1.44, 0.05, 0.05);
+          this.foreR.rotation.x = 0; this.foreL.rotation.x = 0;
+        }
+        if (this.atkT > 0) {
+          // CORTE DIAGONAL estilo Leon (RE4 quick slash): windup curto levando
+          // a mão pra fora/alto, corte descendo ATRAVESSANDO o corpo (direita→
+          // esquerda) com torso torcendo junto e leve afundada, retorno ao stance
+          const pr = 1 - this.atkT / this.atkDur;
+          let wind = 0, cut = 0;
+          if (pr < 0.25) wind = pr / 0.25;
+          else if (pr < 0.55) { cut = (pr - 0.25) / 0.30; wind = 1 - cut; }
+          else { const r = (pr - 0.55) / 0.45; cut = 1 - r * r; }
+          const ease = (t) => t * t * (3 - 2 * t);
+          wind = ease(Math.max(0, Math.min(1, wind)));
+          cut = ease(Math.max(0, Math.min(1, cut)));
+          this.armR.rotation.x = -1.52 + wind * 0.22 - cut * 0.30;
+          this.armR.rotation.y = -0.04 + wind * 0.42 - cut * 0.85; // sai pra fora e ATRAVESSA
+          this.armR.rotation.z = -0.05 + wind * 0.18 - cut * 0.35;
+          this.foreR.rotation.x = 0 - wind * 0.25 + cut * 0.55;    // chicoteia o antebraço
+          this.torso.rotation.y = wind * 0.20 - cut * 0.42;        // torção do tronco (alcance sem despregar o ombro)
+          this.torso.position.y = (this.aiActive ? 1.14 : this.torso.position.y) - cut * 0.05;
+        } else {
+          this.torso.position.y += ((this.aiActive ? 1.14 : this.torso.position.y) - this.torso.position.y) * Math.min(1, dt * 10);
+          if (Math.abs(this.torso.position.z) > 1e-4) this.torso.position.z = 0;
+        }
+        if (this.gunPivot) this.gunPivot.rotation.x = 0.92; // nivela o cano da pistola
+        if (this.knifeM && this.atkT <= 0) this.knifeM.rotation.set(3.77, 0, -0.45); // fallback
+        if (this.atkT <= 0) this.updateKnifeWorldUp(); // no corte a faca acompanha o ARCO na mão (RE4); fora dele, vertical na tela
+      }
+      else { this.armR.rotation.set(-1.45, 0.18, 0); this.armL.rotation.set(-1.40, -0.22, 0); }
       this.legL.rotation.x = 0; this.legR.rotation.x = 0;
+      this.shinL.rotation.x = 0; this.shinR.rotation.x = 0;
+      this.group.rotation.x = 0;
       this.group.rotation.y = this.angle;
       return ev;
     }
@@ -430,12 +985,35 @@ export class Player {
       collideCircle(this.group.position, 0.38, room.solids);
 
       const sw = Math.sin(this.walkPhase);
-      this.legL.rotation.x = sw * 0.55;
-      this.legR.rotation.x = -sw * 0.55;
-      this.armL.rotation.x = -sw * 0.45;
-      this.armR.rotation.x = sw * 0.45;
-      this.armL.rotation.z = 0.05; this.armR.rotation.z = -0.05;
+      // rig RE2/RE3: joelhos dobram na recuperação do passo (pé sai do chão)
+      const legAmp = this.aiActive ? 0.30 : 0.55;
+      const kneeAmp = running ? 1.05 : 0.72;
+      this.legL.rotation.x = sw * legAmp;
+      this.legR.rotation.x = -sw * legAmp;
+      this.shinL.rotation.x = Math.max(0, -Math.cos(this.walkPhase)) * kneeAmp;
+      this.shinR.rotation.x = Math.max(0, Math.cos(this.walkPhase)) * kneeAmp;
+      const cls = this._weaponClass();
+      if (cls === 'light' || cls === 'heavy') {
+        // ARMADO DE FOGO (RE2/RE3): braços firmes no low-ready — NÃO balançam
+        this.armR.rotation.x = -0.50; this.armR.rotation.y = 0.08;
+        this.armL.rotation.x = -0.42; this.armL.rotation.y = -0.06;
+        this.armR.rotation.z = this.aiActive ? this._aiArmZ.R : -0.05;
+        this.armL.rotation.z = this.aiActive ? this._aiArmZ.L : 0.05;
+        this.foreR.rotation.x = 0.85; this.foreL.rotation.x = 0.75;
+      } else {
+        // FACA: andar APROVADO (braços balançam) — cotovelos ficam neutros
+        const armAmp = this.aiActive ? 0.26 : 0.45;
+        this.armL.rotation.x = -sw * armAmp;
+        this.armR.rotation.x = sw * armAmp;
+        this.armL.rotation.z = this.aiActive ? this._aiArmZ.L : 0.05;
+        this.armR.rotation.z = this.aiActive ? this._aiArmZ.R : -0.05;
+        this.foreL.rotation.x = 0; this.foreR.rotation.x = 0;
+      }
       this.torso.rotation.y = -sw * 0.06;
+      if (this.aiActive) this.torso.position.y = 1.14 - Math.abs(sw) * 0.045;
+      // inclinação de corrida (lean clássico)
+      const leanT = running ? 0.10 : 0.035;
+      this.group.rotation.x += (leanT - this.group.rotation.x) * Math.min(1, dt * 6);
 
       if ((prevPhase % Math.PI) > (this.walkPhase % Math.PI)) {
         ev.step = true;
@@ -443,14 +1021,85 @@ export class Player {
       }
     } else {
       this.moving = false;
+      if (this.aiActive && this.torso) this.torso.position.y += (1.14 - this.torso.position.y) * Math.min(1, dt * 8);
       this.legL.rotation.x *= Math.max(0, 1 - dt * 10);
       this.legR.rotation.x *= Math.max(0, 1 - dt * 10);
-      this.armL.rotation.x *= Math.max(0, 1 - dt * 10);
-      this.armR.rotation.x *= Math.max(0, 1 - dt * 10);
+      if (this._weaponClass() === 'knife') { // decay do braço só na faca (leves/pesadas vão p/ low-ready)
+        this.armL.rotation.x *= Math.max(0, 1 - dt * 10);
+        this.armR.rotation.x *= Math.max(0, 1 - dt * 10);
+      }
+      if (this.aiActive && this._aiArmZ) { // recompõe o fechamento (ataque/teleporte zeravam Z)
+        this.armL.rotation.z += (this._aiArmZ.L - this.armL.rotation.z) * Math.min(1, dt * 8);
+        this.armR.rotation.z += (this._aiArmZ.R - this.armR.rotation.z) * Math.min(1, dt * 8);
+      }
+      // rig RE2/RE3: joelhos esticam; ARMADO vai p/ low-ready (arma baixa, pronta)
+      const cls = this._weaponClass();
+      const k = Math.min(1, dt * 10);
+      this.shinL.rotation.x *= Math.max(0, 1 - dt * 10);
+      this.shinR.rotation.x *= Math.max(0, 1 - dt * 10);
+      if (cls === 'light' || cls === 'heavy') {
+        // RE2/RE3: arma de fogo fica em low-ready parado
+        this.armR.rotation.x += (-0.35 - this.armR.rotation.x) * k;
+        this.armL.rotation.x += (-0.28 - this.armL.rotation.x) * k;
+        this.foreR.rotation.x += (0.80 - this.foreR.rotation.x) * k;
+        this.foreL.rotation.x += (0.70 - this.foreL.rotation.x) * k;
+      } else {
+        this.foreR.rotation.x *= Math.max(0, 1 - dt * 8);
+        this.foreL.rotation.x *= Math.max(0, 1 - dt * 8);
+      }
+      this.group.rotation.x += (0 - this.group.rotation.x) * Math.min(1, dt * 8);
       this.torso.rotation.y *= Math.max(0, 1 - dt * 10);
-      this.head.position.y = 1.62 + Math.sin(performance.now() / 600) * 0.015;
+      const headBase = (this.aiActive && this._aiHeadY) ? this._aiHeadY : 1.62;
+      this.head.position.y = headBase + Math.sin(performance.now() / 600) * 0.015;
     }
+    this.updateKnifeWorldUp(); // lâmina vertical no mundo em idle E andar
     return ev;
+  }
+
+  // FACA DE PÉ EM TODA ANIMAÇÃO: em vez de ângulos estáticos por estado
+  // (o swing do andar tombava a lâmina), compensa POR FRAME a rotação da
+  // cadeia do braço (idle/walk/mira) forçando a lâmina VERTICAL no mundo.
+  updateKnifeWorldUp() {
+    if (!this.knifeM || !this.knifeM.visible || !this.knifeM.parent) return;
+    const T = this.THREE;
+    const pv = new T.Vector3(), pq = new T.Quaternion(), ps = new T.Vector3();
+    this.knifeM.parent.updateWorldMatrix(true, false);
+    this.knifeM.parent.matrixWorld.decompose(pv, pq, ps);
+    pq.invert(); // parentWorld^-1: a intenção (alvo) é NO MUNDO puro — NÃO
+                 // remover o yaw. Com intenção inclinada (vertical-da-tela),
+                 // o yaw do corpo girava a intenção na horizontal e virava a
+                 // lâmina na diagonal (com intenção +Y pura era invisível:
+                 // yaw*up = up). Posição NÃO é tocada: cabo segue no punho.
+    // Alvo: lâmina (+Z local) VERTICAL NA TELA. Com câmera conhecida (jogo real),
+    // "vertical na tela" != +Y do mundo: câmera alta inclina verticais na beira
+    // do quadro (perspectiva). d = direção que APARECE de pé na tela na posição
+    // da faca; flat (+X) vira p/ câmera (lâmina sempre visível de frente).
+    const cam = this.renderCamera;
+    if (cam && cam.getWorldPosition) {
+      const cp = new T.Vector3();
+      cam.getWorldPosition(cp);
+      const f = pv.clone().sub(cp); // câmera -> faca
+      if (f.lengthSq() > 1e-6) {
+        f.normalize();
+        const up = new T.Vector3(0, 1, 0);
+        const d = up.clone().addScaledVector(f, -up.dot(f)); // up projetado na tela
+        if (d.lengthSq() > 1e-6) {
+          d.normalize();
+          const n = new T.Vector3().crossVectors(f, d); // flat apontando p/ câmera
+          if (n.lengthSq() > 1e-6) {
+            n.normalize();
+            const y = new T.Vector3().crossVectors(d, n);
+            const m = new T.Matrix4().makeBasis(n, y, d);
+            const alvo = new T.Quaternion().setFromRotationMatrix(m);
+            this.knifeM.quaternion.copy(pq).multiply(alvo);
+            return;
+          }
+        }
+      }
+    }
+    // sem câmera (laboratório): vertical no MUNDO (ref. foto do chef)
+    const mundo = new T.Quaternion().setFromAxisAngle(new T.Vector3(1, 0, 0), -Math.PI / 2);
+    this.knifeM.quaternion.copy(pq).multiply(mundo);
   }
 
   damage(n) {
@@ -480,6 +1129,12 @@ export class Player {
 
   canFire() { return this.fireCd <= 0; }
   spendCooldown(rate = 0.4) { this.fireCd = rate; }
+  // FACADA: braço avança e volta (a faca segue a mão pela hierarquia; a
+  // compensação de tela mantém a lâmina de pé durante todo o golpe)
+  playAttack(rate = 0.4) {
+    this.atkDur = 0.42; // RE4R quick slash: rápido, sem windup longo
+    this.atkT = this.atkDur;
+  }
 }
 
 // ------------------------------ INIMIGOS ------------------------------
@@ -811,7 +1466,9 @@ export class Enemy {
     }
 
     // ================= 5. SOMBRA / LAMENTO / VULTO (PADRÃO) =================
-    const bodyM = lam(0x0c0c12);
+    // Turnaround: espectro flutuante com capa facetada, capuz pontudo,
+    // bainha esfarrapada, vazio negro no rosto e névoa espectral na base.
+    const bodyM = lam(0x0c0c12, 0x000000, this.TEX.facet);
     const darkM = lam(0x060608);
 
     const cloak = new this.THREE.Mesh(
@@ -821,6 +1478,36 @@ export class Enemy {
     cloak.position.y = 0.75 * s;
     this.group.add(cloak);
     this.cloak = cloak;
+
+    // bainha esfarrapada: pontas em zigue-zague na base (turnaround)
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2;
+      const spikeH = (i % 2 === 0 ? 0.34 : 0.22) * s;
+      const spike = new this.THREE.Mesh(
+        new this.THREE.ConeGeometry(0.055 * s, spikeH, 4),
+        darkM
+      );
+      spike.rotation.x = Math.PI; // aponta para baixo
+      spike.position.set(Math.sin(a) * 0.33 * s, spikeH / 2 + 0.05 * s, Math.cos(a) * 0.33 * s);
+      this.group.add(spike);
+    }
+
+    // capuz pontudo sobre os ombros
+    const hood = new this.THREE.Mesh(
+      new this.THREE.ConeGeometry(0.3 * s, 0.62 * s, 5),
+      bodyM
+    );
+    hood.position.set(0, 1.72 * s, -0.02 * s);
+    hood.rotation.x = 0.1;
+    this.group.add(hood);
+
+    // vazio negro do rosto (os olhos brilham contra o absolutamente escuro)
+    const voidM = new this.THREE.MeshBasicMaterial({ color: 0x030306 });
+    this.mats.push(voidM);
+    const faceVoid = new this.THREE.Mesh(new this.THREE.PlaneGeometry(0.22 * s, 0.26 * s), voidM);
+    faceVoid.position.set(0, 1.74 * s, 0.185 * s);
+    faceVoid.rotation.x = -0.08;
+    this.group.add(faceVoid);
 
     const torso = new this.THREE.Mesh(new this.THREE.BoxGeometry(0.5 * s, 0.6 * s, 0.34 * s), bodyM);
     torso.position.y = 1.35 * s;
@@ -837,9 +1524,9 @@ export class Enemy {
     const eyeM = new this.THREE.MeshBasicMaterial({ color: this.cfg.eye });
     this.mats.push(eyeM);
     const eL = new this.THREE.Mesh(eyeG, eyeM);
-    eL.position.set(-0.08 * s, 1.82 * s, 0.16 * s);
+    eL.position.set(-0.08 * s, 1.77 * s, 0.19 * s);
     const eR = new this.THREE.Mesh(eyeG, eyeM);
-    eR.position.set(0.08 * s, 1.82 * s, 0.16 * s);
+    eR.position.set(0.08 * s, 1.77 * s, 0.19 * s);
     this.group.add(eL, eR);
 
     const glow = new this.THREE.Sprite(new this.THREE.SpriteMaterial({
@@ -847,9 +1534,23 @@ export class Enemy {
       opacity: 0.55, blending: this.THREE.AdditiveBlending, depthWrite: false,
     }));
     glow.scale.set(0.7 * s, 0.35 * s, 1);
-    glow.position.set(0, 1.82 * s, 0.1 * s);
+    glow.position.set(0, 1.77 * s, 0.12 * s);
     this.group.add(glow);
     this.eyeGlow = glow;
+
+    // névoa espectral na base (turnaround: nuvem de píxeis acinzentada)
+    this.mist = [];
+    for (let i = 0; i < 3; i++) {
+      const puff = new this.THREE.Sprite(new this.THREE.SpriteMaterial({
+        map: this.TEX.blob, color: 0x9aa0a8, transparent: true,
+        opacity: 0.28, depthWrite: false,
+      }));
+      const ps = (0.75 + i * 0.22) * s;
+      puff.scale.set(ps, ps * 0.5, 1);
+      puff.position.set((i - 1) * 0.16 * s, (0.1 + (i % 2) * 0.08) * s, (i % 2 ? 0.1 : -0.12) * s);
+      this.group.add(puff);
+      this.mist.push(puff);
+    }
 
     this.arms = [];
     for (const side of [-1, 1]) {
@@ -1073,6 +1774,13 @@ export class Enemy {
     }
     if (this.cloak) this.cloak.rotation.y += 0.01;
     if (this.crown) this.crown.rotation.z += 0.02;
+    if (this.mist) {
+      const t = performance.now() / 1000;
+      this.mist.forEach((puff, i) => {
+        puff.material.opacity = 0.2 + Math.sin(t * 1.3 + i * 2.1) * 0.1;
+        puff.position.x = Math.sin(t * 0.7 + i * 2.1) * 0.12 * this.cfg.scale;
+      });
+    }
   }
 }
 
@@ -1102,25 +1810,73 @@ export class NPC {
       return mesh;
     };
 
-    if (this.who === 'clara') {
-      const coat = lam(0xdcdcd8);
+    if (this.who === 'lucia') {
+      // LÚCIA (turnaround): franzina, vestido rosa-terra longo, franja,
+      // cabelo na cintura, pingente do medalhão, mãos postas à frente
+      const dress = lam(0xa8847c);
+      const dressD = lam(0x8f6e66);
+      const hair = lam(0x2a1a12);
+      const skin = lam(0xecd0b4);
+      // vestido longo (saia + torso)
+      bx(0.44, 0.78, 0.32, dress, 0, 0.52, 0);
+      bx(0.5, 0.06, 0.36, dressD, 0, 0.15, 0); // barra
+      bx(0.36, 0.55, 0.26, dress, 0, 1.18, 0);
+      // braços delicados com mãos postas à frente
+      bx(0.08, 0.48, 0.1, dress, -0.2, 1.22, 0, this.group).rotation.z = 0.12;
+      bx(0.08, 0.48, 0.1, dress, 0.2, 1.22, 0, this.group).rotation.z = -0.12;
+      bx(0.14, 0.08, 0.1, skin, 0, 1.02, 0.16); // mãos postas
+      // cabeça + cabelo: franja reta + laterais + costas na cintura
+      this.head = bx(0.26, 0.3, 0.26, skin, 0, 1.62, 0);
+      bx(0.3, 0.12, 0.3, hair, 0, 1.77, -0.01);
+      bx(0.3, 0.09, 0.05, hair, 0, 1.7, 0.145); // franja
+      bx(0.3, 0.62, 0.1, hair, 0, 1.42, -0.15); // costas
+      bx(0.06, 0.52, 0.12, hair, -0.16, 1.44, 0);
+      bx(0.06, 0.52, 0.12, hair, 0.16, 1.44, 0);
+      // pingente do medalhão
+      bx(0.05, 0.07, 0.02, lam(0x6a2a20), 0, 1.38, 0.14);
+      // sapatinhos simples
+      bx(0.16, 0.08, 0.24, lam(0x4a3428), -0.09, 0.04, 0.02);
+      bx(0.16, 0.08, 0.24, lam(0x4a3428), 0.09, 0.04, 0.02);
+    } else if (this.who === 'clara') {
+      const coat = lam(0xd8d8d4);
       const wine = lam(0x6b1d28);
-      const dark = lam(0x222228);
-      const skin = lam(0xddb294);
+      const dark = lam(0x465064);
+      const skin = lam(0xdcb194);
+      const hair = lam(0x4a2c18);
       bx(0.2, 0.78, 0.24, dark, -0.12, 0.39, 0);
       bx(0.2, 0.78, 0.24, dark, 0.12, 0.39, 0);
-      bx(0.48, 0.72, 0.3, coat, 0, 1.14, 0);
-      bx(0.24, 0.4, 0.32, wine, 0, 1.16, 0.01);
+      // jaleco longo aberto com blusa vinho
+      bx(0.48, 0.5, 0.3, coat, 0, 1.14, 0);
+      bx(0.5, 0.5, 0.32, coat, 0, 0.66, 0);
+      bx(0.24, 0.42, 0.32, wine, 0, 1.18, 0.01);
+      bx(0.2, 0.78, 0.24, skin, -0.12, 1.44, 0.02); // antebraço à mostra
+      bx(0.2, 0.78, 0.24, skin, 0.12, 1.44, 0.02);
       this.head = bx(0.28, 0.32, 0.28, skin, 0, 1.62, 0);
-      bx(0.3, 0.14, 0.3, lam(0x4a2c18), 0, 1.76, -0.01); // cabelo
+      bx(0.3, 0.14, 0.3, hair, 0, 1.76, -0.01);
+      bx(0.3, 0.6, 0.1, hair, 0, 1.44, -0.15); // cabelo longo
+      bx(0.06, 0.5, 0.12, hair, -0.16, 1.46, 0);
+      bx(0.06, 0.5, 0.12, hair, 0.16, 1.46, 0);
+      bx(0.2, 0.1, 0.3, lam(0xcfcfc8), -0.12, 0.04, 0.04); // tênis brancos
+      bx(0.2, 0.1, 0.3, lam(0xcfcfc8), 0.12, 0.04, 0.04);
     } else if (this.who === 'bento') {
-      const blue = lam(0x223854);
+      const blue = lam(0x2c4666);
+      const cream = lam(0xd8d0c0);
       const skin = lam(0xba9476);
       bx(0.22, 0.78, 0.26, blue, -0.13, 0.39, 0);
       bx(0.22, 0.78, 0.26, blue, 0.13, 0.39, 0);
       bx(0.54, 0.72, 0.34, blue, 0, 1.14, 0);
+      bx(0.5, 0.42, 0.38, blue, 0, 1.06, 0.04); // barriga
+      bx(0.4, 0.3, 0.02, blue, 0, 1.24, 0.185); // bib
+      bx(0.3, 0.24, 0.02, cream, 0, 1.3, 0.005); // camisa creme no peito
+      bx(0.14, 0.5, 0.16, cream, -0.34, 1.3, 0); // mangas arregaçadas
+      bx(0.14, 0.5, 0.16, cream, 0.34, 1.3, 0);
+      bx(0.12, 0.24, 0.14, skin, -0.34, 0.94, 0); // antebraços
+      bx(0.12, 0.24, 0.14, skin, 0.34, 0.94, 0);
       this.head = bx(0.3, 0.34, 0.3, skin, 0, 1.62, 0);
-      bx(0.32, 0.12, 0.34, lam(0x3a3e44), 0, 1.76, 0); // boné
+      bx(0.32, 0.1, 0.34, lam(0x8a8a88), 0, 1.78, -0.02); // cabelo grisalho lateral
+      bx(0.24, 0.12, 0.28, lam(0x9a9a96), 0, 1.48, 0.06); // barba grisalha
+      bx(0.22, 0.12, 0.3, lam(0x141416), -0.12, 0.04, 0.05); // botas
+      bx(0.22, 0.12, 0.3, lam(0x141416), 0.12, 0.04, 0.05);
     } else {
       // Daniel
       const coat = lam(0x2a3448);

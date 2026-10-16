@@ -1,0 +1,98 @@
+══════════════════════════════════════════════════════════════════
+   AUDITORIA DE DESIGN & MODELOS 3D — SANATÓRIO SANTA LÚCIA
+   bot auditor v2 · build 1924_1997_v94 · PASSADA nível 3 (1=gameplay, 2=+malha, 3=+micrometria)
+══════════════════════════════════════════════════════════════════
+Gerado em: 16/10/2026, 15:51:43 · grid 0.25m · raio player 0.28m
+
+RESUMO: 🔴 0 críticos · 🟠 0 altos · 🟡 0 médios · 🔵 21 baixos
+
+──────────────────────────────────────────────────────────────────
+PAINEL POR SALA (área | chão conectado | portas/itens/acts/ini | cam/luz)
+──────────────────────────────────────────────────────────────────
+  quarto             80m²  nav 100%  1/1/4/0  1cam/1luz  corredor min —  móveis:2
+  corredor          112m²  nav 100%  3/1/0/1  2cam/2luz  corredor min 3.69m  móveis:0
+  quarto2            80m²  nav 100%  1/1/3/0  1cam/1luz  corredor min —  móveis:2
+  saguao            468m²  nav 100%  5/3/4/0  2cam/8luz  💾SAVE  corredor min 3.25m  móveis:8
+  cemiterio         160m²  nav 100%  2/2/2/3  2cam/2luz  corredor min 2.72m  móveis:1
+  estufa            120m²  nav 100%  1/2/2/1  1cam/1luz  corredor min —  móveis:4
+  floresta          280m²  nav 100%  3/1/3/3  2cam/3luz  corredor min 1.75m  móveis:11
+  estacionamento    192m²  nav 100%  1/3/1/2  3cam/2luz  corredor min —  móveis:5
+  casa_zelador       80m²  nav 100%  2/2/3/0  1cam/1luz  corredor min 3.69m  móveis:3
+  passagem          126m²  nav 100%  2/2/0/1  1cam/1luz  corredor min 4.14m  móveis:2
+  corredor_n        126m²  nav 100%  5/3/1/1  2cam/2luz  corredor min 3.69m  móveis:1
+  experimentos      120m²  nav 100%  1/3/3/2  1cam/1luz  corredor min —  móveis:1
+  catedral          352m²  nav 100%  1/4/3/2  3cam/3luz  corredor min —  móveis:7
+  hall2             280m²  nav 100%  5/3/3/1  3cam/2luz  corredor min 2.75m  móveis:2
+  enfermaria        216m²  nav 100%  1/3/2/0  3cam/2luz  💾SAVE  corredor min —  móveis:1
+  escritorio2       108m²  nav 100%  1/1/3/1  1cam/1luz  corredor min —  móveis:2
+  fornalhas         192m²  nav 100%  1/5/3/2  3cam/3luz  corredor min —  móveis:3
+  corredor3         120m²  nav 100%  2/1/1/1  2cam/2luz  corredor min 3.69m  móveis:0
+  escritorio_sup    108m²  nav 100%  1/4/3/1  1cam/1luz  corredor min —  móveis:3
+  telhado           384m²  nav 100%  1/4/3/0  2cam/3luz  💾SAVE  corredor min —  móveis:3
+
+──────────────────────────────────────────────────────────────────
+PROGRESSÃO POR CAMPANHA
+──────────────────────────────────────────────────────────────────
+  DANIEL: 19/20 salas · final(telhado) ✅ alcançável · fora do alcance: estacionamento
+  CLARA: 19/20 salas · final(catedral) ✅ alcançável · fora do alcance: estacionamento
+  BENTO: 19/20 salas · final(floresta) ✅ alcançável · fora do alcance: estacionamento
+
+──────────────────────────────────────────────────────────────────
+ECONOMIA DO MUNDO (dados)
+──────────────────────────────────────────────────────────────────
+  fitas:8 (saves possíveis) · shells:36 · pills:8 · antidotes:4 · frags:3/4
+  ammo9:58 · ammo38:20 · HP total de inimigos+bosses: 2843
+  chaves no mapa: greenhouse_key, frag, fuse, alencastro_dossier, mezanino_emblem, frag, terrace_key, frag
+
+──────────────────────────────────────────────────────────────────
+ACHADOS (ordenados por severidade)
+──────────────────────────────────────────────────────────────────
+  🔵 [BAIXO] casa_zelador: act "cabana_bento" (3.6,0.8) fica dentro de móvel (alcançável de fora por raio 1.5) — estético
+        ↳ conserto: puxar o ponto 0.3–0.5 pra frente do móvel
+  🔵 [BAIXO] casa_zelador: act "armario_secreto" (-3.6,-0.5) fica dentro de móvel (alcançável de fora por raio 1.5) — estético
+        ↳ conserto: puxar o ponto 0.3–0.5 pra frente do móvel
+  🔵 [BAIXO] casa_zelador: act "bento_radio" (3.5,1.8) fica dentro de móvel (alcançável de fora por raio 1.4) — estético
+        ↳ conserto: puxar o ponto 0.3–0.5 pra frente do móvel
+  🔵 [BAIXO] catedral: act "altar_capela" (0,-5) fica dentro de móvel (alcançável de fora por raio 1.8) — estético
+        ↳ conserto: puxar o ponto 0.3–0.5 pra frente do móvel
+  🔵 [BAIXO] catedral: act "anjo_capela" (6.5,0) fica dentro de móvel (alcançável de fora por raio 1.5) — estético
+        ↳ conserto: puxar o ponto 0.3–0.5 pra frente do móvel
+  🔵 [BAIXO] cemiterio: act "mausoleum" (-5,-3) fica dentro de móvel (alcançável de fora por raio 1.6) — estético
+        ↳ conserto: puxar o ponto 0.3–0.5 pra frente do móvel
+  🔵 [BAIXO] estacionamento: act "carro_zelador" (-4,2) fica dentro de móvel (alcançável de fora por raio 1.7) — estético
+        ↳ conserto: puxar o ponto 0.3–0.5 pra frente do móvel
+  🔵 [BAIXO] estufa: act "greenhouse_bench" (-2,2) fica dentro de móvel (alcançável de fora por raio 1.5) — estético
+        ↳ conserto: puxar o ponto 0.3–0.5 pra frente do móvel
+  🔵 [BAIXO] estufa: act "greenhouse_plants" (2,-2) fica dentro de móvel (alcançável de fora por raio 1.6) — estético
+        ↳ conserto: puxar o ponto 0.3–0.5 pra frente do móvel
+  🔵 [BAIXO] experimentos: act "exam_table" (0,-2) fica dentro de móvel (alcançável de fora por raio 1.6) — estético
+        ↳ conserto: puxar o ponto 0.3–0.5 pra frente do móvel
+  🔵 [BAIXO] experimentos: act "exam_sink" (2.5,2.2) fica dentro de móvel (alcançável de fora por raio 1.5) — estético
+        ↳ conserto: puxar o ponto 0.3–0.5 pra frente do móvel
+  🔵 [BAIXO] floresta: act "monolith" (-6,-3) fica dentro de móvel (alcançável de fora por raio 1.7) — estético
+        ↳ conserto: puxar o ponto 0.3–0.5 pra frente do móvel
+  🔵 [BAIXO] floresta: act "carro_clara" (-2,4) fica dentro de móvel (alcançável de fora por raio 1.8) — estético
+        ↳ conserto: puxar o ponto 0.3–0.5 pra frente do móvel
+  🔵 [BAIXO] floresta: sala grande (280m²) com só 2 câmera(s)
+        ↳ conserto: salas grandes pedem 3–4 ângulos
+  🔵 [BAIXO] quarto: act "bed" (-3.2,-2) fica dentro de móvel (alcançável de fora por raio 1.4) — estético
+        ↳ conserto: puxar o ponto 0.3–0.5 pra frente do móvel
+  🔵 [BAIXO] quarto: act "drawer" (-3,-3.2) fica dentro de móvel (alcançável de fora por raio 1.3) — estético
+        ↳ conserto: puxar o ponto 0.3–0.5 pra frente do móvel
+  🔵 [BAIXO] quarto: act "teddy" (-4,1.8) fica dentro de móvel (alcançável de fora por raio 1.3) — estético
+        ↳ conserto: puxar o ponto 0.3–0.5 pra frente do móvel
+  🔵 [BAIXO] quarto2: act "bed2" (3.2,-1.5) fica dentro de móvel (alcançável de fora por raio 1.4) — estético
+        ↳ conserto: puxar o ponto 0.3–0.5 pra frente do móvel
+  🔵 [BAIXO] saguao: act "statue" (0,-4.5) fica dentro de móvel (alcançável de fora por raio 1.6) — estético
+        ↳ conserto: puxar o ponto 0.3–0.5 pra frente do móvel
+  🔵 [BAIXO] saguao: sala grande (468m²) com só 2 câmera(s)
+        ↳ conserto: salas grandes pedem 3–4 ângulos
+  🔵 [BAIXO] telhado: sala grande (384m²) com só 2 câmera(s)
+        ↳ conserto: salas grandes pedem 3–4 ângulos
+  ℹ️  [INFO] bento: sala "estacionamento" fora do alcance da campanha bento (avaliar se é by design)
+  ℹ️  [INFO] catedral: boss alencastro: dist-entrada 11.1m, kite 66%
+  ℹ️  [INFO] clara: sala "estacionamento" fora do alcance da campanha clara (avaliar se é by design)
+  ℹ️  [INFO] daniel: sala "estacionamento" fora do alcance da campanha daniel (avaliar se é by design)
+  ℹ️  [INFO] telhado: boss vulto: dist-entrada 11.4m, kite 100%
+
+══════════════════════════════════════════════════════════════════

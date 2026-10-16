@@ -90,10 +90,14 @@ console.log('\n--- 2. Tela de Configurações: Painel Elétrico de Fundo ---');
 game.titleAction('options');
 assert(!game.ui.el.options.classList.contains('hidden'), 'CONFIGURAÇÕES abre o Painel Elétrico Industrial de fundo');
 
-// Teste de ação EXTRA (Loja de Pontos & Modelos 3D com Estante e Mesa)
-console.log('\n--- 3. Tela de Extras: Loja de Pontos, Estante & Mesa com Vela ---');
+// Teste de ação EXTRA (Hub de Modos Extras & Loja de Pontos e Modelos 3D)
+console.log('\n--- 3. Tela de Extras: Hub de Modos Extras, Loja de Pontos, Estante & Mesa ---');
 game.titleAction('extras');
-assert(!game.ui.el.pointsShop.classList.contains('hidden'), 'EXTRA abre a Loja de Pontos e Modelos 3D');
+assert(!game.ui.el.extraModes.classList.contains('hidden') || !game.ui.el.pointsShop.classList.contains('hidden'), 'EXTRA abre o Menu de Extras / Loja');
+
+// Acesso à Loja de Pontos & Modelos 3D com Estante
+game.ui.showShop(game.points, game.unlocks);
+assert(!game.ui.el.pointsShop.classList.contains('hidden'), 'Loja de Pontos e Modelos 3D aberta');
 assert(game.ui.el.shopList.children.length > 0, 'Estante possui prateleiras com itens e colecionáveis');
 
 console.log(fails === 0 ? '\n✓ NOVO DESIGN DE MENUS AUDITADO COM SUCESSO TOTAL!' : `\n❌ ${fails} FALHA(S)`);

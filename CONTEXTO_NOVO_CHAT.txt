@@ -1,0 +1,103 @@
+════════════════════════════════════════════════════════════════════
+ SANTA LÚCIA — CONTEXTO COMPLETO PARA NOVO CHAT (handover 16/out/2025)
+════════════════════════════════════════════════════════════════════
+
+► O QUE É
+Survival horror estilo PS1 (Tank-adjacente, câmera fixa), 3ª pessoa,
+Three.js r160 puro (sem build), 3 campanhas zeráveis (Daniel, Clara,
+Bento "O Turno da Noite"), 20 salas, 4 fragmentos de memória, senhas,
+boss no telhado. Objetivo do dono: publicar na STEAM. Nome ainda não
+definido (SANTA LÚCIA é codinome; ver Gamma "Nome-do-jogo").
+
+► COMO RODAR
+1. npm i            (instala só ferramentas de teste; o jogo não depende)
+2. python3 serve.py → http://localhost:8000  (servidor no-cache)
+3. Autenticidade de versão = RODAPÉ do jogo (BUILD_TAG 1924_1997_v94).
+   NÃO É CACHE: se o rodapé não mudou, o bump não foi feito.
+
+► ESTADO ATUAL (v94, commitada na branch do zip)
+· Mundo:    auditoria 🔴0 🟠0 🟡0 (21 baixos)   → tools/audit_world.mjs
+· UI:       100/100                            → tools/audit_ui.mjs
+· UX:       30/30 (harness jsdom novo)         → node tools/_test_ux.mjs
+· ZERÁVEL:  3/3 bots ZERADOS v94 — Bento 10min/0m · Clara 14min/0m ·
+            Daniel 49min/1m/2frags/4 senhas    → tools/bot_play.mjs
+· ZIP tem o .git INTEIRO: commits v87→v94 estão nele. PUSH PENDENTE!
+  (nova sessão: git push origin arena/01a0e942-teste — NUNCA mergear PR)
+
+► FERRAMENTAL (régua de ouro: mudou algo → rodar TUDO isso)
+· 3 bots zerando:   node tools/bot_play.mjs daniel|clara|bento (acelerados)
+· auditor mundo:    node tools/audit_world.mjs
+· auditor UI:       node tools/audit_ui.mjs
+· UX jsdom:         node tools/_test_ux.mjs (inventário/mapa como player)
+· OLHOS REAIS:      python3 serve.py &  e depois:
+                    node tools/_shot.mjs title|play|inventory|map daniel
+   → chromium headless COM WEBGL fotografa o jogo de verdade
+     (SwiftShader; libs extraídas sozinho p/ /tmp/al2libs)
+   → saída: docs/refs/_debug/shot_*.png — SEMPRE OLHAR O PNG
+· render de sala:   node tools/render_room_dump.mjs <sala> [portaN]
+                    && python3 tools/render_room.py → /tmp/room_*.png
+· mapa/escada:      node tools/_test_map.mjs · node tools/_test_stairs.mjs
+· console do jogo:  window.__game (state, inv, openInventory(true), etc.)
+
+► O QUE FOI FEITO RECENTEMENTE (v92→v94)
+· HUDs pelos MOCKUPS do produtor (canônico): inventário "couro/pergaminho"
+  (retrato, ESTADO, ECG clássico na coluna, grade 4×3 emoldurada, comandos
+  c/ ícone, DESCARTAR, VOLTAR ✕) + aba MAPA no inventário (M abre direto;
+  névoa de guerra por visitedRooms; andares L1/L2/L3/TX; legenda; dot
+  pulsante "você está aqui"; auto-seleciona andar atual)
+· QA profissional: 7 bugs mortos (DESCARTAR ReferenceError, teclado
+  fantasma no mapa, ESC hierárquico, anti-softlock de arma, COMBINAR
+  fantasma, retrato onerror, canvas esticado) + harness jsdom
+· CONCERTO DA LUZ (causa raiz): THREE r160 usa luz física (r155+) e a
+  cena nascia ~π× mais escura = buraco preto. ambient 0.85→2.7,
+  hemi 0.65→2.05, brilho ×π, lantern 14→18. PROVAS: shot_play.png
+  (antes v93 escuro / depois legível). PRECISA DO AVAL VISUAL DO DONO.
+· antes disso: espiral cantilever + corrimão helicoidal (v90/91),
+  stairsAnim v2, disjuntor vivo com LEDs (v91), porta-fantasma do saguão.
+
+► O QUE FALTA (prioridades sugeridas)
+1. AVAL DO DONO: luz nova + inventário novo (comparar com mockups originais)
+2. Push da branch (nova sessão) + pull request p/ o dono mergear
+3. Polir inventário: footer "FECHAR [TAB/ESC]" ficou redundante com VOLTAR;
+   micro-ajustes de espaçamento; conferir Cinzel no título do mapa
+4. TELAS DE MAPA SEPARADAS (prometidas pós-HUDs) — mapa de exemplo dentro
+   do inventário já serve de base
+5. 9 GLBs de inimigos aguardando re-upload (pipeline 3D grátis:
+   Tripo ~13/mês, Hunyuan3D diário, TRELLIS 1/dia) — ver PROMPTS_IA3D.md
+6. Steam-ready: fullscreen, gamepad no menu, exporta offline (Electron/Tauri)
+7. ESCOLHER O NOME DO JOGO
+
+► REGRAS CANÔNICAS DO DONO (RESPEITAR SEMPRE)
+· Português BR informal; máximo esforço quando pedido ("é pra Steam")
+· Turnarounds/mockups/imagem do dono = CÂNON visual. Processo certo:
+  referência → renderizar → comparar lado a lado → ajustar até bater
+  (é assim que as telas iniciais foram feitas; usar _shot.mjs p/ isso)
+· RE2/RE3 clássicos = referência de TODAS as animações; pose de mira e
+  ATK idle são INTOCÁVEIS; ataques transientes só no clique
+· Mão real em cena quando mão vazia (v73); rig com juntas v68/69
+· Backup OBRIGATÓRIO em _arquivo/ (+tag) antes de refatoração
+· Lixo NUNCA deletar → zipar em _arquivo/ · manter este MAPA_DO_PROJETO
+· Contexto p/ compartilhar = .txt na árvore do projeto
+· Móveis flush nas paredes, NÃO bloqueiam porta/caminho; sala de spawn
+  sem inimigo; "examinar" só onde tem propósito; medir geometria antes
+  de posicionar (interior das paredes = ±(w/2−0.25))
+· Transição de escada ≠ porta (stairsAnim v2 aprovada); portas: folha
+  preenche o vão inteiro; doorVisual SEMPRE d/w na ordem certa
+· Render-offline → olhar o PNG → commit OBRIGATÓRIO com medidor numérico
+· Merge de PR é MANUAL DO DONO — agente nunca dá merge; push só em
+  sessão nova de coding
+
+► SEGREDOS DE JOGO (p/ testes)
+Senhas: 1994 · 2016 · 1402 · 1000 · fusível 30A energiza elevador P1↔P3
+(fuseOn; quadro de força no saguão acende LEDs verdes) · zerar NÃO exige
+os 4 fragmentos · ?playtest abre lab (PS1 OFF temporiamente; deletar mapa
+SÓ no ?playtest) · M = mapa · V/C = câmera · TAB/I = inventário ·
+Space mira · J/X/F ataca com mira
+
+► ARQUIVOS-CHAVE
+index.html (HUDs/overlays/sprite de ícones) · js/game.js (loop, salas,
+visitedRooms, luz) · js/world.js (geometria, portas, espiral, fuseLeds)
+· js/ui.js (inventário/mapa/stairsAnim/ECG) · js/config.js (ITEMS/CAMPAIGNS)
+· css/style.css (bloco "MOCKUP CANÔNICO" no fim) · MAPA_DO_PROJETO.txt
+(histórico v a v) · docs/refs/_debug/ (provas visuais; gitignored)
+════════════════════════════════════════════════════════════════════

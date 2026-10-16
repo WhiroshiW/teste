@@ -1,0 +1,9 @@
+# Backups locais e material frio (não versionar)
+backup/
+_arquivo/
+upload/
+modelos 3d/
+docs/refs/_debug/
+
+# dependências locais (reinstaláveis via npm i)
+node_modules/

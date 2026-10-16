@@ -1,0 +1,363 @@
+================================================================
+  MAPA DO PROJETO — SANTA LÚCIA (guia de localização do agente)
+  Atualizado: v74-wip · Se algo mudar de lugar, ATUALIZE ESTE ARQUIVO.
+================================================================
+
+⚠️ EM ANDAMENTO (14/out): BOT PLAYTESTER v3 — diagnóstico e checklist
+   completos em **BOT_PLAYTESTER_STATUS.txt** (raiz). Bug aberto: hop de
+   objetivo mira porta puxada e porta trancada vizinha rouba o candidato.
+   Fix do porão-alagado (bug de progressão nº10, world.js water solid) já
+   na tree. Telemetria 🛰️/🚪·E no bot é TEMPORÁRIA.
+
+REGRA DE OURO ANTES DE QUALQUER PATCH:
+  1. grep do trecho EXATO que vai ser substituído (nunca confiar em
+     memória — 6 falhas histórias por pular isso).
+  2. patch via write_file/python (NUNCA node -e multi-linha).
+  3. render-offline → eu olho → commit OBRIGATÓRIO com medidor.
+  4. tag de backup antes de refatoração grande (backup-vXX-nome).
+
+----------------------------------------------------------------
+1. ÁRVORE DO PROJETO
+----------------------------------------------------------------
+index.html ............. página única; currentBuild=:20 (bump vXX aqui)
+serve.py ............... servidor local :8000, No-Cache, 0.0.0.0
+README.md .............. visão geral antiga do repo
+MAPA_DO_PROJETO.txt .... ESTE ARQUIVO
+css/style.css .......... todo o visual dos menus/HUD (gótico RE)
+vendor/three.module.min.js  Three.js (usar this.THREE no Player, NUNCA bare THREE)
+js/ .................... 100% do código (detalhe na seção 2)
+assets/ ................ texturas/fundos REAIS do jogo (5.1M, não tocar:
+  daniel_body.jpg ...... atlas do modelo AI do Daniel (picsum: dedos pintados)
+  clara_body_ai.jpg .... atlas da Clara
+  camp_bg.jpg .......... fundo gótico REAL do jogo (usar em promo/slides)
+  title_bg/title_depth . fundos do menu título
+  portrait_daniel/clara.png  retratos da seleção
+test/ .................. 9 suítes (loop na seção 5)
+tools/review_layout.mjs — BOT DE LAYOUT (design, não colisão): fluxo,
+  orientação geográfica das portas, rótulos, circuitos por andar,
+  proporções, supply line do boss, vertical (1 escada + 1 elevador).
+  Nota 0-100. Saída: LAYOUT_REVIEW.txt. Rodar: node tools/review_layout.mjs
+tools/audit_world.mjs — BOT AUDITOR DE DESIGN (NÃO joga): constrói as 20
+  salas headless (THREE real) e disseca geometria: grid de navegação 0.25m,
+  portas (vão/recíproca/chegada), pickups na mesh, spawns em sólido, ilhas,
+  luzes/cams, salas de save, boss e cadeia por campanha. 3 NÍVEIS de
+  profundidade (node tools/audit_world.mjs 1|2|3): 2=malha×colisão
+  (invisível/atravessável/enterrado/sobreposto), 3=micrometria (widest
+  path >=0.9m, câmera bloqueada c/ altura, teto, densidade). Saída:
+  AUDITORIA_MUNDO.txt na raiz.
+tools/ ................. pipeline de validação/render offline (seção 5)
+docs/refs/ ............. REFERÊNCIAS CANÔNICAS do produtor (12M, não zipar:
+  daniel_apose_*.png ... turnaround do Daniel (cânon visual!)
+  clara_*.png .......... turnaround da Clara
+  inimigo_*_ref.png .... enfermeira/infectado/sombra (futuros inimigos)
+  arma_*_ref.png ....... faca/pistola/revólver/bisturi/chave (recalibração)
+docs/entrega_slides/ ... pacote do Gian: dossiê .docx, contexto .txt,
+                         pacote_completo.zip e prints_slide/ (7 imgs)
+docs/historico/ ........ dossiê de atualização de set/2026 (referência)
+_arquivo/ (IGNORADO) ... lixo zipado, NUNCA deletado:
+  dr_mixamo.glb.zip .... GLB de animação mixamo (sem ref no código)
+  patch_etapa_re_remake.diff.zip ... patch antigo de etapa RE
+  ferramentas_debug_antigas.zip .. debug_rig, inspect_rig, where_knife,
+                                   render_quarto_dump, audit_flow.mjs
+  SANTA_LUCIA_prints_apresentacao.zip (superseded pelo pacote_completo)
+
+----------------------------------------------------------------
+2. js/ — CÓDIGO (ordem de importância p/ o agente)
+----------------------------------------------------------------
+entities.js (86K) — Player/Enemy/NPC. ÂNCORAS:
+  :162  this.skinMat = cor da pele (punhos usam)
+  :289  kb/kh invisíveis + prop da faca COMENTADO (recalibração)
+  :389  applyAIModel(enabled) — monta o modelo AI, RIG DE JUNTAS:
+        :472 rigList=cópia (NUNCA iterar aiMeshes viva — cascata)
+        :478 splits braço@0.55/perna@0.52 + _cutWrist('R'/'L', defer=true)
+        :485→:503 gunPivot→foreR + calibração pose.gun (2 linhas!)
+        :503+ _cutWrist('L'/'R') FINAL (com gunPivot já calibrado)
+  :524  _cutWrist(side, defer) — manga frusto + punho; âncoras:
+        tubeAt (janela densa 2cm, âncora topo do braço) + gunPivot
+        espelhado pro lado L. cutY = b.min.y+0.07 (UV da mão no topo)
+  :623  _frustumGeo — geometria da manga (winding duplo)
+  :647  splitPartMesh(mesh, frac, childGroup, force) — corta soup em y;
+        pedaços userData.split; retorna cutY (frame do MESH!)
+  :724  setHero — cores/skins por herói; applyAIModel no fim
+  :855  _weaponClass(): pistol/revolver/magnum=light,
+        shotgun/grenade_launcher=heavy, resto=knife
+  :900  atkT decai SEMPRE (antes do if aiming)
+  :906+ poses por classe: mira light/heavy/knife-stance EXATO (NÃO
+        MEXER: aprovado); walk/run: legAmp .30, kneeAmp .72/.1.05,
+        lean .035/.10; low-ready andando (leves/pesadas)
+  :928  CORTE DIAGONAL estilo Leon (RE4): SEM position.z no braço
+        (desprega ombro!), torso.rotation.y corte 0.42, foreR chicote
+  :991+ update idle/decay — decay de braço SÓ knife
+  :1027 playAttack(rate) — atkDur .42; chamado por game.tryFire
+  knifeM canon: pos(-0.03,0,0) rot(-1.57,-0.49,-0.45); mira(3.77,0,-.45)
+  gunPivot compensado: pose.gun[1] - foreR.position.y (SEMPRE)
+
+game.js (92K) — orquestração do jogo:
+  :922  startCampaign (setHero, itens, arma inicial)
+  :1063 ~spawnWave/horda; :2083 ~boss vulto
+  :2200 ~tryFire (playAttack p/ armas brancas, rate, sfx, camShake)
+  lab: rota ?playtest → buildLab (devmode.js)
+config.js (17K) — NÚMEROS CANÔNICOS:
+  :21 ITEMS, :72 WEAPONS (rate/kick), :87 ENEMIES (cores/tamanhos),
+  :131 CAMPAIGNS (daniel/clara/bento: hp, speed, startItems, desc),
+  :193 SHOP_ITEMS
+story.js (30K) — TODO o texto:
+  :8 INTRO (Daniel), :18 INTRO_CLARA, :27 INTRO_BENTO, :34 D (diálogos
+  por evento), :370 DIARY, :381 TIPS, :418 OBJECTIVES, :420+ END_*
+  (5 finais: Aceitação/Meio Caminho/Redenção Médica/Fuga/Último Turno)
+world.js (95K+) — PLANTA NOVA COMPLETA (14/out, turnarounds canônicos):
+  20 salas em 3 andares + title_diorama. BUILDERS no tail.
+  Antiga preservada em _arquivo/. Regra: NÃO inventar caminhos extras
+  entre andares (escada corredor_n<->hall2; elevador P1=fusível,
+  P2->P3=válvulas; telhado SÓ por porta c/ terrace_key).
+  L1 (13): quarto, corredor, quarto2, saguao, cemiterio, estufa,
+  floresta, estacionamento, casa_zelador, passagem, corredor_n,
+  experimentos, catedral (final da CLARA; boss alencastro 0,-5.5;
+  luz no altar pós-bossDead = final dela).
+  L2 (4): hall2 (hub elevador), enfermaria (SAVE limpo + ribbon),
+  escritorio2 (lore), fornalhas (3 válvulas = valveOpen; escopota
+  na entrada; frag3).
+  L3 (3): corredor3 (arquivo morto), escritorio_sup (terrace_key +
+  frag4 + page), telhado (heliponto, helicóptero = fuga final,
+  diário de bordo = SAVE, boss VULTO 0,-4 p/ daniel/bento).
+  Máquina de escrever (save): EXIGE fita de tinta (ribbon) — 8 no mundo.
+  Cap do inventário: 12; chaves transbordam; até 3 armas ignoram o cap.
+devmode.js (24K) — LABORATÓRIO: :461 buildLab, :516 SLOTS (VAZIOS p/
+  recalibração de armas; re-ler nota no local)
+ui.js (107K) — menus, HUD ECG, diário, loja, intro patrocinadores
+textures.js (50K) — texturas canvas 32x64; :997 nurseUniform (cruz
+  médica — a "cruz no peito" de print era o CROSSHAIR do jogo!)
+audio.js (33K) procedural · gamepad.js (12K) · psx.js (6K) pós-efeito
+model_daniel_data.js (2.9M) / model_clara_data.js (3.0M) — geometria
+  base64 dos modelos AI (Tripo): parts{p,u,n}, pose{armOpen,gun,finger}
+model_weapons_data.js (217K) — faca calibrada (JSON exibe_faca GUARDADO
+  aqui p/ recalibração; prop oculto desde v70)
+main.js — :10 const BUILD (badge/rodapé do intro! bump TAMBÉM aqui)
+
+----------------------------------------------------------------
+3. ESTADO CANÔNICO DO VISUAL (v71, aprovado pelo produtor)
+----------------------------------------------------------------
+- Rig 2 segmentos: foreL/R @(0,-0.36,0), shinL/R @(0,-0.40,0);
+  andar/correr RE2/RE3 APROVADOS — NÃO REGREDIR.
+- MÃO REAL do modelo em cena (v73, pedido do produtor — 'pq vc n usa meu modelo na mão?'). Punho procedural (fistMat/manga frusto) OCULTO, código do _cutWrist PRESERVADO no histórico p/ reativar quando as armas voltarem. Antes:
+  escondida em TODA passada de _cutWrist; antebraço AI fora (dedos
+  fundidos no soup — NÃO tentar fatiar de novo).
+- Faca FORA da mão (recalibração pendente); JSON da calibração salvo.
+- Pose de mira/ATK idle INTOCÁVEL; ataques transientes só no clique.
+- Lab: PS1 OFF temporário; vitrine vazia; deletar mapa só em ?playtest.
+- Layers: 0=mundo+corpo, 1=oclusor, 2=armas full-res.
+- updateKnifeWorldUp (v57): só quando atkT<=0.
+
+----------------------------------------------------------------
+4. RODAPÉ/BUILD — COMO AUTENTICAR VERSÃO (NÃO É CACHE!)
+----------------------------------------------------------------
+bump: sed s/1924_1997_vXX/1924_1997_vYY/g index.html js/*.js
+      + SANTA LÚCIA vX→vY no <title> do index.html
+      + const BUILD = 'vY' no js/main.js (:10 — rodapé do intro!)
+      + rodar as 9 suítes antes de commitar.
+
+----------------------------------------------------------------
+5. COMANDOS DO DIA A DIA (cwd = raiz)
+----------------------------------------------------------------
+Servidor:      python3 serve.py        (porta 8000; preview ?playtest p/ lab)
+Suítes (9):    for t in headless test_new_menus test_save_load_screen
+               test_linear_flow test_shop_and_extras
+               test_particles_and_re_hud test_remastered_plant
+               test_sponsor_intro test_screen_transitions; do node test/$t.mjs; done
+Testes visual: node tools/test_rig.mjs      (rig+punhos, 8 checks)
+               node tools/test_facada.mjs   (slash Leon, reprova se ombro translada)
+               node tools/test_lab.mjs      (lab+editor)
+               node tools/measure_blade.mjs (ângulo da lâmina NA TELA — moot s/ faca)
+               node tools/screen_check.mjs  (lâmina na tela)
+Renders p/ EU olhar:
+               node tools/render_lab_dump.mjs  → dump lab (isola player)
+               node tools/render_player_dump.mjs idle|aim|slash|both
+               node tools/render_atk_dump.mjs  → 3 frames do corte c/ updates
+               python3 tools/render_player.py front|walk|game|back|palm
+               (dump → /tmp/player_render.json; py rasteriza → /tmp/player_*.png)
+               numpy/pillow/pip3 install --break-system-packages (sandbox reseta!)
+tools que RESTARAM: render_*, test_rig/facada/lab, measure_blade,
+               screen_check, build_character_model.py, build_prop_model.py
+               (os 2 .py = gera base64 dos modelos/props — recalibração)
+
+----------------------------------------------------------------
+6. GIT / SESSÃO
+----------------------------------------------------------------
+Branch de sessão: arena/<hash>-teste (push só em NOVA sessão;
+merge manual pelo usuário — NUNCA mergear por ele).
+Tags de backup: backup-v67-completo, backup-v68-rig, backup-v71-mangas.
+Sandbox recicla: git volta pro merge base MAS A ÁRVORE DE ARQUIVOS
+SOBREVIVE — re-commitar com o conteúdo intacto e recriar tag (feito
+2×: v70, v71). Processos background MORREM a cada sessão: subir
+serve.py de novo e conferir BUILD com curl.
+modelos 3d/ (GLBs dos inimigos) PERDIDOS no revival — produtor vai
+re-subir via GitHub web; enquanto isso, animações de inimigos bloqueadas.
+
+----------------------------------------------------------------
+7. CIDADÃO CORTADO (lixos conhecidos — NÃO recriar)
+----------------------------------------------------------------
+- iterar this.aiMeshes durante splitPartMesh → cascata de fragmentos.
+- gunPivot sem compensar foreR.position.y → faca pende 0.36m.
+- assert de patch sem grep prévio (k6, 6ª falha).
+- node -e multi-linha → SyntaxError; usar write_file + node arquivo.
+- jab por ROTAÇÃO não avança a faca (v65).
+- 'aim90'.endsWith('m90') é TRUE — cuidado com sufixos.
+- centróide cru do braço é ARRASTADO pelos flaps do casaco (manga
+  virava sino 44°) → sempre janela densa c/ âncora.
+- gunPivot é ÚNICO (mão R): lado L = espelho do x.
+================================================================
+
+## v80 — BOT DE UI (14/out)
+- tools/audit_ui.mjs: varredura estática (el $('x') vs ids do HTML, estados setado vs
+  tratado, ícones usados vs ICONS, loja, diálogos D.*) + navegação headless por TODAS
+  as telas (sponsor→título→campanhas→jogo→pause→help→options→galeria→loja→savebox).
+  Rodar: node tools/audit_ui.mjs → UI_REVIEW.txt.
+- NOTA DE UI: 0/100 (1ª run, 30 críticos) → 100/100 (0/0/0/0) neste commit.
+  Fixes: 17 el faltantes no index.html (titlePointsVal, galleryCanvas/Name/Sub/Bio,
+  4 rows de opções vol*/brilho, scoreMercenaries/scoreSurvivor); dead code opt* fora;
+  hp() NaN-safe; showHud(false) no fim; ícones da loja (syringe/ammo9/bolt/sparkle);
+  +4 diálogos (cofre_abre, cofre_errado, salvar_sem_fita, boiler).
+- bot_play.mjs ganhou 🧭 RESGATE pós-morte: save antigo devolve item consumido ao mundo
+  → bot marca pkSeen stale, revisita a sala e re-pega (testado: Daniel morreu pro VULTO,
+  re-pegou terrace_key no escritório_sup e zerou).
+
+## v81 — QUARTO 1 refeito (15/out): móveis residenciais de verdade
+- Player reclamou: cama de ENFERMAGEM nos quartos (grade cromada + soro), urso = bloco
+  marrom solto, armário com textura de PAPEL DE PAREDE. Corrigido no mundo todo:
+- +3 texturas: bedspread (manta xadrez), woodFurn (madeira de móvel c/ veios), plush (pelúcia)
+- makeNormalBed: cama de madeira (cabeceira/pés com topo arredondado fake, colchão,
+  travesseiro, manta xadrez c/ caimento) — solid gira com ry (bug de parede invisível evitado)
+- makeTeddyChair: cadeira de madeira com URSO DE PELÚCIA sentado (torso, cabeça, orelhas,
+  focinho, barriga clara, braços, pernas esticadas c/ pés) — 3/4 virado pra porta
+- makeWardrobe: armário de madeira (plinto, cornija, portas c/ painel rebaixado, puxadores
+  de latão) — flush na parede, footprint gira com ry; QUARTO 1/2 + casa do zelador trocados
+- Olhos: tools/render_room_dump.mjs + render_room.py (dump da sala c/ texturas reais via
+  @napi-rs/canvas + rasterizador numpy c/ z-buffer) — renders em docs/refs/_debug/
+- Régua: 3/3 ZERADOS · UI 100 · layout 94 · mundo 0/0/0 (armário des-enterrado da parede)
+
+## v82 — ajustes do Quarto 1 (feedback do produtor, 15/out)
+- gaveta saiu de FRENTE DA PORTA de saída → canto sudoeste, rente à parede sul
+- REMOVIDO spawn de sombra no quarto 1: é a sala onde o player ACORDA (segura, clássico RE)
+- régua: 3/3 ZERADOS (Clara 15min/0m · Bento 14min/0m · Daniel 56min/1m+resgate)
+- auditores: mundo 0/0/0 · UI 100 · layout 94
+
+## v85 — Quarto 2 (cofre confidencial) endireitado (15/out, feedback do produtor)
+- cofre estava TORTO (ry=0.4 rad, meio de lado) com solid DUPLICADO que ignorava a
+  rotação → agora flush na parede oeste (ry=π/2, porta/dial pro quarto), solid gira
+- estante de prontuários tinha parede invisível de 1.8m (solid z:-2.1..-0.3 pra móvel
+  de 0.5m) → solid = volume exato do móvel
+- makeSafeConfidential: solid respeita ry (90° troca eixos)
+- blob vermelho no meio do quarto = pickup da FITA DE TINTA com glow (é loot de save,
+  não é bug); posicionado perto da cama
+- régua: 3/3 ZERADOS (Clara 15/0m · Bento 14/0m · Daniel 53/1m+🧭) · mundo 0/0/0 · UI 100
+
+## v86 — camas e estante ENCOSTADAS de verdade (15/out, feedback do produtor)
+- MEDIDO: interior das paredes = ±4.75 (perimeter th=0.5 centrado em ±w/2). Com isso:
+  quarto 2: cama encostada na parede leste (cabeceira NA parede, ry=π), estante e cofre
+  flush na oeste; quarto 1: cama flush na oeste, gaveta rente à parede sul, armário em x=4.5
+- cornija da estante RECUADA (menor que o corpo — antes parecia tampa de cabeça pra baixo)
+- interações reposicionadas junto dos móveis; auditor do mundo como régua de enterramento
+- régua: 3/3 ZERADOS (Clara 13/0m · Bento 14/0m · Daniel 54/1m+🧭) · mundo 0/0/0 · UI 100
+
+## v87 — estante de prontuários: eixos trocados de vez (15/out, feedback do produtor)
+- CRIME RAIZ: box tinha 1.8 no eixo X (entrando na parede) e 0.5 no Z — só o fiapo
+  de 0.5m aparecia (o "pilar"). Agora: fundo 0.5 contra a parede oeste, face 1.8 pro quarto
+- vendeu a função: 3 prateleiras salientes + 2 fileiras de pastas de prontuários
+  (cores mortas de arquivo) apoiadas nelas
+- régua: 3/3 (Clara 15/0m · Bento 14/0m · Daniel 46/0m) · mundo 0/0/0 · UI 100
+
+## v88 — saguão: estátua nova, ESCADA em ESPIRAL, quadro de força de parede (15/out)
+- estátua era 2 cilindros com textura de PAPEL DE PAREDE → agora estátua de pedra em
+  blocos: base, pedestal, manto, torso, ombros, braços, PRATO nas mãos com OS DOIS OLHOS
+  (símbolo de Santa Lúcia), cabeça véu; vela quente aos pés
+- escadaria quebrada (4 caixas) → ESPIRAL de pedra colada na parede oeste subindo ATÉ O
+  TETO (4.4m, 16 degraus + fuso central + patamar no alto + corrimão na base); cenário,
+  2º andar segue pela porta da ala norte
+- quadro de força era caixa solta no meio do piso → gabinete metálico FLUSH na parede
+  leste: porta c/ maçaneta, disjuntores, LEDs (ON verde/falha vermelha), faixa de PERIGO,
+  3 eletrodutos subindo até o teto; interact e solid reposicionados
+- BUG pego pelo auditor: pointLight dentro do grupo da estátua quebrou o build do saguão
+  (helper espera a SALA) → luz em coords de mundo; mundo 0/0/0 de volta
+- régua: 3/3 ZERADOS (Clara 15/0m · Bento 14/0m · Daniel 53/0m 18 salas)
+
+## v89 — ESCADA ESPIRAL agora LEVA pro 2º andar (canon do produtor, 15/out)
+- fim do "cenário": a espiral do saguão é passagem REAL saguao ↔ hall2
+  (ida na base oeste 'Subir a Escada Espiral'; volta no canto SO do hall2)
+- portas antigas rebatizadas como 'Escada de Serviço' (corredor_n ↔ hall2 segue
+  funcionando — escada alternativa de empregados, caminho dos bots preservado)
+- auditor pegou o gatilho nascendo DENTRO do sólido da escada → movido pra frente
+  da base; mundo 0/0/0
+- REGRA ATUALIZADA: escada do saguão = caminho canônico pro 2º andar (pedido
+  explícito do produtor em 15/out, revoga o 'só cenário' do v88)
+- régua: 3/3 ZERADOS (Clara 17/0m · Bento 11/0m · Daniel 55/1m+🧭) — a Clara agora
+  explora o hall2 cedo pela espiral (~295 interações, comportamento esperado)
+
+## v90 — espiral linda no cantão + transição de ESCADA + porta-fantasma consertada (15/out)
+- porta do saguão norte: doorVisual chamado c/ d/w INVERTIDOS — a folha nascia a 4m
+  FORA da sala (z=-13), o 'buraco preto com porta pequena' era ela ao longe na névoa;
+  conserto + folha agora cobre o vão inteiro (1.84, batentes a ±0.92) nas 2 orientações
+- espiral: encaixada no cantão SO (fuso a 1.25 das paredes, degraus flush), balaústres
+  + ANÉIS de corrimão (torus), remate de latão no fuso, vela na base e luar no topo
+- transição: doorSequence aceita {stairs:true} → stairsAnim (espiral 2D em perspectiva,
+  degraus descendo = subindo, fades) + sfx stairStep (4 pisadas com eco); 2ª escada
+  do jogo (serviço) mantém animação de porta normal
+- auditor pegou spawn em ilha e degraus cortando a parede → 0/0/0
+- régua: 3/3 ZERADOS (Clara 16/0m · Bento 11/0m · Daniel 45/0m)
+
+## v91 — espiral cantilever c/ corrimão helicoidal + animação v2 + disjuntor vivo (15/out)
+- degraus agora CANTILEVER (entram no fuso, vão até r=1.35 — sem flutuar) + corrimão
+  HELICOIDAL contínuo (um elo por degrau) + balaústres a cada 3 degraus
+- stairsAnim v2: espiral em perspectiva de verdade (degraus giram em volta do fuso,
+  ordenados por profundidade, inclinação = giro, pulso de vela embaixo); teste em
+  tools/_test_stairs.mjs → docs/refs/_debug/stairs_f*.png
+- DISJUNTOR EXPLICA: é o soquete do Fusível 30A (fuseOn energiza o elevador P1↔P3).
+  Os LEDs agora REAGEM: vermelho=falha apagado → verde acesa quando o fusível entra
+- régua: 3/3 ZERADOS (Clara 16/0m · Bento 11/0m · Daniel 45/0m) · mundo 0/0/0 · UI 100
+
+## v92 — HUDs pelos mockups do produtor: inventário RE4-style + MAPA no inventário (15/out)
+- INVENTÁRIO remasterizado (mockup image-2 = cânon): retrato do herói à esquerda
+  (portraits reais Daniel/Clara, Bento=silhueta) + ESTADO FINE/CAUTION/DANGER colorido
+  + data "13 DE NOVEMBRO DE 1998"; grade 4×3 emoldurada em pergaminho no centro;
+  "ITEM SELECIONADO" à direita + novo comando DESCARTAR (não aparece p/ itens de história)
+- ABA MAPA dentro do inventário (mockup image-1): abas MALETA/MAPA no header; tela-cheia
+  com planta por andar (L1/L2/L3/TX), seleção de andar à direita, legenda completa
+  (fita=máquina de salvar, E=elevador, tracejado=trancada/não-explorado, dot vermelho
+  pulsante=você-aqui, ?=névoa de guerra) e citação
+- NÉVOA DE GUERRA: game.visitedRooms (Set, alimenta loadRoom); salas visitadas desenham
+  caixa sólida c/ nome, resto fica "?" tracejado; abrir via tecla M (play) → mapa direto;
+  M dentro do inventário alterna MALETA↔MAPA; auto-seleciona o andar da sala atual
+- posição do player no mapa = aproximação por x/z da sala (dot pulsa via rAF, rAF
+  cancelado ao fechar/trocar de aba); render espelhado em tools/_test_map.mjs
+  → docs/refs/_debug/mapa_L{1,2}.png (inspecionados: wrap de 2 linhas p/ nomes longos)
+- régua: 3/3 ZERADOS (Bento 11/0m · Clara 16/0m · Daniel 54/1m) · mundo 0/0/0 · UI 100
+
+## v93 — QA profissional de UX: harness jsdom (30 testes) + 7 bugs do HUD mortos (15/out)
+- **BUG CRÍTICO**: DESCARTAR lançava ReferenceError (usava `cfg` fora de escopo em
+  execInvCmd) — item nunca saía da maleta; corrigido + toast com nome certo
+- teclado INERT na aba MAPA: setas/WASD/Enter/Space/E/Q não mexem mais na grade
+  invisível (sons fantasma, EXAMINAR por cima do mapa, confirmação fantasma); Q com
+  guarda de aba e nunca em item inexistente
+- ESC agora é hierárquico (RE style): combinação → submenu → grade → fecha; TAB/I
+  continuam fechando direto; no MAPA, back fecha
+- anti-softlock: impossível descartar a ÚLTIMA arma do inventário (Steam-ready)
+- trocar de aba cancela o modo COMBINAR (sem estado fantasma ao voltar)
+- retrato: <img> com onerror → fallback automático (nunca quadro quebrado)
+- canvas do mapa com aspect-ratio 620/380 (não estica mais em telas grandes)
+- NOVO FERRAMENTAL: tools/_test_ux.mjs (jsdom) — dirige a UI real como player:
+  30 testes cobrindo abas, navegação, descarte, guards, retrato, estado e hierarquia
+  de back · roda em ~1s: node tools/_test_ux.mjs
+- régua: 3/3 ZERADOS (Bento 11/0m · Clara 17/0m · Daniel 54/1m) · mundo 0/0/0 · UI 100 · UX 30/30
+
+## v94 — conserto da LUZ (causa raiz da escuridão) + inventário remontado pelo mockup + olhos reais (16/out)
+- **BUG GERAL DE LUZ**: THREE r160 usa modo físico (r155+) — Ambient/Hemisphere ficavam
+  ~π× mais fracos que a intenção → jogo inteiro Nascia PRETO (silhuetas, paredes sumidas).
+  Corrigido: ambient 0.85→2.7, hemi 0.65→2.05, níveis de brilho ×π, lantern 14→18 (raio 24)
+- **OLHOS DE VERDADE**: tools/_shot.mjs — chromium headless REAL com WebGL (SwiftShader)
+  fotografando o DOM/canvas do jogo rodando (title/play/inventory/map). Provas em
+  docs/refs/_debug/shot_*.png. Requisito: serve.py no ar; libs extraídas p/ /tmp sozinho
+- inventário REMONTADO no formato do mockup: título ornado ──✟ INVENTÁRIO ✟──, painel
+  de couro grande (morreu o scroll), grade emoldurada c/ rebites, ECG clássico na coluna
+  do retrato, comandos c/ ícones (mão/lupa/lixeira/peça — 4 símbolos novos no sprite),
+  textos "— VAZIO —"/"NENHUM ITEM SELECIONADO.", botão VOLTAR ✕ no rodapé
+- ecgStatus voltou a existir (auditor pegou 🔴) · ECG escalando na coluna sem cortar
+- régua: 3/3 ZERADOS (Bento 10/0m · Clara 14/0m · Daniel 49/1m) · mundo 0/0/0 · UI 100 · UX 30/30
