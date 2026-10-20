@@ -51,7 +51,16 @@ definido (SANTA LÚCIA é codinome; ver Gamma "Nome-do-jogo").
 · CONCERTO DA LUZ (causa raiz): THREE r160 usa luz física (r155+) e a
   cena nascia ~π× mais escura = buraco preto. ambient 0.85→2.7,
   hemi 0.65→2.05, brilho ×π, lantern 14→18. PROVAS: shot_play.png
-  (antes v93 escuro / depois legível). PRECISA DO AVAL VISUAL DO DONO.
+  (antes v93 escuro / depois legível).
+· AVAL VISUAL DO DONO (20/out/2026): v94 ficou CLARA DEMAIS — perdeu o terror.
+  Foi fotografada uma régua de variantes (lanterna fixa em 18, o contraste vem
+  dela) e o dono APROVOU a dosagem B = 60% do fill:
+      v93  amb 0.85/hemi 0.65 → média 16,0 · 53,6% quase-preto
+      v94  amb 2.70/hemi 2.05 → média 33,3 · 15,4%   ← REPROVADO
+      B    amb 1.62/hemi 1.23 → média 24,8 · 27,6%   ← ✅ APROVADO
+  Níveis de brilho: normal 1.23 / max 2.16 / padrão 1.62.
+  BUILD_TAG mantido em 1924_1997_v94 por decisão do dono.
+  Medir: node tools/_mede_luz.mjs docs/refs/_debug/*.png
 · antes disso: espiral cantilever + corrimão helicoidal (v90/91),
   stairsAnim v2, disjuntor vivo com LEDs (v91), porta-fantasma do saguão.
 
