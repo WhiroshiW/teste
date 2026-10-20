@@ -361,3 +361,28 @@ re-subir via GitHub web; enquanto isso, animações de inimigos bloqueadas.
   textos "— VAZIO —"/"NENHUM ITEM SELECIONADO.", botão VOLTAR ✕ no rodapé
 - ecgStatus voltou a existir (auditor pegou 🔴) · ECG escalando na coluna sem cortar
 - régua: 3/3 ZERADOS (Bento 10/0m · Clara 14/0m · Daniel 49/1m) · mundo 0/0/0 · UI 100 · UX 30/30
+
+════════════════════════════════════════════════════════════════
+ v94.1 — DOSAGEM DE LUZ APROVADA PELO DONO (20/out/2026)
+════════════════════════════════════════════════════════════════
+- O ×π da v94 estava CERTO na causa raiz (r155+ luz física), mas o dono achou
+  CLARO DEMAIS — perdeu o terror (aval visual em tools/_shot.mjs).
+- Régua de variantes fotografadas (lanterna fixa em 18: o contraste vem dela):
+    v93 antiga  amb 0.85 / hemi 0.65 / lantern 14 → média 16,0 · 53,6% quase-preto
+    v94 (×π)    amb 2.70 / hemi 2.05 / lantern 18 → média 33,3 · 15,4%  ← REPROVADO
+    A 75%       amb 2.02 / hemi 1.54 / lantern 18 → média 28,6 · 20,4%
+    B 60%       amb 1.62 / hemi 1.23 / lantern 18 → média 24,8 · 27,6%  ← ✅ APROVADO
+    C 45%       amb 1.22 / hemi 0.92 / lantern 18 → média 22,1 · 35,3%
+- Aplicado: ambient 1.62 · hemi 1.23 · níveis de brilho (normal 1.23 / max 2.16 / padrão 1.62)
+- BUILD_TAG mantido em 1924_1997_v94 por decisão do dono.
+- Ferramentas novas: tools/_mede_luz.mjs (régua numérica de luminância) ·
+  tools/_comparativo.mjs (comparativo lado a lado c/ média na etiqueta) ·
+  tools/_probe.mjs (sonda de DOM/layout real — pega o que jsdom não vê)
+- INVENTÁRIO: DONO PEDIU P/ NÃO MEXER até comparar com o mockup canônico.
+  Defeitos medidos (720p e 1080p), aguardando aval:
+    · .invSide com width:38% (sobra do layout antigo em flex) → coluna direita
+      espremida em 116px dentro de um trilho de 305px
+    · painel shrink-to-fit em 871px (max-width é 1150px) → slots da grade em 53px
+    · VOLTAR + rodapé vazam do painel (overflow:visible) e ficam CORTADOS em 720p
+- régua pós-mudança: UI 100/100 · UX 30/30 · mundo 🔴0 🟠0 🟡0 🔵21 ·
+  3/3 ZERADOS (Bento 11min/0m · Clara 16min/0m · Daniel 45min/0m)

@@ -54,10 +54,10 @@ export class Game {
     this.camera = new THREE.PerspectiveCamera(60, 16 / 9, 0.1, 140);
 
     // Iluminação refinada: mais clara, legível e atmosférica
-    this.ambLight = new THREE.AmbientLight(0xffffff, 2.7); // 0.85·π — r155+ luzes físicas
+    this.ambLight = new THREE.AmbientLight(0xffffff, 1.62); // 0.85·π × 0.60 — dosagem B aprovada pelo dono (v94 ficou claro demais)
     this.ambLight.layers.enable(1); this.ambLight.layers.enable(2); // camadas das armas
     this.scene.add(this.ambLight);
-    this.hemiLight = new THREE.HemisphereLight(0xe8f0ff, 0x33283a, 2.05); // 0.65·π
+    this.hemiLight = new THREE.HemisphereLight(0xe8f0ff, 0x33283a, 1.23); // 0.65·π × 0.60
     this.hemiLight.layers.enable(1); this.hemiLight.layers.enable(2); // idem
     this.scene.add(this.hemiLight);
 
@@ -267,7 +267,7 @@ export class Game {
     this.saveOpts();
     const val = level === 'normal' ? 1.25 : level === 'max' ? 1.95 : 1.55;
     this.psx.setBrightness(val);
-    this.ambLight.intensity = level === 'normal' ? 2.05 : level === 'max' ? 3.6 : 2.7; // ×π (r155+)
+    this.ambLight.intensity = level === 'normal' ? 1.23 : level === 'max' ? 2.16 : 1.62; // ×π × 0.60
   }
 
   setFilter(f) {
