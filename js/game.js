@@ -177,7 +177,6 @@ export class Game {
   addPoints(n, reason = '') {
     this.points += n;
     localStorage.setItem(POINTS_KEY, String(this.points));
-    if (this.ui.el.titlePointsVal) this.ui.el.titlePointsVal.textContent = this.points.toLocaleString();
     if (this.ui.el.shopPointsVal) this.ui.el.shopPointsVal.textContent = this.points.toLocaleString();
     if (reason) this.ui.toast(`${icon('star')} +${n} PONTOS: ${reason}`, 3.5);
   }

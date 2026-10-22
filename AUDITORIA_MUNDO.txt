@@ -2,7 +2,7 @@
    AUDITORIA DE DESIGN & MODELOS 3D — SANATÓRIO SANTA LÚCIA
    bot auditor v2 · build 1924_1997_v94 · PASSADA nível 3 (1=gameplay, 2=+malha, 3=+micrometria)
 ══════════════════════════════════════════════════════════════════
-Gerado em: 20/10/2026, 15:59:29 · grid 0.25m · raio player 0.28m
+Gerado em: 22/10/2026, 19:18:36 · grid 0.25m · raio player 0.28m
 
 RESUMO: 🔴 0 críticos · 🟠 0 altos · 🟡 0 médios · 🔵 21 baixos
 

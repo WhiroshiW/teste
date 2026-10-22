@@ -32,6 +32,7 @@ await page.setViewport({ width: +(process.env.VW||1280), height: +(process.env.V
 page.on('console', (m) => { if (m.type() === 'error') console.log('CONSOLE-ERR:', m.text().slice(0, 160)); });
 page.on('requestfailed', (r) => console.log('REQ-FAILED:', r.url().slice(0, 120), r.failure()?.errorText));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+await page.evaluateOnNewDocument((b) => { window.__BUSCA = b; }, process.env.BUSCA || '');
 await page.goto('http://127.0.0.1:8000/', { waitUntil: 'networkidle2', timeout: 90000 });
 await sleep(3000);
 
@@ -89,6 +90,39 @@ const info = await page.evaluate(() => {
   }
   const inv = document.querySelector('.panel.inv.reInv');
   if (inv) out.panelWidth = inv.getBoundingClientRect().width;
+  {
+    const rx = new RegExp(window.__BUSCA || '.', 'i');
+    out.textos = [];
+    document.querySelectorAll('body *').forEach((el) => {
+      if (el.closest('svg')) return;
+      const t = (el.textContent || '').trim();
+      if (!t || el.children.length > 0) return;
+      if (!rx.test(t)) return;
+      const r = el.getBoundingClientRect();
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity <= 0.05 || el.offsetParent === null) return;
+      if (r.width < 1 || r.height < 1) return;
+      out.textos.push({ txt: t.slice(0, 60), xy: [Math.round(r.x), Math.round(r.y)], tam: [Math.round(r.width), Math.round(r.height)],
+        tag: el.tagName + (el.id ? '#' + el.id : '') + (typeof el.className === 'string' && el.className ? '.' + el.className.split(' ')[0] : '') });
+    });
+    out.textos.sort((a, b) => a.xy[1] - b.xy[1]);
+  }
+  if (window.__BUSCA) {
+    const rx = new RegExp(window.__BUSCA, 'i');
+    out.busca = [];
+    document.querySelectorAll('body *').forEach((el) => {
+      const t = (el.textContent || '').trim();
+      if (!t || el.children.length > 0) return;
+      if (!rx.test(t)) return;
+      const r = el.getBoundingClientRect();
+      const cs = getComputedStyle(el);
+      const vis = cs.display !== 'none' && cs.visibility !== 'hidden' && +cs.opacity > 0.05 && el.offsetParent !== null;
+      out.busca.push({ tag: el.tagName + (el.id ? '#' + el.id : '') + (typeof el.className === 'string' && el.className ? '.' + el.className.split(' ')[0] : ''),
+        texto: t.slice(0, 70), rect: [Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height)], visivel: vis,
+        pai: el.parentElement ? el.parentElement.tagName + (el.parentElement.id ? '#' + el.parentElement.id : '') : '',
+        displayPai: el.parentElement ? getComputedStyle(el.parentElement).display : '' });
+    });
+  }
   document.querySelectorAll('body *').forEach((el) => {
     const cs = getComputedStyle(el); const r = el.getBoundingClientRect();
     if (cs.position === 'fixed' || cs.position === 'absolute') {
@@ -104,6 +138,9 @@ const info = await page.evaluate(() => {
 console.log('STATE:', info.state);
 console.log('PAINEL largura:', info.panelWidth); console.log('GRID:', JSON.stringify(info.gridInfo)); console.log('CANDIDATOS:', JSON.stringify(info.candidates.map(c=>c.sel+' -> '+JSON.stringify(c.rect))));
 console.log('OVERLAYS VISÍVEIS:', JSON.stringify(info.overlays, null, 1));
+console.log('BUSCA:', JSON.stringify(info.busca, null, 1));
+console.log('TEXTOS VISÍVEIS (' + info.textos.length + '):');
+info.textos.forEach((t) => console.log('   y=' + String(t.xy[1]).padStart(4) + ' x=' + String(t.xy[0]).padStart(4) + '  ' + t.tam.join('x').padEnd(9) + ' [' + t.tag + '] "' + t.txt + '"'));
 
 fs.mkdirSync('docs/refs/_debug', { recursive: true });
 await page.screenshot({ path: `docs/refs/_debug/probe_${alvo}.png` });

@@ -5,22 +5,22 @@
 NOTA DE UI: 100/100 · 🔴 0 · 🟠 0 · 🟡 0 · 🔵 0
 
 NAVEGAÇÃO (tela a tela):
-  title            state=title        overlays=[body,screen,title,titleMenu,titlePointsVal,helpRows,roomName,roomTitleText,roomSubText,hpText]  ✓
-  load-screen      state=title        overlays=[body,screen,titleMenu,titlePointsVal,helpRows,roomName,roomTitleText,roomSubText,hpText,hpStatus]  ✓
-  campaign-select  state=title        overlays=[body,screen,titleMenu,titlePointsVal,helpRows,roomName,roomTitleText,roomSubText,hpText,hpStatus]  ✓
-  options          state=title        overlays=[body,screen,titleMenu,titlePointsVal,helpRows,options,roomName,roomTitleText,roomSubText,hpText]  ✓
-  extras           state=title        overlays=[body,screen,titleMenu,titlePointsVal,helpRows,options,roomName,roomTitleText,roomSubText,hpText]  ✓
-  shop-vazio       state=title        overlays=[body,screen,titleMenu,titlePointsVal,helpRows,options,roomName,roomTitleText,roomSubText,hpText]  ✓
-  shop-pos-compra  state=title        overlays=[body,screen,titleMenu,titlePointsVal,helpRows,options,roomName,roomTitleText,roomSubText,hpText]  ✓
-  galeria          state=title        overlays=[body,screen,titleMenu,titlePointsVal,helpRows,options,roomName,roomTitleText,roomSubText,hpText]  ✓
-  pause            state=pause        overlays=[body,screen,titleMenu,titlePointsVal,helpRows,hud,roomName,roomTitleText,roomSubText,hpText]  ✓
-  inventory        state=pause        overlays=[body,screen,titleMenu,titlePointsVal,helpRows,hud,roomName,roomTitleText,roomSubText,hpText]  ✓
-  savebox          state=savebox      overlays=[body,screen,titleMenu,titlePointsVal,helpRows,hud,roomName,roomTitleText,roomSubText,hpText]  ✓
-  load-in-game     state=play         overlays=[body,screen,titleMenu,titlePointsVal,helpRows,hud,roomName,roomTitleText,roomSubText,hpText]  ✓
-  safe             state=safe         overlays=[body,screen,titleMenu,titlePointsVal,helpRows,hud,roomName,roomTitleText,roomSubText,hpText]  ✓
-  ending-bom       state=play         overlays=[body,screen,titleMenu,titlePointsVal,helpRows,hud,roomName,roomTitleText,roomSubText,hpText]  ✓
-  ending-ruim      state=play         overlays=[body,screen,titleMenu,titlePointsVal,helpRows,hud,roomName,roomTitleText,roomSubText,hpText]  ✓
-  title-final      state=title        overlays=[body,screen,title,titleMenu,titlePointsVal,helpRows,roomName,roomTitleText,roomSubText,hpText]  ✓
+  title            state=title        overlays=[body,screen,title,titleMenu,helpRows,roomName,roomTitleText,roomSubText,hpText,hpStatus]  ✓
+  load-screen      state=title        overlays=[body,screen,titleMenu,helpRows,roomName,roomTitleText,roomSubText,hpText,hpStatus,ammoBox]  ✓
+  campaign-select  state=title        overlays=[body,screen,titleMenu,helpRows,roomName,roomTitleText,roomSubText,hpText,hpStatus,ammoBox]  ✓
+  options          state=title        overlays=[body,screen,titleMenu,helpRows,options,roomName,roomTitleText,roomSubText,hpText,hpStatus]  ✓
+  extras           state=title        overlays=[body,screen,titleMenu,helpRows,options,roomName,roomTitleText,roomSubText,hpText,hpStatus]  ✓
+  shop-vazio       state=title        overlays=[body,screen,titleMenu,helpRows,options,roomName,roomTitleText,roomSubText,hpText,hpStatus]  ✓
+  shop-pos-compra  state=title        overlays=[body,screen,titleMenu,helpRows,options,roomName,roomTitleText,roomSubText,hpText,hpStatus]  ✓
+  galeria          state=title        overlays=[body,screen,titleMenu,helpRows,options,roomName,roomTitleText,roomSubText,hpText,hpStatus]  ✓
+  pause            state=pause        overlays=[body,screen,titleMenu,helpRows,hud,roomName,roomTitleText,roomSubText,hpText,hpStatus]  ✓
+  inventory        state=pause        overlays=[body,screen,titleMenu,helpRows,hud,roomName,roomTitleText,roomSubText,hpText,hpStatus]  ✓
+  savebox          state=savebox      overlays=[body,screen,titleMenu,helpRows,hud,roomName,roomTitleText,roomSubText,hpText,hpStatus]  ✓
+  load-in-game     state=play         overlays=[body,screen,titleMenu,helpRows,hud,roomName,roomTitleText,roomSubText,hpText,hpStatus]  ✓
+  safe             state=safe         overlays=[body,screen,titleMenu,helpRows,hud,roomName,roomTitleText,roomSubText,hpText,hpStatus]  ✓
+  ending-bom       state=play         overlays=[body,screen,titleMenu,helpRows,hud,roomName,roomTitleText,roomSubText,hpText,hpStatus]  ✓
+  ending-ruim      state=play         overlays=[body,screen,titleMenu,helpRows,hud,roomName,roomTitleText,roomSubText,hpText,hpStatus]  ✓
+  title-final      state=title        overlays=[body,screen,title,titleMenu,helpRows,roomName,roomTitleText,roomSubText,hpText,hpStatus]  ✓
 
 DADOS DA LOJA: itens 16 · GALERIA: modelos 9 · ESTADOS do jogo: 17
 

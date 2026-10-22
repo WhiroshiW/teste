@@ -25,7 +25,7 @@ export class UI {
     this.game = game;
     this.$ = (id) => document.getElementById(id);
     this.el = {
-      title: this.$('title'), titleMenu: this.$('titleMenu'), titlePointsVal: this.$('titlePointsVal'),
+      title: this.$('title'), titleMenu: this.$('titleMenu'),
       help: this.$('help'), helpRows: this.$('helpRows'),
       options: this.$('options'),
       hud: this.$('hud'), roomName: this.$('roomName'),
@@ -249,7 +249,6 @@ export class UI {
     this.menuIdx.title = 0;
     this.renderTitleMenu(hasSave);
     this.startTitleRain();
-    if (this.el.titlePointsVal) this.el.titlePointsVal.textContent = (this.game.points | 0).toLocaleString('pt-BR') + ' PTS';
     this.startTitle3DParallax();
   }
   hideTitle() {
